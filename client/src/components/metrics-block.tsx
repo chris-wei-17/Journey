@@ -134,86 +134,11 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     <Card className="bg-white/90 backdrop-blur-sm shadow-xl mt-6 border-0" style={{
       boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
     }}>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader>
         <CardTitle className="text-lg font-semibold text-gray-800 flex items-center">
           <i className="fas fa-weight text-purple-500 mr-2"></i>
           Metrics
         </CardTitle>
-        <div className="flex items-center space-x-2">
-          <Dialog open={isAddingField} onOpenChange={setIsAddingField}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <i className="fas fa-plus"></i>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Custom Metric</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Metric Name</Label>
-                  <Select value={newFieldName} onValueChange={setNewFieldName}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select or type custom metric" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COMMON_METRICS.map((metric) => (
-                        <SelectItem key={metric.name} value={metric.name}>
-                          {metric.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    placeholder="Or type custom metric name"
-                    value={newFieldName}
-                    onChange={(e) => setNewFieldName(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-                <div>
-                  <Label>Unit Type</Label>
-                  <Select value={newFieldUnit} onValueChange={setNewFieldUnit}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="length">Length (in/cm)</SelectItem>
-                      <SelectItem value="percentage">Percentage (%)</SelectItem>
-                      <SelectItem value="count">Count/Reps</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsAddingField(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={addCustomField}
-                    disabled={!newFieldName.trim() || createCustomFieldMutation.isPending}
-                    className="bg-purple-500 hover:bg-purple-600 text-white"
-                  >
-                    Add Metric
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsEditMode(!isEditMode)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <i className="fas fa-edit"></i>
-          </Button>
-        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -309,6 +234,81 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
             <p className="text-gray-500 text-center py-4">
               No metrics tracked yet. Tap the + button to add custom measurements.
             </p>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-3 mt-4">
+          <Dialog open={isAddingField} onOpenChange={setIsAddingField}>
+            <DialogTrigger asChild>
+              <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
+                <i className="fas fa-plus mr-2"></i>
+                ADD CUSTOM METRIC
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Custom Metric</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Metric Name</Label>
+                  <Select value={newFieldName} onValueChange={setNewFieldName}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select or type custom metric" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMON_METRICS.map((metric) => (
+                        <SelectItem key={metric.name} value={metric.name}>
+                          {metric.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="Or type custom metric name"
+                    value={newFieldName}
+                    onChange={(e) => setNewFieldName(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label>Unit Type</Label>
+                  <Select value={newFieldUnit} onValueChange={setNewFieldUnit}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="length">Length (in/cm)</SelectItem>
+                      <SelectItem value="percentage">Percentage (%)</SelectItem>
+                      <SelectItem value="count">Count/Reps</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsAddingField(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={addCustomField}
+                    disabled={!newFieldName.trim() || createCustomFieldMutation.isPending}
+                    className="bg-purple-500 hover:bg-purple-600 text-white"
+                  >
+                    Add Metric
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {customFields.length > 0 && (
+            <Button 
+              onClick={() => setIsEditMode(!isEditMode)}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition-all duration-200"
+            >
+              <i className="fas fa-edit mr-2"></i>
+              {isEditMode ? "DONE EDITING" : "EDIT METRICS"}
+            </Button>
           )}
         </div>
       </CardContent>
