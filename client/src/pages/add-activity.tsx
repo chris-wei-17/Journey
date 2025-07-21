@@ -115,9 +115,9 @@ export default function AddActivity() {
           variant="ghost" 
           size="sm"
           onClick={() => setLocation('/')}
-          className="p-2 text-white hover:bg-white/20"
+          className="p-2 text-white hover:bg-white/20 w-10 h-10 flex items-center justify-center"
         >
-          <i className="fas fa-times text-xl"></i>
+          <i className="fas fa-times text-xl text-white"></i>
         </Button>
       </div>
 

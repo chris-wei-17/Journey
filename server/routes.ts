@@ -269,6 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create new activity
   app.post('/api/activities', isAuthenticated, async (req: any, res) => {
+    console.log('=== ACTIVITY CREATION START ===');
     try {
       const userId = parseInt(req.user.claims.sub);
       console.log('Creating activity for user:', userId);
@@ -299,8 +300,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Created activity:', JSON.stringify(activity, null, 2));
       res.status(201).json(activity);
     } catch (error) {
+      console.error("=== ACTIVITY CREATION ERROR ===");
       console.error("Error creating activity:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : JSON.stringify(error));
       console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
+      console.error("=== END ERROR ===");
       res.status(500).json({ message: "Failed to create activity", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
