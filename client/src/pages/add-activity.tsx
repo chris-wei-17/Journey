@@ -55,8 +55,11 @@ export default function AddActivity() {
       }
     },
     onSuccess: () => {
-      // Invalidate activities cache
+      // Invalidate activities cache for all dates
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      // Also invalidate the specific date query
+      const today = new Date().toISOString().split('T')[0];
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/date/${today}`] });
       toast({
         title: "Success",
         description: "Activity added successfully!",
@@ -121,9 +124,9 @@ export default function AddActivity() {
         <h1 className="text-xl font-bold text-white">ADD ACTIVITY</h1>
         <div 
           onClick={() => setLocation('/')}
-          className="w-10 h-10 flex items-center justify-center cursor-pointer text-white hover:bg-white/20 rounded"
+          className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
         >
-          <i className="fas fa-times text-xl"></i>
+          <i className="fas fa-times text-xl text-black"></i>
         </div>
       </div>
 
