@@ -111,14 +111,12 @@ export default function AddActivity() {
           <i className="fas fa-chevron-left text-xl"></i>
         </Button>
         <h1 className="text-xl font-bold text-white">ADD ACTIVITY</h1>
-        <Button 
-          variant="ghost" 
-          size="sm"
+        <div 
           onClick={() => setLocation('/')}
-          className="p-2 text-white hover:bg-white/20 w-10 h-10 flex items-center justify-center"
+          className="w-10 h-10 flex items-center justify-center cursor-pointer text-white hover:bg-white/20 rounded"
         >
-          <i className="fas fa-times text-xl text-white"></i>
-        </Button>
+          <i className="fas fa-times text-xl"></i>
+        </div>
       </div>
 
       <main className="px-4 max-w-lg mx-auto">

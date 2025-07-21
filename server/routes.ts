@@ -268,8 +268,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new activity
-  app.post('/api/activities', isAuthenticated, async (req: any, res) => {
-    console.log('=== ACTIVITY CREATION START ===');
+  app.post('/api/activities', async (req: any, res) => {
+    console.log('=== ACTIVITY CREATION START (NO AUTH CHECK) ===');
+    console.log('Headers:', req.headers);
+    console.log('User object:', req.user);
+    
+    // Manual auth check with logging
+    if (!req.user || !req.user.claims || !req.user.claims.sub) {
+      console.log('=== AUTH FAILED ===');
+      return res.status(401).json({ message: "Unauthorized - no user found" });
+    }
     try {
       const userId = parseInt(req.user.claims.sub);
       console.log('Creating activity for user:', userId);
