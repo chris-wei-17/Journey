@@ -205,16 +205,14 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
             </DialogContent>
           </Dialog>
           
-          {customFields.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditMode(!isEditMode)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <i className="fas fa-edit"></i>
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsEditMode(!isEditMode)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <i className="fas fa-edit"></i>
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
