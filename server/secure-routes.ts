@@ -15,7 +15,8 @@ import {
   registerSchema,
   onboardingSchema,
   insertProgressEntrySchema,
-  insertPhotoSchema 
+  insertPhotoSchema,
+  insertActivitySchema 
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -364,6 +365,87 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting photo:", error);
       res.status(500).json({ message: "Failed to delete photo" });
+    }
+  });
+
+  // Activity routes for "My Day" functionality
+  app.get('/api/activities/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      const date = req.params.date;
+      const activities = await storage.getActivitiesForDate(userId, date);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching activities for date:", error);
+      res.status(500).json({ message: "Failed to fetch activities" });
+    }
+  });
+
+  app.post('/api/activities', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    console.log('=== ACTIVITY CREATION START ===');
+    try {
+      const userId = req.userId!;
+      console.log('Creating activity for user:', userId);
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+      
+      const activityData = {
+        userId,
+        activityType: req.body.activityType,
+        startTime: new Date(req.body.startTime),
+        endTime: new Date(req.body.endTime),
+        date: new Date(req.body.date),
+      };
+      
+      console.log('Processed activity data:', JSON.stringify(activityData, null, 2));
+      
+      const result = insertActivitySchema.safeParse(activityData);
+      
+      if (!result.success) {
+        console.log('Validation errors:', JSON.stringify(result.error.errors, null, 2));
+        return res.status(400).json({ 
+          message: "Invalid activity data",
+          errors: result.error.errors 
+        });
+      }
+
+      console.log('Validated activity data:', JSON.stringify(result.data, null, 2));
+      const activity = await storage.createActivity(result.data);
+      console.log('Created activity:', JSON.stringify(activity, null, 2));
+      res.status(201).json(activity);
+    } catch (error) {
+      console.error("=== ACTIVITY CREATION ERROR ===");
+      console.error("Error creating activity:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : JSON.stringify(error));
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
+      console.error("=== END ERROR ===");
+      res.status(500).json({ message: "Failed to create activity", error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.delete('/api/activities/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      const activityId = parseInt(req.params.id);
+      
+      await storage.deleteActivity(activityId, userId);
+      res.json({ message: "Activity deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      res.status(500).json({ message: "Failed to delete activity" });
+    }
+  });
+
+  // Progress by date route
+  app.get('/api/progress/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      const date = req.params.date;
+      const progress = await storage.getProgressEntriesForDate(userId, date);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching progress for date:", error);
+      res.status(500).json({ message: "Failed to fetch progress" });
     }
   });
 

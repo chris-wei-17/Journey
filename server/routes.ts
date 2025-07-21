@@ -268,21 +268,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new activity
-  app.post('/api/activities', (req: any, res, next) => {
-    console.log('=== ACTIVITY CREATION REQUEST RECEIVED ===');
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('User:', req.user);
-    console.log('Session:', req.session);
-    console.log('Is authenticated:', req.isAuthenticated ? req.isAuthenticated() : 'No isAuthenticated method');
-    
-    // Try to proceed without auth first to debug
-    next();
-  }, async (req: any, res) => {
-    console.log('=== ACTIVITY CREATION PROCESSING ===');
+  app.post('/api/activities', isAuthenticated, async (req: any, res) => {
+    console.log('=== ACTIVITY CREATION START ===');
     try {
-      // For now, use a hardcoded user ID to test creation
-      const userId = req.user?.claims?.sub ? parseInt(req.user.claims.sub) : 5;
+      const userId = parseInt(req.user.claims.sub);
       console.log('Creating activity for user:', userId);
       console.log('Request body:', JSON.stringify(req.body, null, 2));
       
