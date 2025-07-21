@@ -126,7 +126,6 @@ export const photosRelations = relations(photos, ({ one }) => ({
 
 // Schema types
 export type UpsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
 
 // Metrics tracking table
 export const metrics = pgTable("metrics", {
@@ -255,10 +254,7 @@ export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
   updatedAt: true,
 });
 
-export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
-  id: true,
-  createdAt: true,
-});
+// Remove userSessions reference - not using sessions anymore
 
 export const insertUserGoalSchema = createInsertSchema(userGoals).omit({
   id: true,
