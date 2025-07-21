@@ -44,7 +44,9 @@ export default function Onboarding() {
   };
 
   const goToLogin = () => {
-    window.location.href = "/api/logout";
+    // Clear the auth token and reload to show auth page
+    localStorage.removeItem('authToken');
+    window.location.reload();
   };
 
   return (

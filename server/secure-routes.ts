@@ -367,6 +367,13 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Logout endpoint (for client-side logout)
+  app.get('/api/logout', (req, res) => {
+    // Since we're using JWT tokens stored client-side, 
+    // logout is primarily handled by the client removing the token
+    res.json({ message: "Logout successful" });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -16,7 +16,9 @@ export default function Home() {
   });
 
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    // Clear the auth token and reload to show auth page
+    localStorage.removeItem('authToken');
+    window.location.reload();
   };
 
   const handleSettings = () => {
