@@ -27,6 +27,7 @@ import {
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import sharp from "sharp";
 
 // Configure multer for photo uploads
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -313,7 +314,6 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       const savedPhotos = [];
       for (const file of files) {
         // Generate thumbnail
-        const sharp = require('sharp');
         const thumbnailFilename = `thumb_${file.filename}`;
         const thumbnailPath = path.join(uploadDir, thumbnailFilename);
         
