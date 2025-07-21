@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import Onboarding from "@/pages/onboarding";
 import Profile from "@/pages/profile";
 import AddActivity from "@/pages/add-activity";
+import SelectActivity from "@/pages/select-activity";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -35,6 +36,7 @@ function Router() {
               <Route path="/" component={Home} />
               <Route path="/profile" component={Profile} />
               <Route path="/add-activity" component={AddActivity} />
+              <Route path="/select-activity" component={SelectActivity} />
             </>
           )}
         </>

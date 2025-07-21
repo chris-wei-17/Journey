@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
@@ -14,6 +13,13 @@ const ACTIVITY_OPTIONS = [
   { value: 'walking', label: 'Walking', icon: 'fa-walking' },
   { value: 'running', label: 'Running', icon: 'fa-running' },
   { value: 'cycling', label: 'Cycling', icon: 'fa-biking' },
+  { value: 'acupuncture', label: 'Acupuncture', icon: 'fa-spa' },
+  { value: 'air-compression', label: 'Air Compression', icon: 'fa-wind' },
+  { value: 'assault-bike', label: 'Assault Bike', icon: 'fa-biking' },
+  { value: 'australian-rules-football', label: 'Australian Rules Football', icon: 'fa-football-ball' },
+  { value: 'babywearing', label: 'Babywearing', icon: 'fa-baby' },
+  { value: 'badminton', label: 'Badminton', icon: 'fa-shuttlecock' },
+  { value: 'barre', label: 'Barre', icon: 'fa-dumbbell' },
 ];
 
 export default function AddActivity() {
@@ -26,6 +32,17 @@ export default function AddActivity() {
   const [endTime, setEndTime] = useState('');
   const [location, setActivityLocation] = useState('');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  // Get activity from URL params if coming from select page
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activityParam = urlParams.get('activity');
+    if (activityParam) {
+      setSelectedActivity(activityParam);
+      // Clean URL
+      window.history.replaceState({}, '', '/add-activity');
+    }
+  }, []);
 
   const createActivityMutation = useMutation({
     mutationFn: async (activityData: any) => {
@@ -78,6 +95,11 @@ export default function AddActivity() {
     return activity ? activity.icon : 'fa-dumbbell';
   };
 
+  const getSelectedActivityLabel = () => {
+    const activity = ACTIVITY_OPTIONS.find(opt => opt.value === selectedActivity);
+    return activity ? activity.label : 'SELECT ACTIVITY';
+  };
+
   return (
     <div className="app-gradient-bg min-h-screen">
       {/* Header */}
@@ -96,43 +118,22 @@ export default function AddActivity() {
 
       <main className="px-4 max-w-lg mx-auto">
         {/* Activity Selection */}
-        <Card className="mb-6 bg-gray-800 border-0">
+        <Card 
+          className="mb-6 bg-gray-800 border-0 cursor-pointer hover:bg-gray-700 transition-all duration-200"
+          onClick={() => setLocation('/select-activity')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 flex items-center justify-center">
                   <i className={`fas ${getSelectedActivityIcon()} text-gray-400 text-lg`}></i>
                 </div>
-                <span className="text-white font-medium">SELECT ACTIVITY</span>
+                <span className="text-white font-medium">{getSelectedActivityLabel()}</span>
               </div>
               <i className="fas fa-chevron-right text-gray-400"></i>
             </div>
           </CardContent>
         </Card>
-
-        {/* Activity Options */}
-        <div className="mb-6 space-y-3">
-          {ACTIVITY_OPTIONS.map((activity) => (
-            <Card 
-              key={activity.value} 
-              className={`cursor-pointer transition-all duration-200 border-2 ${
-                selectedActivity === activity.value 
-                  ? 'border-white bg-white/10' 
-                  : 'border-gray-700 bg-gray-800 hover:bg-gray-700'
-              }`}
-              onClick={() => setSelectedActivity(activity.value)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center">
-                    <i className={`fas ${activity.icon} text-white`}></i>
-                  </div>
-                  <span className="text-white font-medium">{activity.label}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Time Section */}
         <div className="mb-6">
