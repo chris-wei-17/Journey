@@ -2,17 +2,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function Landing() {
-  // This component is no longer used since we redirect directly to Auth
-  // when not authenticated. Keeping for potential future use.
-  return null;
+  const handleLogin = () => {
+    window.location.href = '/api/login';
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-300 to-lavender-300">
-      <Card className="w-full max-w-md card-shadow">
+    <div className="min-h-screen flex items-center justify-center p-4 app-gradient-bg">
+      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl border-0" style={{
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+      }}>
         <CardContent className="p-8">
           {/* App Logo */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-300 to-lavender-300 rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
               <i className="fas fa-dumbbell text-3xl text-white"></i>
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">FitJourney</h1>
@@ -30,14 +32,14 @@ export default function Landing() {
           {/* Login Button */}
           <Button 
             onClick={handleLogin}
-            className="w-full bg-gradient-to-r from-primary-300 to-lavender-300 hover:from-primary-400 hover:to-lavender-400 text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             Get Started
           </Button>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Sign in to start your fitness journey
+              Sign in with Replit to start your fitness journey
             </p>
           </div>
         </CardContent>
