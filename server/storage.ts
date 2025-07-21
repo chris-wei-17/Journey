@@ -23,6 +23,12 @@ import {
   macroTargets,
   type MacroTarget,
   type InsertMacroTarget,
+  metrics,
+  type MetricEntry,
+  type InsertMetric,
+  customMetricFields,
+  type CustomMetricField,
+  type InsertCustomMetricField,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, sql } from "drizzle-orm";
@@ -71,6 +77,15 @@ export interface IStorage {
   // Macro target operations
   getMacroTargets(userId: number): Promise<MacroTarget | undefined>;
   upsertMacroTargets(targets: InsertMacroTarget): Promise<MacroTarget>;
+  
+  // Metrics operations
+  getMetricsByDate(userId: number, date: string): Promise<MetricEntry[]>;
+  createOrUpdateMetric(data: InsertMetric): Promise<MetricEntry>;
+  
+  // Custom metric fields operations
+  getCustomMetricFields(userId: number): Promise<CustomMetricField[]>;
+  createCustomMetricField(data: InsertCustomMetricField): Promise<CustomMetricField>;
+  deleteCustomMetricField(fieldId: number, userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -335,6 +350,91 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return targets;
+  }
+
+  // Metrics operations
+  async getMetricsByDate(userId: number, date: string): Promise<MetricEntry[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return await db
+      .select()
+      .from(metrics)
+      .where(
+        and(
+          eq(metrics.userId, userId),
+          sql`${metrics.date} >= ${startOfDay} AND ${metrics.date} <= ${endOfDay}`
+        )
+      )
+      .orderBy(metrics.createdAt);
+  }
+
+  async createOrUpdateMetric(metricData: InsertMetric): Promise<MetricEntry> {
+    const startOfDay = new Date(metricData.date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(metricData.date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Check if metric exists for this date
+    const [existingMetric] = await db
+      .select()
+      .from(metrics)
+      .where(
+        and(
+          eq(metrics.userId, metricData.userId),
+          sql`${metrics.date} >= ${startOfDay} AND ${metrics.date} <= ${endOfDay}`
+        )
+      );
+
+    if (existingMetric) {
+      // Update existing metric
+      const [updatedMetric] = await db
+        .update(metrics)
+        .set({
+          weight: metricData.weight,
+          customFields: metricData.customFields,
+        })
+        .where(eq(metrics.id, existingMetric.id))
+        .returning();
+      return updatedMetric;
+    } else {
+      // Create new metric
+      const [newMetric] = await db
+        .insert(metrics)
+        .values(metricData)
+        .returning();
+      return newMetric;
+    }
+  }
+
+  // Custom metric fields operations
+  async getCustomMetricFields(userId: number): Promise<CustomMetricField[]> {
+    return await db
+      .select()
+      .from(customMetricFields)
+      .where(eq(customMetricFields.userId, userId))
+      .orderBy(customMetricFields.createdAt);
+  }
+
+  async createCustomMetricField(fieldData: InsertCustomMetricField): Promise<CustomMetricField> {
+    const [field] = await db
+      .insert(customMetricFields)
+      .values(fieldData)
+      .returning();
+    return field;
+  }
+
+  async deleteCustomMetricField(fieldId: number, userId: number): Promise<void> {
+    await db
+      .delete(customMetricFields)
+      .where(
+        and(
+          eq(customMetricFields.id, fieldId),
+          eq(customMetricFields.userId, userId)
+        )
+      );
   }
 }
 

@@ -18,7 +18,11 @@ import {
   insertPhotoSchema,
   insertActivitySchema,
   insertMacroSchema,
-  insertMacroTargetSchema 
+  insertMacroTargetSchema,
+  insertMetricsSchema,
+  insertCustomMetricFieldSchema,
+  type MetricEntry,
+  type CustomMetricField
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -529,6 +533,98 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching macro targets:", error);
       res.status(500).json({ message: "Failed to fetch macro targets" });
+    }
+  });
+
+  // Metrics routes
+  app.get('/api/metrics/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { date } = req.params;
+      const userId = req.userId!;
+      
+      const metrics = await storage.getMetricsByDate(userId, date);
+      res.json(metrics);
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+      res.status(500).json({ message: 'Failed to fetch metrics' });
+    }
+  });
+
+  app.post('/api/metrics', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      
+      const metricData = {
+        userId,
+        date: new Date(req.body.date),
+        weight: req.body.weight || null,
+        customFields: req.body.customFields || {},
+      };
+
+      const result = insertMetricsSchema.safeParse(metricData);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: 'Invalid request body', 
+          errors: result.error.issues 
+        });
+      }
+
+      const metric = await storage.createOrUpdateMetric(result.data);
+      res.status(201).json(metric);
+    } catch (error) {
+      console.error('Error creating/updating metric:', error);
+      res.status(500).json({ message: 'Failed to save metric' });
+    }
+  });
+
+  // Custom metric fields routes
+  app.get('/api/custom-metric-fields', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      const fields = await storage.getCustomMetricFields(userId);
+      res.json(fields);
+    } catch (error) {
+      console.error('Error fetching custom metric fields:', error);
+      res.status(500).json({ message: 'Failed to fetch custom fields' });
+    }
+  });
+
+  app.post('/api/custom-metric-fields', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      
+      const fieldData = {
+        userId,
+        fieldName: req.body.fieldName,
+        unit: req.body.unit,
+      };
+
+      const result = insertCustomMetricFieldSchema.safeParse(fieldData);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: 'Invalid request body', 
+          errors: result.error.issues 
+        });
+      }
+
+      const field = await storage.createCustomMetricField(result.data);
+      res.status(201).json(field);
+    } catch (error) {
+      console.error('Error creating custom metric field:', error);
+      res.status(500).json({ message: 'Failed to create custom field' });
+    }
+  });
+
+  app.delete('/api/custom-metric-fields/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const fieldId = parseInt(req.params.id);
+      const userId = req.userId!;
+      
+      await storage.deleteCustomMetricField(fieldId, userId);
+      res.json({ message: 'Custom field deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting custom metric field:', error);
+      res.status(500).json({ message: 'Failed to delete custom field' });
     }
   });
 

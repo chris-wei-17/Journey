@@ -10,6 +10,7 @@ import {
   boolean,
   date,
   numeric,
+  decimal,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -136,6 +137,33 @@ export const photosRelations = relations(photos, ({ one }) => ({
 // Schema types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// Metrics tracking table
+export const metrics = pgTable("metrics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  date: timestamp("date").notNull(),
+  weight: numeric("weight", { precision: 5, scale: 2 }),
+  customFields: jsonb("custom_fields").$type<Record<string, number>>().default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMetricsSchema = createInsertSchema(metrics).omit({ id: true, createdAt: true });
+export type InsertMetric = z.infer<typeof insertMetricsSchema>;
+export type MetricEntry = typeof metrics.$inferSelect;
+
+// Custom metric fields table
+export const customMetricFields = pgTable("custom_metric_fields", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  fieldName: varchar("field_name").notNull(),
+  unit: varchar("unit").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCustomMetricFieldSchema = createInsertSchema(customMetricFields).omit({ id: true, createdAt: true });
+export type InsertCustomMetricField = z.infer<typeof insertCustomMetricFieldSchema>;
+export type CustomMetricField = typeof customMetricFields.$inferSelect;
 
 // Activities table for "My Day" tracking
 export const activities = pgTable("activities", {
