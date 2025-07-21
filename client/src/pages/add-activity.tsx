@@ -30,8 +30,6 @@ export default function AddActivity() {
   const [selectedActivity, setSelectedActivity] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [location, setActivityLocation] = useState('');
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   // Get activity from URL params if coming from select page
   useEffect(() => {
@@ -77,16 +75,16 @@ export default function AddActivity() {
       return;
     }
 
-    const activityDate = new Date(date);
-    const startDateTime = new Date(`${date}T${startTime}`);
-    const endDateTime = new Date(`${date}T${endTime}`);
+    // Use today's date automatically
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const startDateTime = new Date(`${today}T${startTime}`);
+    const endDateTime = new Date(`${today}T${endTime}`);
 
     createActivityMutation.mutate({
       activityType: selectedActivity,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
-      date: activityDate.toISOString(),
-      location: location || null,
+      date: new Date(today).toISOString(),
     });
   };
 
@@ -160,30 +158,6 @@ export default function AddActivity() {
               />
             </div>
 
-            <div>
-              <Label className="text-white mb-2 block">Date</Label>
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Location Section */}
-        <div className="mb-8">
-          <h3 className="text-gray-400 text-sm font-medium mb-4 tracking-wide">LOCATION</h3>
-          <div>
-            <Label className="text-white mb-2 block">Where did you do this activity?</Label>
-            <Input
-              type="text"
-              placeholder="---"
-              value={location}
-              onChange={(e) => setActivityLocation(e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-            />
           </div>
         </div>
 
