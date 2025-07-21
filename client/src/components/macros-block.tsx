@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -47,6 +47,7 @@ const macroTargetSchema = z.object({
 export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const { data: macros = [] } = useQuery<MacroEntry[]>({
     queryKey: [`/api/macros/date/${format(selectedDate, 'yyyy-MM-dd')}`],
@@ -82,6 +83,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/macro-targets'] });
+      setDialogOpen(false);
       toast({
         title: "Success",
         description: "Macro targets updated successfully",
@@ -116,9 +118,9 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">Macros</CardTitle>
           <div className="flex items-center space-x-3">
-            <Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors text-right">
                   Target: P:{macroTargets ? parseFloat(macroTargets.proteinTarget.toString()) : 0}g | F:{macroTargets ? parseFloat(macroTargets.fatsTarget.toString()) : 0}g | C:{macroTargets ? parseFloat(macroTargets.carbsTarget.toString()) : 0}g
                 </button>
               </DialogTrigger>
@@ -203,7 +205,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
           <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
             <span>NUTRITION</span>
             {macros.length > 0 && (
-              <span className="text-xs">
+              <span className="text-xs text-right">
                 P: {totals.protein}g | F: {totals.fats}g | C: {totals.carbs}g
               </span>
             )}
