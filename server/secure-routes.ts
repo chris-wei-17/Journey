@@ -17,7 +17,8 @@ import {
   insertProgressEntrySchema,
   insertPhotoSchema,
   insertActivitySchema,
-  insertMacroSchema 
+  insertMacroSchema,
+  insertMacroTargetSchema 
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -516,6 +517,46 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting macro:", error);
       res.status(500).json({ message: "Failed to delete macro" });
+    }
+  });
+
+  // Macro targets routes
+  app.get('/api/macro-targets', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      const targets = await storage.getMacroTargets(userId);
+      res.json(targets);
+    } catch (error) {
+      console.error("Error fetching macro targets:", error);
+      res.status(500).json({ message: "Failed to fetch macro targets" });
+    }
+  });
+
+  app.post('/api/macro-targets', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      
+      const targetsData = {
+        userId,
+        proteinTarget: req.body.proteinTarget,
+        fatsTarget: req.body.fatsTarget,
+        carbsTarget: req.body.carbsTarget,
+      };
+      
+      const result = insertMacroTargetSchema.safeParse(targetsData);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Invalid macro targets data",
+          errors: result.error.errors 
+        });
+      }
+
+      const targets = await storage.upsertMacroTargets(result.data);
+      res.json(targets);
+    } catch (error) {
+      console.error("Error updating macro targets:", error);
+      res.status(500).json({ message: "Failed to update macro targets" });
     }
   });
 

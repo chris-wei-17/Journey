@@ -184,6 +184,30 @@ export const insertMacroSchema = createInsertSchema(macros).omit({
 export type InsertMacro = z.infer<typeof insertMacroSchema>;
 export type Macro = typeof macros.$inferSelect;
 
+// Macro targets table for nutrition goals
+export const macroTargets = pgTable("macro_targets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id).unique(),
+  proteinTarget: numeric("protein_target", { precision: 5, scale: 1 }).notNull().default("0"), // grams
+  fatsTarget: numeric("fats_target", { precision: 5, scale: 1 }).notNull().default("0"), // grams
+  carbsTarget: numeric("carbs_target", { precision: 5, scale: 1 }).notNull().default("0"), // grams
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMacroTargetSchema = createInsertSchema(macroTargets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  proteinTarget: z.coerce.number().min(0),
+  fatsTarget: z.coerce.number().min(0),
+  carbsTarget: z.coerce.number().min(0),
+});
+
+export type InsertMacroTarget = z.infer<typeof insertMacroTargetSchema>;
+export type MacroTarget = typeof macroTargets.$inferSelect;
+
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type InsertUserProfile = typeof userProfiles.$inferInsert;
 

@@ -1,8 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { format, isToday } from "date-fns";
 import { Link } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import * as React from "react";
 
 interface MacroEntry {
   id: number;
@@ -15,31 +24,182 @@ interface MacroEntry {
   createdAt: string;
 }
 
+interface MacroTarget {
+  id: number;
+  userId: number;
+  proteinTarget: number;
+  fatsTarget: number;
+  carbsTarget: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface MacrosBlockProps {
   selectedDate: Date;
 }
 
+const macroTargetSchema = z.object({
+  proteinTarget: z.coerce.number().min(0),
+  fatsTarget: z.coerce.number().min(0),
+  carbsTarget: z.coerce.number().min(0),
+});
+
 export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
   const { data: macros = [] } = useQuery<MacroEntry[]>({
     queryKey: [`/api/macros/date/${format(selectedDate, 'yyyy-MM-dd')}`],
   });
 
+  const { data: macroTargets } = useQuery<MacroTarget>({
+    queryKey: ['/api/macro-targets'],
+  });
+
+  const form = useForm<z.infer<typeof macroTargetSchema>>({
+    resolver: zodResolver(macroTargetSchema),
+    defaultValues: {
+      proteinTarget: macroTargets?.proteinTarget ? parseFloat(macroTargets.proteinTarget.toString()) : 0,
+      fatsTarget: macroTargets?.fatsTarget ? parseFloat(macroTargets.fatsTarget.toString()) : 0,
+      carbsTarget: macroTargets?.carbsTarget ? parseFloat(macroTargets.carbsTarget.toString()) : 0,
+    },
+  });
+
+  // Update form when targets data is loaded
+  React.useEffect(() => {
+    if (macroTargets) {
+      form.reset({
+        proteinTarget: parseFloat(macroTargets.proteinTarget.toString()),
+        fatsTarget: parseFloat(macroTargets.fatsTarget.toString()),
+        carbsTarget: parseFloat(macroTargets.carbsTarget.toString()),
+      });
+    }
+  }, [macroTargets, form]);
+
+  const updateTargetsMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof macroTargetSchema>) => {
+      return await apiRequest('/api/macro-targets', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/macro-targets'] });
+      toast({
+        title: "Success",
+        description: "Macro targets updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update macro targets",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getTotalMacros = () => {
     return macros.reduce((totals, macro) => ({
-      protein: totals.protein + macro.protein,
-      fats: totals.fats + macro.fats,
-      carbs: totals.carbs + macro.carbs,
+      protein: totals.protein + parseFloat(macro.protein.toString()),
+      fats: totals.fats + parseFloat(macro.fats.toString()),
+      carbs: totals.carbs + parseFloat(macro.carbs.toString()),
     }), { protein: 0, fats: 0, carbs: 0 });
   };
 
   const totals = getTotalMacros();
+
+  const onSubmit = (data: z.infer<typeof macroTargetSchema>) => {
+    updateTargetsMutation.mutate(data);
+  };
 
   return (
     <Card className="mb-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">Macros</CardTitle>
-          <i className="fas fa-utensils text-gray-400"></i>
+          <div className="flex items-center space-x-3">
+            {macroTargets && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                    Target: P:{parseFloat(macroTargets.proteinTarget.toString())}g | F:{parseFloat(macroTargets.fatsTarget.toString())}g | C:{parseFloat(macroTargets.carbsTarget.toString())}g
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Edit Macro Targets</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="proteinTarget"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Protein Target (grams)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                placeholder="0"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="fatsTarget"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fats Target (grams)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                placeholder="0"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="carbsTarget"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Carbs Target (grams)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                placeholder="0"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={updateTargetsMutation.isPending}
+                      >
+                        {updateTargetsMutation.isPending ? 'Updating...' : 'Update Targets'}
+                      </Button>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            )}
+            <i className="fas fa-utensils text-gray-400"></i>
+          </div>
         </div>
       </CardHeader>
       

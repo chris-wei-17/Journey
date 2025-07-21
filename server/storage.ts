@@ -20,6 +20,9 @@ import {
   macros,
   type Macro,
   type InsertMacro,
+  macroTargets,
+  type MacroTarget,
+  type InsertMacroTarget,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, sql } from "drizzle-orm";
@@ -64,6 +67,10 @@ export interface IStorage {
   getMacrosForDate(userId: number, date: string): Promise<Macro[]>;
   createMacro(macro: InsertMacro): Promise<Macro>;
   deleteMacro(id: number, userId: number): Promise<void>;
+
+  // Macro target operations
+  getMacroTargets(userId: number): Promise<MacroTarget | undefined>;
+  upsertMacroTargets(targets: InsertMacroTarget): Promise<MacroTarget>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -302,6 +309,32 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(macros)
       .where(and(eq(macros.id, id), eq(macros.userId, userId)));
+  }
+
+  // Macro target operations
+  async getMacroTargets(userId: number): Promise<MacroTarget | undefined> {
+    const [targets] = await db
+      .select()
+      .from(macroTargets)
+      .where(eq(macroTargets.userId, userId));
+    return targets;
+  }
+
+  async upsertMacroTargets(targetsData: InsertMacroTarget): Promise<MacroTarget> {
+    const [targets] = await db
+      .insert(macroTargets)
+      .values(targetsData)
+      .onConflictDoUpdate({
+        target: macroTargets.userId,
+        set: {
+          proteinTarget: targetsData.proteinTarget,
+          fatsTarget: targetsData.fatsTarget,
+          carbsTarget: targetsData.carbsTarget,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return targets;
   }
 }
 
