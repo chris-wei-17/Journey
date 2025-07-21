@@ -35,7 +35,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-lavender-50 to-secondary-50">
+    <div className="min-h-screen" style={{
+      background: "linear-gradient(135deg, hsl(var(--primary-50)) 0%, hsl(var(--lavender-50)) 50%, hsl(var(--secondary-50)) 100%)"
+    }}>
       <Header />
       
       <main className="p-4 max-w-6xl mx-auto">
@@ -51,10 +53,12 @@ export default function Home() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 border-0" style={{
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+          }}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <i className="fas fa-chart-line text-primary-300 mr-2"></i>
+                <i className="fas fa-chart-line mr-2" style={{ color: "hsl(var(--primary-300))" }}></i>
                 Overall Progress
               </CardTitle>
             </CardHeader>
@@ -66,10 +70,12 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 border-0" style={{
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+          }}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <i className="fas fa-camera text-secondary-300 mr-2"></i>
+                <i className="fas fa-camera mr-2" style={{ color: "hsl(var(--secondary-300))" }}></i>
                 Progress Photos
               </CardTitle>
             </CardHeader>
@@ -81,10 +87,12 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 border-0" style={{
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+          }}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <i className="fas fa-target text-accent-300 mr-2"></i>
+                <i className="fas fa-target mr-2" style={{ color: "hsl(var(--accent-300))" }}></i>
                 Active Goals
               </CardTitle>
             </CardHeader>
@@ -98,35 +106,61 @@ export default function Home() {
         </div>
 
         {/* Quick Actions */}
-        <Card className="bg-white/80 backdrop-blur-sm shadow-lg">
+        <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-0" style={{
+          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        }}>
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-800">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link href="/progress">
-                <Button className="w-full h-20 bg-gradient-to-br from-primary-300 to-primary-400 hover:from-primary-400 hover:to-primary-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <Button 
+                  className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(var(--primary-300)), hsl(var(--primary-400)))`,
+                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                  }}
+                >
                   <i className="fas fa-plus text-lg"></i>
                   <span className="text-sm">Log Progress</span>
                 </Button>
               </Link>
 
               <Link href="/photos">
-                <Button className="w-full h-20 bg-gradient-to-br from-secondary-300 to-secondary-400 hover:from-secondary-400 hover:to-secondary-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <Button 
+                  className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(var(--secondary-300)), hsl(var(--secondary-400)))`,
+                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                  }}
+                >
                   <i className="fas fa-camera text-lg"></i>
                   <span className="text-sm">Add Photos</span>
                 </Button>
               </Link>
 
               <Link href="/goals">
-                <Button className="w-full h-20 bg-gradient-to-br from-accent-300 to-accent-400 hover:from-accent-400 hover:to-accent-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <Button 
+                  className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(var(--accent-300)), hsl(var(--accent-400)))`,
+                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                  }}
+                >
                   <i className="fas fa-target text-lg"></i>
                   <span className="text-sm">View Goals</span>
                 </Button>
               </Link>
 
               <Link href="/workouts">
-                <Button className="w-full h-20 bg-gradient-to-br from-lavender-300 to-lavender-400 hover:from-lavender-400 hover:to-lavender-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <Button 
+                  className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
+                  style={{
+                    background: `linear-gradient(135deg, hsl(var(--lavender-300)), hsl(var(--lavender-400)))`,
+                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                  }}
+                >
                   <i className="fas fa-dumbbell text-lg"></i>
                   <span className="text-sm">Workouts</span>
                 </Button>
@@ -137,22 +171,30 @@ export default function Home() {
 
         {/* Recent Progress */}
         {Array.isArray(progressData) && progressData.length > 0 && (
-          <Card className="bg-white/80 backdrop-blur-sm shadow-lg mt-8">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-xl mt-8 border-0" style={{
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+          }}>
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-gray-800">Recent Progress</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {progressData.slice(0, 3).map((item: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-primary-300 rounded-full"></div>
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: "hsl(var(--primary-300))" }}
+                      ></div>
                       <span className="font-medium text-gray-700 capitalize">
                         {item.goalType.replace('-', ' ')}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-lg font-semibold text-primary-600">
+                      <span 
+                        className="text-lg font-bold"
+                        style={{ color: "hsl(var(--primary-600))" }}
+                      >
                         {item.progressValue}%
                       </span>
                     </div>
