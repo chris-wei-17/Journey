@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "fitjourney-development-secret-key"
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 export interface AuthenticatedRequest extends Request {
-  userId: number;
+  userId?: number;
 }
 
 export const hashPassword = async (password: string): Promise<string> => {

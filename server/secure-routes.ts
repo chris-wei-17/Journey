@@ -162,7 +162,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Protected routes
-  app.get('/api/user', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/user', authenticateToken, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.userId!);
       if (!user) {
@@ -191,7 +191,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Complete onboarding
-  app.post('/api/onboarding/complete', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/onboarding/complete', authenticateToken, async (req: any, res) => {
     try {
       const result = onboardingSchema.safeParse(req.body);
       
@@ -247,7 +247,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Get user profile
-  app.get('/api/profile', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/profile', authenticateToken, async (req: any, res) => {
     try {
       const profile = await storage.getUserProfile(req.userId!);
       const goals = await storage.getUserGoals(req.userId!);
@@ -263,7 +263,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Update progress
-  app.post('/api/progress', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/progress', authenticateToken, async (req: any, res) => {
     try {
       const result = insertProgressEntrySchema.safeParse({
         ...req.body,
@@ -286,7 +286,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Get user progress
-  app.get('/api/progress', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/progress', authenticateToken, async (req: any, res) => {
     try {
       const progress = await storage.getUserProgress(req.userId!);
       res.json(progress);
@@ -297,7 +297,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Upload photos
-  app.post('/api/photos', authenticateToken, upload.array('photos', 5), async (req: AuthenticatedRequest, res) => {
+  app.post('/api/photos', authenticateToken, upload.array('photos', 5), async (req: any, res) => {
     try {
       const files = req.files as Express.Multer.File[];
       const dateStr = req.body.date;
@@ -342,7 +342,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Get user photos
-  app.get('/api/photos', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/photos', authenticateToken, async (req: any, res) => {
     try {
       const photos = await storage.getUserPhotos(req.userId!);
       res.json(photos);
@@ -353,7 +353,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Get photos by date
-  app.get('/api/photos/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/photos/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const date = req.params.date;
       const photos = await storage.getPhotosByDate(req.userId!, date);
@@ -365,7 +365,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Serve uploaded photos with authorization
-  app.get('/api/photos/:filename', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/photos/:filename', authenticateToken, async (req: any, res) => {
     try {
       const filename = req.params.filename;
       
@@ -391,7 +391,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Serve thumbnails with authorization
-  app.get('/api/photos/thumbnail/:filename', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/photos/thumbnail/:filename', authenticateToken, async (req: any, res) => {
     try {
       const filename = req.params.filename;
       
@@ -417,7 +417,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Delete photo
-  app.delete('/api/photos/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.delete('/api/photos/:id', authenticateToken, async (req: any, res) => {
     try {
       const photoId = parseInt(req.params.id);
       
@@ -447,7 +447,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Activity routes for "My Day" functionality
-  app.get('/api/activities/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/activities/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       const date = req.params.date;
@@ -459,7 +459,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/activities', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/activities', authenticateToken, async (req: any, res) => {
     console.log('=== ACTIVITY CREATION START ===');
     try {
       const userId = req.userId!;
@@ -501,7 +501,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/activities/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.delete('/api/activities/:id', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       const activityId = parseInt(req.params.id);
@@ -515,7 +515,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Progress by date route
-  app.get('/api/progress/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/progress/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       const date = req.params.date;
@@ -528,7 +528,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Macro routes for nutrition tracking
-  app.get('/api/macros/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/macros/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       const date = req.params.date;
@@ -540,7 +540,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/macros', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/macros', authenticateToken, async (req: any, res) => {
     console.log('=== MACRO CREATION START ===');
     try {
       const userId = req.userId!;
@@ -583,7 +583,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/macros/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.delete('/api/macros/:id', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       const macroId = parseInt(req.params.id);
@@ -597,7 +597,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Macro targets routes
-  app.get('/api/macro-targets', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/macro-targets', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       const targets = await storage.getMacroTargets(userId);
@@ -609,7 +609,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Metrics routes
-  app.get('/api/metrics/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/metrics/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const { date } = req.params;
       const userId = req.userId!;
@@ -622,7 +622,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/metrics', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/metrics', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       
@@ -650,7 +650,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Custom metric fields routes
-  app.get('/api/custom-metric-fields', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/custom-metric-fields', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       const fields = await storage.getCustomMetricFields(userId);
@@ -661,7 +661,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/custom-metric-fields', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/custom-metric-fields', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       
@@ -687,7 +687,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/custom-metric-fields/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.delete('/api/custom-metric-fields/:id', authenticateToken, async (req: any, res) => {
     try {
       const fieldId = parseInt(req.params.id);
       const userId = req.userId!;
@@ -700,7 +700,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/macro-targets', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/macro-targets', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
       
