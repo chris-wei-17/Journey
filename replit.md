@@ -122,3 +122,20 @@ Preferred communication style: Simple, everyday language.
 - **Banner**: Development mode indicators for external access
 
 The application follows a monorepo structure with shared types and schemas, enabling type safety across the full stack while maintaining clear separation between client and server concerns.
+
+## Recent Changes
+
+### July 21, 2025
+- Implemented "My Day" activity tracking functionality
+- Created activity selection flow with comprehensive activity list (walking, running, cycling, etc.)
+- Added activity creation page with time selection (start/end times)
+- Removed location and date fields - date auto-populates from selected calendar date
+- Added X button to activity creation page for easy dismissal
+- Fixed activity schema validation by removing optional fields from validation
+- Enhanced debug logging for activity creation to identify backend errors
+- Database connection confirmed working properly
+
+## Current Issues
+- Activity creation still failing despite schema fixes and database connectivity
+- Debug logs added to identify exact error in activity creation flow
+- Issue appears to be in backend validation or storage layer

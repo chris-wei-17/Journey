@@ -108,10 +108,17 @@ export default function AddActivity() {
           onClick={() => setLocation('/')}
           className="p-2 text-white hover:bg-white/20"
         >
-          <i className="fas fa-times text-xl"></i>
+          <i className="fas fa-chevron-left text-xl"></i>
         </Button>
         <h1 className="text-xl font-bold text-white">ADD ACTIVITY</h1>
-        <div className="w-8"></div> {/* Spacer for centering */}
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => setLocation('/')}
+          className="p-2 text-white hover:bg-white/20"
+        >
+          <i className="fas fa-times text-xl"></i>
+        </Button>
       </div>
 
       <main className="px-4 max-w-lg mx-auto">

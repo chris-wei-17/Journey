@@ -270,30 +270,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new activity
   app.post('/api/activities', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = parseInt(req.user.claims.sub);
       console.log('Creating activity for user:', userId);
-      console.log('Request body:', req.body);
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
       
-      const result = insertActivitySchema.safeParse({
-        ...req.body,
-        userId: parseInt(userId),
-      });
+      const activityData = {
+        userId,
+        activityType: req.body.activityType,
+        startTime: new Date(req.body.startTime),
+        endTime: new Date(req.body.endTime),
+        date: new Date(req.body.date),
+      };
+      
+      console.log('Processed activity data:', JSON.stringify(activityData, null, 2));
+      
+      const result = insertActivitySchema.safeParse(activityData);
       
       if (!result.success) {
-        console.log('Validation errors:', result.error.errors);
+        console.log('Validation errors:', JSON.stringify(result.error.errors, null, 2));
         return res.status(400).json({ 
           message: "Invalid activity data",
           errors: result.error.errors 
         });
       }
 
-      console.log('Parsed activity data:', result.data);
+      console.log('Validated activity data:', JSON.stringify(result.data, null, 2));
       const activity = await storage.createActivity(result.data);
-      console.log('Created activity:', activity);
+      console.log('Created activity:', JSON.stringify(activity, null, 2));
       res.status(201).json(activity);
     } catch (error) {
       console.error("Error creating activity:", error);
-      res.status(500).json({ message: "Failed to create activity" });
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
+      res.status(500).json({ message: "Failed to create activity", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
