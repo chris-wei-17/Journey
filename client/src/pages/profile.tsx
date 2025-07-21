@@ -26,20 +26,19 @@ export default function Profile() {
       <Header />
       
       <main className="p-4 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleBack}
-              className="text-gray-600 hover:text-gray-800 hover:bg-white/50"
-            >
-              <i className="fas fa-arrow-left text-lg"></i>
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Profile & Settings</h1>
-              <p className="text-gray-600">Manage your account and preferences</p>
-            </div>
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleBack}
+            className="mb-4 bg-white/80 backdrop-blur-sm border-gray-200 text-gray-700 hover:text-gray-900 hover:bg-white/90 shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            <i className="fas fa-arrow-left text-base mr-2"></i>
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Profile & Settings</h1>
+            <p className="text-gray-600">Manage your account and preferences</p>
           </div>
         </div>
 
