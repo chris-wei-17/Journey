@@ -175,6 +175,10 @@ export const macros = pgTable("macros", {
 export const insertMacroSchema = createInsertSchema(macros).omit({
   id: true,
   createdAt: true,
+}).extend({
+  protein: z.coerce.number().min(0),
+  fats: z.coerce.number().min(0),
+  carbs: z.coerce.number().min(0),
 });
 
 export type InsertMacro = z.infer<typeof insertMacroSchema>;
