@@ -35,9 +35,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen" style={{
-      background: "linear-gradient(135deg, hsl(var(--primary-50)) 0%, hsl(var(--lavender-50)) 50%, hsl(var(--secondary-50)) 100%)"
-    }}>
+    <div className="app-gradient-bg">
       <Header />
       
       <main className="p-4 max-w-6xl mx-auto">
@@ -58,7 +56,7 @@ export default function Home() {
           }}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <i className="fas fa-chart-line mr-2" style={{ color: "hsl(var(--primary-300))" }}></i>
+                <i className="fas fa-chart-line mr-2" style={{ color: "#ec4899" }}></i>
                 Overall Progress
               </CardTitle>
             </CardHeader>
@@ -75,7 +73,7 @@ export default function Home() {
           }}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <i className="fas fa-camera mr-2" style={{ color: "hsl(var(--secondary-300))" }}></i>
+                <i className="fas fa-camera mr-2" style={{ color: "#2dd4bf" }}></i>
                 Progress Photos
               </CardTitle>
             </CardHeader>
@@ -92,7 +90,7 @@ export default function Home() {
           }}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <i className="fas fa-target mr-2" style={{ color: "hsl(var(--accent-300))" }}></i>
+                <i className="fas fa-target mr-2" style={{ color: "#fbbf24" }}></i>
                 Active Goals
               </CardTitle>
             </CardHeader>
@@ -118,8 +116,8 @@ export default function Home() {
                 <Button 
                   className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
                   style={{
-                    background: `linear-gradient(135deg, hsl(var(--primary-300)), hsl(var(--primary-400)))`,
-                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                    background: "linear-gradient(135deg, #ec4899, #db2777)",
+                    boxShadow: "0 10px 25px rgba(236, 72, 153, 0.3)"
                   }}
                 >
                   <i className="fas fa-plus text-lg"></i>
@@ -131,8 +129,8 @@ export default function Home() {
                 <Button 
                   className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
                   style={{
-                    background: `linear-gradient(135deg, hsl(var(--secondary-300)), hsl(var(--secondary-400)))`,
-                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                    background: "linear-gradient(135deg, #2dd4bf, #14b8a6)",
+                    boxShadow: "0 10px 25px rgba(45, 212, 191, 0.3)"
                   }}
                 >
                   <i className="fas fa-camera text-lg"></i>
@@ -144,8 +142,8 @@ export default function Home() {
                 <Button 
                   className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
                   style={{
-                    background: `linear-gradient(135deg, hsl(var(--accent-300)), hsl(var(--accent-400)))`,
-                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                    background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                    boxShadow: "0 10px 25px rgba(251, 191, 36, 0.3)"
                   }}
                 >
                   <i className="fas fa-target text-lg"></i>
@@ -157,8 +155,8 @@ export default function Home() {
                 <Button 
                   className="w-full h-20 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
                   style={{
-                    background: `linear-gradient(135deg, hsl(var(--lavender-300)), hsl(var(--lavender-400)))`,
-                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)"
+                    background: "linear-gradient(135deg, #a855f7, #9333ea)",
+                    boxShadow: "0 10px 25px rgba(168, 85, 247, 0.3)"
                   }}
                 >
                   <i className="fas fa-dumbbell text-lg"></i>
@@ -184,7 +182,7 @@ export default function Home() {
                     <div className="flex items-center space-x-3">
                       <div 
                         className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: "hsl(var(--primary-300))" }}
+                        style={{ backgroundColor: "#ec4899" }}
                       ></div>
                       <span className="font-medium text-gray-700 capitalize">
                         {item.goalType.replace('-', ' ')}
@@ -193,7 +191,7 @@ export default function Home() {
                     <div className="text-right">
                       <span 
                         className="text-lg font-bold"
-                        style={{ color: "hsl(var(--primary-600))" }}
+                        style={{ color: "#be185d" }}
                       >
                         {item.progressValue}%
                       </span>

@@ -22,9 +22,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen" style={{
-      background: "linear-gradient(135deg, hsl(var(--primary-50)) 0%, hsl(var(--lavender-50)) 50%, hsl(var(--secondary-50)) 100%)"
-    }}>
+    <div className="app-gradient-bg">
       <Header />
       
       <main className="p-4 max-w-4xl mx-auto">

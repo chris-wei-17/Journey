@@ -112,6 +112,15 @@
     animation: slideIn 0.5s ease-out;
   }
 
+  .app-gradient-bg {
+    background: linear-gradient(135deg, 
+      #fef7f7 0%,     /* Light pink */
+      #f4f1ff 50%,    /* Light lavender */
+      #f0fdf9 100%    /* Light teal */
+    );
+    min-height: 100vh;
+  }
+
   .photo-upload-area {
     background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
     border: 2px dashed hsl(var(--secondary-300));
