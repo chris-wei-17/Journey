@@ -1,387 +1,318 @@
-import React from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import type { MetricEntry, CustomMetricField } from "@shared/schema";
 
 interface MetricsBlockProps {
   selectedDate: Date;
 }
 
-interface MetricEntry {
-  id: number;
-  userId: number;
-  date: string;
-  weight?: string;
-  customFields: Record<string, number>;
-  createdAt: string;
-}
+const UNITS = {
+  weight: ["lbs", "kg"],
+  length: ["in", "cm"],
+  percentage: ["%"],
+  count: ["reps", "count"]
+};
 
-interface CustomMetricField {
-  id: number;
-  userId: number;
-  fieldName: string;
-  unit: string;
-  createdAt: string;
-}
-
-const metricsSchema = z.object({
-  weight: z.string().optional(),
-  customFields: z.record(z.coerce.number()).optional(),
-});
-
-const customFieldSchema = z.object({
-  fieldName: z.string().min(1, "Field name is required"),
-  unit: z.string().min(1, "Unit is required"),
-});
+const COMMON_METRICS = [
+  { name: "Waist", unit: "length" },
+  { name: "Chest", unit: "length" },
+  { name: "Arms", unit: "length" },
+  { name: "Thighs", unit: "length" },
+  { name: "Hips", unit: "length" },
+  { name: "Body Fat %", unit: "percentage" },
+  { name: "Muscle Mass", unit: "percentage" }
+];
 
 export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isAddingField, setIsAddingField] = useState(false);
+  const [newFieldName, setNewFieldName] = useState("");
+  const [newFieldUnit, setNewFieldUnit] = useState("length");
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [tempValue, setTempValue] = useState("");
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
-  const [addFieldDialogOpen, setAddFieldDialogOpen] = React.useState(false);
-  const [metricsDialogOpen, setMetricsDialogOpen] = React.useState(false);
 
-  const dateString = format(selectedDate, 'yyyy-MM-dd');
+  const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
-  // Get today's metrics
-  const { data: metrics } = useQuery<MetricEntry[]>({
-    queryKey: ['/api/metrics/date', dateString],
+  // Fetch metrics for the selected date
+  const { data: metrics = [] } = useQuery<MetricEntry[]>({
+    queryKey: [`/api/metrics/date/${dateStr}`],
   });
 
-  // Get custom fields
+  // Fetch custom metric fields
   const { data: customFields = [] } = useQuery<CustomMetricField[]>({
-    queryKey: ['/api/custom-metric-fields'],
+    queryKey: ["/api/custom-metric-fields"],
   });
 
-  const todaysMetric = metrics?.[0];
+  // Get current metric entry for today
+  const currentMetric = metrics.find(m => format(new Date(m.date), 'yyyy-MM-dd') === dateStr);
 
-  const form = useForm<z.infer<typeof metricsSchema>>({
-    resolver: zodResolver(metricsSchema),
-    defaultValues: {
-      weight: todaysMetric?.weight || "",
-      customFields: todaysMetric?.customFields || {},
-    },
-  });
-
-  const addFieldForm = useForm<z.infer<typeof customFieldSchema>>({
-    resolver: zodResolver(customFieldSchema),
-    defaultValues: {
-      fieldName: "",
-      unit: "",
-    },
-  });
-
-  React.useEffect(() => {
-    if (todaysMetric) {
-      form.reset({
-        weight: todaysMetric.weight || "",
-        customFields: todaysMetric.customFields || {},
-      });
-    }
-  }, [todaysMetric, form]);
-
-  const updateMetricsMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof metricsSchema>) => {
-      return await apiRequest('/api/metrics', 'POST', {
-        ...data,
-        weight: data.weight || null,
-        date: selectedDate.toISOString(),
+  const createCustomFieldMutation = useMutation({
+    mutationFn: async (data: { fieldName: string; unit: string }) => {
+      return apiRequest("/api/custom-metric-fields", {
+        method: "POST",
+        body: data,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/metrics/date', dateString] });
-      setMetricsDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "Metrics updated successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update metrics",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const addCustomFieldMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof customFieldSchema>) => {
-      return await apiRequest('/api/custom-metric-fields', 'POST', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/custom-metric-fields'] });
-      setAddFieldDialogOpen(false);
-      addFieldForm.reset();
-      toast({
-        title: "Success",
-        description: "Custom field added successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add custom field",
-        variant: "destructive",
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
+      setNewFieldName("");
+      setNewFieldUnit("length");
+      setIsAddingField(false);
     },
   });
 
   const deleteCustomFieldMutation = useMutation({
     mutationFn: async (fieldId: number) => {
-      return await apiRequest(`/api/custom-metric-fields/${fieldId}`, 'DELETE');
+      return apiRequest(`/api/custom-metric-fields/${fieldId}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/custom-metric-fields'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/metrics/date', dateString] });
-      toast({
-        title: "Success",
-        description: "Custom field removed successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to remove custom field",
-        variant: "destructive",
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
     },
   });
 
-  const onSubmitMetrics = (data: z.infer<typeof metricsSchema>) => {
-    updateMetricsMutation.mutate(data);
+  const saveMetricsMutation = useMutation({
+    mutationFn: async (data: { weight?: number; customFields: Record<string, number> }) => {
+      return apiRequest("/api/metrics", {
+        method: "POST",
+        body: {
+          date: dateStr,
+          weight: data.weight,
+          customFields: data.customFields,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/metrics/date/${dateStr}`] });
+    },
+  });
+
+  const handleFieldEdit = (fieldName: string, currentValue: string) => {
+    setEditingField(fieldName);
+    setTempValue(currentValue);
   };
 
-  const onSubmitCustomField = (data: z.infer<typeof customFieldSchema>) => {
-    addCustomFieldMutation.mutate(data);
+  const handleFieldSave = (fieldName: string) => {
+    if (fieldName === "weight") {
+      const weight = tempValue ? parseFloat(tempValue) : undefined;
+      const customFields = currentMetric?.customFields || {};
+      saveMetricsMutation.mutate({ weight, customFields });
+    } else {
+      const weight = currentMetric?.weight ? parseFloat(currentMetric.weight.toString()) : undefined;
+      const customFields = { 
+        ...(currentMetric?.customFields || {}), 
+        [fieldName]: tempValue ? parseFloat(tempValue) : 0
+      };
+      saveMetricsMutation.mutate({ weight, customFields });
+    }
+    setEditingField(null);
+    setTempValue("");
   };
 
-  const hasData = todaysMetric?.weight || Object.keys(todaysMetric?.customFields || {}).length > 0;
+  const addCustomField = () => {
+    if (newFieldName.trim()) {
+      const unitType = newFieldUnit;
+      const unit = UNITS[unitType as keyof typeof UNITS][0];
+      createCustomFieldMutation.mutate({ 
+        fieldName: newFieldName.trim(),
+        unit: unit
+      });
+    }
+  };
 
   return (
-    <Card className="mb-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-gray-800">Metrics</CardTitle>
-          <div className="flex items-center space-x-2">
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-              <DialogTrigger asChild>
-                <button className="text-xs text-black hover:text-gray-700 transition-colors">
-                  Edit
-                </button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Manage Custom Fields</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  {customFields.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Current Fields:</h4>
-                      <div className="space-y-2">
-                        {customFields.map((field) => (
-                          <div key={field.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                            <span className="text-sm">{field.fieldName} ({field.unit})</span>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => deleteCustomFieldMutation.mutate(field.id)}
-                              disabled={deleteCustomFieldMutation.isPending}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
+    <Card className="bg-white/90 backdrop-blur-sm shadow-xl mt-6 border-0" style={{
+      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+    }}>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-lg font-semibold text-gray-800 flex items-center">
+          <i className="fas fa-weight text-purple-500 mr-2"></i>
+          Metrics
+        </CardTitle>
+        <div className="flex items-center space-x-2">
+          <Dialog open={isAddingField} onOpenChange={setIsAddingField}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <i className="fas fa-plus"></i>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Custom Metric</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Metric Name</Label>
+                  <Select value={newFieldName} onValueChange={setNewFieldName}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select or type custom metric" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMON_METRICS.map((metric) => (
+                        <SelectItem key={metric.name} value={metric.name}>
+                          {metric.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="Or type custom metric name"
+                    value={newFieldName}
+                    onChange={(e) => setNewFieldName(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label>Unit Type</Label>
+                  <Select value={newFieldUnit} onValueChange={setNewFieldUnit}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="length">Length (in/cm)</SelectItem>
+                      <SelectItem value="percentage">Percentage (%)</SelectItem>
+                      <SelectItem value="count">Count/Reps</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsAddingField(false)}>
+                    Cancel
+                  </Button>
                   <Button
-                    onClick={() => setAddFieldDialogOpen(true)}
-                    className="w-full"
+                    onClick={addCustomField}
+                    disabled={!newFieldName.trim() || createCustomFieldMutation.isPending}
+                    className="bg-purple-500 hover:bg-purple-600 text-white"
                   >
-                    Add Custom Field
+                    Add Metric
                   </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-0">
-        <div className="space-y-3 mb-4">
-          {hasData ? (
-            <div className="space-y-3">
-              {todaysMetric?.weight && (
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-blue-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
-                      <i className="fas fa-weight text-white text-sm"></i>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">Weight</div>
-                      <div className="text-gray-300 text-xs">{todaysMetric.weight} lbs</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {Object.entries(todaysMetric?.customFields || {}).map(([fieldName, value]) => {
-                const customField = customFields.find(f => f.fieldName === fieldName);
-                if (!customField) return null;
-                
-                return (
-                  <div key={fieldName} className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-green-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
-                        <i className="fas fa-ruler text-white text-sm"></i>
-                      </div>
-                      <div>
-                        <div className="text-white font-medium">{fieldName}</div>
-                        <div className="text-gray-300 text-xs">{value} {customField.unit}</div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-gray-500 text-center py-4">
-              No metrics logged for this date
-            </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          {customFields.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditMode(!isEditMode)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <i className="fas fa-edit"></i>
+            </Button>
           )}
         </div>
-        
-        <Dialog open={metricsDialogOpen} onOpenChange={setMetricsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
-              <i className="fas fa-plus mr-2"></i>
-              ADD METRICS
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add/Update Metrics</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitMetrics)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="weight"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Weight (lbs)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          step="0.1"
-                          placeholder="0.0"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {/* Weight field - always present */}
+          <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              {isEditMode && (
+                <div className="w-6 h-6 flex items-center justify-center opacity-30">
+                  <i className="fas fa-ban text-gray-400 text-xs"></i>
+                </div>
+              )}
+              <span className="text-sm font-medium text-gray-700">Weight</span>
+            </div>
+            {editingField === "weight" ? (
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  value={tempValue}
+                  onChange={(e) => setTempValue(e.target.value)}
+                  className="w-20 h-8"
+                  autoFocus
                 />
-                
-                {customFields.map((customField) => (
-                  <FormField
-                    key={customField.id}
-                    control={form.control}
-                    name={`customFields.${customField.fieldName}`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{customField.fieldName} ({customField.unit})</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            inputMode="decimal"
-                            step="0.1"
-                            placeholder="0.0"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
-                
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={updateMetricsMutation.isPending}
+                <span className="text-xs text-gray-500">lbs</span>
+                <Button
+                  size="sm"
+                  onClick={() => handleFieldSave("weight")}
+                  className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
                 >
-                  {updateMetricsMutation.isPending ? 'Saving...' : 'Save Metrics'}
+                  Save
                 </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+              </div>
+            ) : (
+              <button
+                onClick={() => handleFieldEdit("weight", currentMetric?.weight?.toString() || "")}
+                className="px-3 py-1 bg-gray-200 rounded text-sm text-gray-700 hover:bg-gray-300 transition-colors"
+              >
+                {currentMetric?.weight ? `${currentMetric.weight} lbs` : "Tap to add"}
+              </button>
+            )}
+          </div>
 
-        <Dialog open={addFieldDialogOpen} onOpenChange={setAddFieldDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Custom Metric Field</DialogTitle>
-            </DialogHeader>
-            <Form {...addFieldForm}>
-              <form onSubmit={addFieldForm.handleSubmit(onSubmitCustomField)} className="space-y-4">
-                <FormField
-                  control={addFieldForm.control}
-                  name="fieldName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Field Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., Waist, Arms, Body Fat %"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addFieldForm.control}
-                  name="unit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., inches, cm, %"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={addCustomFieldMutation.isPending}
+          {/* Custom fields */}
+          {customFields.map((field) => (
+            <div key={field.id} className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                {isEditMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteCustomFieldMutation.mutate(field.id)}
+                    className="text-red-500 hover:text-red-700 w-6 h-6 p-0 rounded-full bg-red-100 hover:bg-red-200"
+                  >
+                    <i className="fas fa-minus text-xs"></i>
+                  </Button>
+                )}
+                <span className="text-sm font-medium text-gray-700">{field.fieldName}</span>
+              </div>
+              {editingField === field.fieldName ? (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={tempValue}
+                    onChange={(e) => setTempValue(e.target.value)}
+                    className="w-20 h-8"
+                    autoFocus
+                  />
+                  <span className="text-xs text-gray-500">{field.unit}</span>
+                  <Button
+                    size="sm"
+                    onClick={() => handleFieldSave(field.fieldName)}
+                    className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
+                  >
+                    Save
+                  </Button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleFieldEdit(field.fieldName, currentMetric?.customFields?.[field.fieldName]?.toString() || "")}
+                  className="px-3 py-1 bg-gray-200 rounded text-sm text-gray-700 hover:bg-gray-300 transition-colors"
                 >
-                  {addCustomFieldMutation.isPending ? 'Adding...' : 'Add Field'}
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                  {currentMetric?.customFields?.[field.fieldName] 
+                    ? `${currentMetric.customFields[field.fieldName]} ${field.unit}` 
+                    : "Tap to add"
+                  }
+                </button>
+              )}
+            </div>
+          ))}
+
+          {customFields.length === 0 && !currentMetric?.weight && (
+            <p className="text-gray-500 text-center py-4">
+              No metrics tracked yet. Tap the + button to add custom measurements.
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
