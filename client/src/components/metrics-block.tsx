@@ -57,10 +57,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const createCustomFieldMutation = useMutation({
     mutationFn: async (data: { fieldName: string; unit: string }) => {
-      return apiRequest("/api/custom-metric-fields", {
-        method: "POST",
-        body: data,
-      });
+      return apiRequest("/api/custom-metric-fields", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
@@ -72,9 +69,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const deleteCustomFieldMutation = useMutation({
     mutationFn: async (fieldId: number) => {
-      return apiRequest(`/api/custom-metric-fields/${fieldId}`, {
-        method: "DELETE",
-      });
+      return apiRequest(`/api/custom-metric-fields/${fieldId}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
@@ -83,13 +78,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const saveMetricsMutation = useMutation({
     mutationFn: async (data: { weight?: number; customFields: Record<string, number> }) => {
-      return apiRequest("/api/metrics", {
-        method: "POST",
-        body: {
-          date: dateStr,
-          weight: data.weight,
-          customFields: data.customFields,
-        },
+      return apiRequest("/api/metrics", "POST", {
+        date: dateStr,
+        weight: data.weight,
+        customFields: data.customFields,
       });
     },
     onSuccess: () => {
@@ -186,14 +178,12 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
             <div key={field.id} className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-3">
                 {isEditMode && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={() => deleteCustomFieldMutation.mutate(field.id)}
-                    className="text-red-500 hover:text-red-700 w-6 h-6 p-0 rounded-full bg-red-100 hover:bg-red-200"
+                    className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors"
                   >
-                    <i className="fas fa-minus text-xs"></i>
-                  </Button>
+                    <i className="fas fa-times text-white text-xs"></i>
+                  </button>
                 )}
                 <span className="text-sm font-medium text-gray-700">{field.fieldName}</span>
               </div>
