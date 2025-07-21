@@ -271,20 +271,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/activities', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log('Creating activity for user:', userId);
+      console.log('Request body:', req.body);
+      
       const result = insertActivitySchema.safeParse({
         ...req.body,
-        userId,
+        userId: parseInt(userId),
       });
       
       if (!result.success) {
+        console.log('Validation errors:', result.error.errors);
         return res.status(400).json({ 
           message: "Invalid activity data",
           errors: result.error.errors 
         });
       }
 
+      console.log('Parsed activity data:', result.data);
       const activity = await storage.createActivity(result.data);
-      res.json(activity);
+      console.log('Created activity:', activity);
+      res.status(201).json(activity);
     } catch (error) {
       console.error("Error creating activity:", error);
       res.status(500).json({ message: "Failed to create activity" });

@@ -235,10 +235,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createActivity(activity: InsertActivity): Promise<Activity> {
+    console.log('Storage createActivity called with:', activity);
     const [newActivity] = await db
       .insert(activities)
-      .values(activity)
+      .values({
+        ...activity,
+        location: null, // Set optional fields to null
+        notes: null,
+      })
       .returning();
+    console.log('Storage created activity:', newActivity);
     return newActivity;
   }
 

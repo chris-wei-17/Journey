@@ -152,6 +152,8 @@ export const activities = pgTable("activities", {
 export const insertActivitySchema = createInsertSchema(activities).omit({
   id: true,
   createdAt: true,
+  location: true, // Remove optional location field from validation
+  notes: true,    // Remove optional notes field from validation
 });
 
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
