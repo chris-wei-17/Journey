@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { PhotoSelectionDialog } from "@/components/ui/photo-selection-dialog";
 
 interface AvatarProps {
   firstName?: string;
@@ -25,29 +26,16 @@ function getInitials(firstName?: string, lastName?: string): string {
 }
 
 function getGradientFromName(firstName?: string, lastName?: string): string {
-  const name = (firstName || "") + (lastName || "");
-  const gradients = [
-    "from-primary-300 to-lavender-300",
-    "from-secondary-300 to-accent-300", 
-    "from-accent-300 to-primary-300",
-    "from-lavender-300 to-secondary-300",
-    "from-primary-400 to-accent-400",
-    "from-secondary-400 to-lavender-400"
-  ];
-  
-  // Use name hash to consistently pick a gradient
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return gradients[Math.abs(hash) % gradients.length];
+  // Always use the app's primary pink gradient
+  return "from-primary-300 to-lavender-300";
 }
 
 export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onImageUpload, editable = false }: AvatarProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
   const [cropScale, setCropScale] = useState(1);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
+  const [isPhotoSelectionOpen, setIsPhotoSelectionOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouch, setLastTouch] = useState<{ x: number; y: number } | null>(null);
   const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
@@ -59,20 +47,17 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
   const gradient = getGradientFromName(firstName, lastName);
   const sizeClass = sizeClasses[size];
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      setImageFile(file);
-      setCropPosition({ x: 0, y: 0 });
-      setCropScale(1);
-      setIsDialogOpen(true);
-    }
+  const handleFileSelect = (file: File) => {
+    setImageFile(file);
+    setCropPosition({ x: 0, y: 0 });
+    setCropScale(1);
+    setIsCropDialogOpen(true);
   };
 
   const handleSave = () => {
     if (imageFile && onImageUpload) {
       onImageUpload(imageFile);
-      setIsDialogOpen(false);
+      setIsCropDialogOpen(false);
       setImageFile(null);
     }
   };
@@ -165,7 +150,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
           />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-            <span className="font-semibold text-white">{initials}</span>
+            <span className="font-semibold text-black">{initials}</span>
           </div>
         )}
       </div>
@@ -177,7 +162,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => document.getElementById('photo-upload')?.click()}
+              onClick={() => setIsPhotoSelectionOpen(true)}
               className="text-sm text-center"
             >
               <i className="fas fa-camera mr-2"></i>
@@ -185,16 +170,13 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
             </Button>
           </div>
 
-          <input
-            id="photo-upload"
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handleFileSelect}
-            className="hidden"
+          <PhotoSelectionDialog
+            isOpen={isPhotoSelectionOpen}
+            onClose={() => setIsPhotoSelectionOpen(false)}
+            onFileSelect={handleFileSelect}
           />
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-center">Adjust Your Photo</DialogTitle>
@@ -258,7 +240,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
 
                   <div className="flex space-x-2 pt-4">
                     <Button 
-                      onClick={() => setIsDialogOpen(false)}
+                      onClick={() => setIsCropDialogOpen(false)}
                       variant="outline"
                       className="flex-1 text-center"
                     >
