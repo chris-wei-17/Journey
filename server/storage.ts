@@ -16,7 +16,7 @@ import {
   type InsertPhoto,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or } from "drizzle-orm";
+import { eq, and, or, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -38,6 +38,7 @@ export interface IStorage {
   
   // Progress operations
   getUserProgress(userId: number): Promise<ProgressEntry[]>;
+  getProgressEntriesForDate(userId: number, date: string): Promise<ProgressEntry[]>;
   createProgressEntry(entry: InsertProgressEntry): Promise<ProgressEntry>;
   getLatestProgressByGoal(userId: number, goalType: string): Promise<ProgressEntry | undefined>;
   
@@ -134,6 +135,24 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(progressEntries)
       .where(eq(progressEntries.userId, userId));
+  }
+
+  async getProgressEntriesForDate(userId: number, date: string): Promise<ProgressEntry[]> {
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+    
+    const entries = await db
+      .select()
+      .from(progressEntries)
+      .where(
+        and(
+          eq(progressEntries.userId, userId),
+          sql`DATE(${progressEntries.entryDate}) = DATE(${targetDate.toISOString().split('T')[0]})`
+        )
+      )
+      .orderBy(progressEntries.entryDate);
+    return entries;
   }
 
   async createProgressEntry(entry: InsertProgressEntry): Promise<ProgressEntry> {

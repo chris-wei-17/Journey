@@ -172,6 +172,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get progress entries for a specific date
+  app.get('/api/progress/date/:date', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const date = req.params.date;
+      const entries = await storage.getProgressEntriesForDate(userId, date);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching progress entries for date:", error);
+      res.status(500).json({ message: "Failed to fetch progress entries for date" });
+    }
+  });
+
   // Upload photos
   app.post('/api/photos', isAuthenticated, upload.array('photos', 5), async (req: any, res) => {
     try {

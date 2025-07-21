@@ -1,19 +1,28 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { DateNavigation } from "@/components/date-navigation";
+import { format, isToday } from "date-fns";
 
 export default function Home() {
   const { user } = useAuth();
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
+  // Use date-specific query when not today
   const { data: progressData = [] } = useQuery({
-    queryKey: ["/api/progress"],
+    queryKey: isToday(selectedDate) 
+      ? ["/api/progress"] 
+      : [`/api/progress/date/${format(selectedDate, 'yyyy-MM-dd')}`],
+    enabled: !!user,
   });
 
   const { data: photos = [] } = useQuery({
     queryKey: ["/api/photos"],
+    enabled: !!user,
   });
 
   const getMotivationalMessage = () => {
@@ -40,14 +49,35 @@ export default function Home() {
       
       <main className="p-4 max-w-6xl mx-auto">
         {/* Welcome Section */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Welcome back, {user?.firstName || user?.username}!
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-lg mb-4">
             {getMotivationalMessage()}
           </p>
+          
+          {/* Date Navigation */}
+          <DateNavigation 
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+          />
         </div>
+
+        {/* Date-specific content header */}
+        {!isToday(selectedDate) && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Progress for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+            </h2>
+            <p className="text-gray-600">
+              {Array.isArray(progressData) && progressData.length > 0 
+                ? `You logged ${progressData.length} progress ${progressData.length === 1 ? 'entry' : 'entries'} on this day.`
+                : 'No progress entries found for this date.'
+              }
+            </p>
+          </div>
+        )}
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

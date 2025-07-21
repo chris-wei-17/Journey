@@ -69,6 +69,7 @@ export const progressEntries = pgTable("progress_entries", {
   userId: integer("user_id").notNull().references(() => users.id),
   goalType: varchar("goal_type").notNull(),
   progressValue: integer("progress_value").notNull(), // 0-100
+  entryDate: timestamp("entry_date").notNull().defaultNow(), // Date for the progress entry
   createdAt: timestamp("created_at").defaultNow(),
 });
 
