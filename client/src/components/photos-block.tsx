@@ -44,7 +44,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
       });
       formData.append('date', dateStr);
 
-      return apiRequest('/api/photos', 'POST', formData);
+      return apiRequest('POST', '/api/photos', formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/photos/date/${dateStr}`] });
@@ -64,7 +64,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
 
   const deletePhotoMutation = useMutation({
     mutationFn: async (photoId: number) => {
-      return apiRequest(`/api/photos/${photoId}`, "DELETE");
+      return apiRequest("DELETE", `/api/photos/${photoId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/photos/date/${dateStr}`] });
