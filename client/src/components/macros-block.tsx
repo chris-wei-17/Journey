@@ -78,10 +78,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
   const updateTargetsMutation = useMutation({
     mutationFn: async (data: z.infer<typeof macroTargetSchema>) => {
-      return await apiRequest('/api/macro-targets', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest('/api/macro-targets', 'POST', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/macro-targets'] });
@@ -119,13 +116,12 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">Macros</CardTitle>
           <div className="flex items-center space-x-3">
-            {macroTargets && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
-                    Target: P:{parseFloat(macroTargets.proteinTarget.toString())}g | F:{parseFloat(macroTargets.fatsTarget.toString())}g | C:{parseFloat(macroTargets.carbsTarget.toString())}g
-                  </button>
-                </DialogTrigger>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                  Target: P:{macroTargets ? parseFloat(macroTargets.proteinTarget.toString()) : 0}g | F:{macroTargets ? parseFloat(macroTargets.fatsTarget.toString()) : 0}g | C:{macroTargets ? parseFloat(macroTargets.carbsTarget.toString()) : 0}g
+                </button>
+              </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
                     <DialogTitle>Edit Macro Targets</DialogTitle>
@@ -197,7 +193,6 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                   </Form>
                 </DialogContent>
               </Dialog>
-            )}
             <i className="fas fa-utensils text-gray-400"></i>
           </div>
         </div>
