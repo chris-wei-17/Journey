@@ -49,7 +49,7 @@ export function CalendarPicker({ selectedDate, onDateSelect, onClose }: Calendar
             variant="ghost" 
             size="sm"
             onClick={handlePrevMonth}
-            className="p-2 h-8 w-8"
+            className="p-2 h-8 w-8 flex items-center justify-center"
           >
             <i className="fas fa-chevron-left text-sm"></i>
           </Button>
@@ -62,7 +62,7 @@ export function CalendarPicker({ selectedDate, onDateSelect, onClose }: Calendar
             variant="ghost" 
             size="sm"
             onClick={handleNextMonth}
-            className="p-2 h-8 w-8"
+            className="p-2 h-8 w-8 flex items-center justify-center"
           >
             <i className="fas fa-chevron-right text-sm"></i>
           </Button>

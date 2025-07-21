@@ -53,7 +53,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Welcome back, {user?.firstName || user?.username}!
           </h1>
-          <p className="text-gray-600 text-lg mb-4">
+          <p className="text-gray-600 text-lg mb-4 h-16 flex items-center">
             {getMotivationalMessage()}
           </p>
           

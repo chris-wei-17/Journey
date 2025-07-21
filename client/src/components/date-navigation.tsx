@@ -20,11 +20,7 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
   };
 
   const handleTodayClick = () => {
-    if (isToday(selectedDate)) {
-      setShowCalendar(!showCalendar);
-    } else {
-      onDateChange(new Date());
-    }
+    setShowCalendar(!showCalendar);
   };
 
   const handleDateSelect = (date: Date) => {
@@ -39,16 +35,16 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
           variant="ghost" 
           size="sm"
           onClick={handlePrevDay}
-          className="text-gray-600 hover:text-gray-800 hover:bg-white/50 p-2"
+          className="text-gray-600 hover:text-gray-800 hover:bg-white/50 p-3 h-10 w-10 flex items-center justify-center"
         >
-          <i className="fas fa-chevron-left"></i>
+          <i className="fas fa-chevron-left text-lg"></i>
         </Button>
         
         <Button
           variant="outline"
           onClick={handleTodayClick}
           className={`
-            px-6 py-2 font-semibold transition-all duration-200
+            px-6 py-2 font-semibold transition-all duration-200 min-w-[140px] h-10
             ${isToday(selectedDate) 
               ? 'bg-gray-800 text-white border-gray-800 hover:bg-gray-700 shadow-lg' 
               : 'bg-white/80 text-gray-700 border-gray-300 hover:bg-white/90 shadow-md'
@@ -62,9 +58,9 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
           variant="ghost" 
           size="sm"
           onClick={handleNextDay}
-          className="text-gray-600 hover:text-gray-800 hover:bg-white/50 p-2"
+          className="text-gray-600 hover:text-gray-800 hover:bg-white/50 p-3 h-10 w-10 flex items-center justify-center"
         >
-          <i className="fas fa-chevron-right"></i>
+          <i className="fas fa-chevron-right text-lg"></i>
         </Button>
       </div>
 
