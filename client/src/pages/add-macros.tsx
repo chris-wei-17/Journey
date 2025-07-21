@@ -123,6 +123,7 @@ export default function AddMacros() {
                 <CardContent className="p-4">
                   <Input
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     placeholder="0.0"
                     value={protein}
@@ -139,6 +140,7 @@ export default function AddMacros() {
                 <CardContent className="p-4">
                   <Input
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     placeholder="0.0"
                     value={fats}
@@ -155,6 +157,7 @@ export default function AddMacros() {
                 <CardContent className="p-4">
                   <Input
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     placeholder="0.0"
                     value={carbs}

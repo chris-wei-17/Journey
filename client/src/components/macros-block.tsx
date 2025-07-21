@@ -117,10 +117,10 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">Macros</CardTitle>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-end">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors text-right">
+                <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
                   Target: P:{macroTargets ? parseFloat(macroTargets.proteinTarget.toString()) : 0}g | F:{macroTargets ? parseFloat(macroTargets.fatsTarget.toString()) : 0}g | C:{macroTargets ? parseFloat(macroTargets.carbsTarget.toString()) : 0}g
                 </button>
               </DialogTrigger>
@@ -139,6 +139,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                             <FormControl>
                               <Input
                                 type="number"
+                                inputMode="decimal"
                                 step="0.1"
                                 placeholder="0"
                                 {...field}
@@ -157,6 +158,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                             <FormControl>
                               <Input
                                 type="number"
+                                inputMode="decimal"
                                 step="0.1"
                                 placeholder="0"
                                 {...field}
@@ -175,6 +177,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                             <FormControl>
                               <Input
                                 type="number"
+                                inputMode="decimal"
                                 step="0.1"
                                 placeholder="0"
                                 {...field}
@@ -195,7 +198,6 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                   </Form>
                 </DialogContent>
               </Dialog>
-            <i className="fas fa-utensils text-gray-400"></i>
           </div>
         </div>
       </CardHeader>
