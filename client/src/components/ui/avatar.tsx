@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface AvatarProps {
   firstName?: string;
@@ -48,6 +48,12 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
   const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
   const [cropScale, setCropScale] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastTouch, setLastTouch] = useState<{ x: number; y: number } | null>(null);
+  const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
+  
+  const imageRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const initials = getInitials(firstName, lastName);
   const gradient = getGradientFromName(firstName, lastName);
@@ -57,6 +63,8 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
       setImageFile(file);
+      setCropPosition({ x: 0, y: 0 });
+      setCropScale(1);
       setIsDialogOpen(true);
     }
   };
@@ -69,10 +77,81 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
     }
   };
 
-  const handleTakePhoto = () => {
-    // For web apps, this would typically open a camera interface
-    // For now, we'll just trigger the file picker
-    document.getElementById('photo-upload')?.click();
+  const getPinchDistance = (touches: React.TouchList) => {
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2)
+    );
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setLastTouch({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      setLastPinchDistance(getPinchDistance(e.touches));
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && isDragging && lastTouch) {
+      const deltaX = e.touches[0].clientX - lastTouch.x;
+      const deltaY = e.touches[0].clientY - lastTouch.y;
+      
+      setCropPosition(prev => ({
+        x: prev.x + deltaX * 0.5,
+        y: prev.y + deltaY * 0.5
+      }));
+      
+      setLastTouch({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    } else if (e.touches.length === 2 && lastPinchDistance) {
+      const currentDistance = getPinchDistance(e.touches);
+      const scaleChange = currentDistance / lastPinchDistance;
+      
+      setCropScale(prev => Math.max(0.5, Math.min(3, prev * scaleChange)));
+      setLastPinchDistance(currentDistance);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setLastTouch(null);
+    setLastPinchDistance(null);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setLastTouch({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && lastTouch) {
+      const deltaX = e.clientX - lastTouch.x;
+      const deltaY = e.clientY - lastTouch.y;
+      
+      setCropPosition(prev => ({
+        x: prev.x + deltaX * 0.5,
+        y: prev.y + deltaY * 0.5
+      }));
+      
+      setLastTouch({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setLastTouch(null);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const scaleChange = e.deltaY > 0 ? 0.9 : 1.1;
+    setCropScale(prev => Math.max(0.5, Math.min(3, prev * scaleChange)));
   };
 
   return (
@@ -93,26 +172,16 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
 
       {editable && (
         <>
-          <div className="mt-3 flex flex-col items-center space-y-2">
+          <div className="mt-3 flex justify-center">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => document.getElementById('photo-upload')?.click()}
-              className="text-sm"
-            >
-              <i className="fas fa-upload mr-2"></i>
-              Upload Photo
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleTakePhoto}
-              className="text-sm"
+              className="text-sm text-center"
             >
               <i className="fas fa-camera mr-2"></i>
-              Take Photo
+              Upload or Take Photo
             </Button>
           </div>
 
@@ -120,6 +189,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
             id="photo-upload"
             type="file"
             accept="image/*"
+            capture="environment"
             onChange={handleFileSelect}
             className="hidden"
           />
@@ -127,81 +197,76 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Adjust Your Photo</DialogTitle>
+                <DialogTitle className="text-center">Adjust Your Photo</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Use touch gestures to adjust your profile photo
+                </DialogDescription>
               </DialogHeader>
               
               {imageFile && (
                 <div className="space-y-4">
-                  <div className="relative w-64 h-64 mx-auto bg-gray-100 rounded-lg overflow-hidden">
+                  <div 
+                    ref={containerRef}
+                    className="relative w-64 h-64 mx-auto bg-gray-100 rounded-lg overflow-hidden touch-none"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onWheel={handleWheel}
+                  >
                     <img
+                      ref={imageRef}
                       src={URL.createObjectURL(imageFile)}
                       alt="Preview"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover select-none"
                       style={{
                         transform: `scale(${cropScale}) translate(${cropPosition.x}px, ${cropPosition.y}px)`
                       }}
+                      draggable={false}
                     />
-                    <div className="absolute inset-0 border-4 border-white rounded-full shadow-lg pointer-events-none" 
-                         style={{ 
-                           width: '200px', 
-                           height: '200px', 
-                           top: '50%', 
-                           left: '50%', 
-                           transform: 'translate(-50%, -50%)' 
-                         }} 
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium">Scale</label>
-                      <input
-                        type="range"
-                        min="0.5"
-                        max="3"
-                        step="0.1"
-                        value={cropScale}
-                        onChange={(e) => setCropScale(parseFloat(e.target.value))}
-                        className="w-full mt-1"
-                      />
-                    </div>
                     
-                    <div>
-                      <label className="text-sm font-medium">Position X</label>
-                      <input
-                        type="range"
-                        min="-100"
-                        max="100"
-                        value={cropPosition.x}
-                        onChange={(e) => setCropPosition(prev => ({ ...prev, x: parseInt(e.target.value) }))}
-                        className="w-full mt-1"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium">Position Y</label>
-                      <input
-                        type="range"
-                        min="-100"
-                        max="100"
-                        value={cropPosition.y}
-                        onChange={(e) => setCropPosition(prev => ({ ...prev, y: parseInt(e.target.value) }))}
-                        className="w-full mt-1"
-                      />
+                    {/* Gray overlay with circular cutout */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <svg className="w-full h-full">
+                        <defs>
+                          <mask id="circleMask">
+                            <rect width="100%" height="100%" fill="white" />
+                            <circle cx="50%" cy="50%" r="100" fill="black" />
+                          </mask>
+                        </defs>
+                        <rect 
+                          width="100%" 
+                          height="100%" 
+                          fill="rgba(0, 0, 0, 0.5)" 
+                          mask="url(#circleMask)" 
+                        />
+                      </svg>
+                      
+                      {/* Circle border */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-[200px] h-[200px] rounded-full border-2 border-white shadow-lg"></div>
+                      </div>
                     </div>
                   </div>
+                  
+                  <p className="text-xs text-gray-500 text-center">
+                    Adjust image as needed
+                  </p>
 
                   <div className="flex space-x-2 pt-4">
                     <Button 
                       onClick={() => setIsDialogOpen(false)}
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 text-center"
                     >
                       Cancel
                     </Button>
                     <Button 
                       onClick={handleSave}
-                      className="flex-1 bg-gradient-to-r from-primary-300 to-lavender-300 hover:from-primary-400 hover:to-lavender-400"
+                      className="flex-1 text-center bg-gradient-to-r from-primary-300 to-lavender-300 hover:from-primary-400 hover:to-lavender-400"
                     >
                       Save Photo
                     </Button>
