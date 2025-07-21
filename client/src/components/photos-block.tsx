@@ -17,6 +17,8 @@ interface Photo {
   size: number;
   date: string;
   createdAt: string;
+  url?: string;
+  thumbnailUrl?: string;
 }
 
 interface PhotosBlockProps {
@@ -115,11 +117,11 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
   };
 
   const getThumbnailUrl = (photo: Photo) => {
-    return `/api/photos/thumbnail/${photo.thumbnailFilename || photo.filename}`;
+    return photo.thumbnailUrl || `/api/photos/thumbnail/${photo.thumbnailFilename || photo.filename}`;
   };
 
   const getFullImageUrl = (photo: Photo) => {
-    return `/api/photos/${photo.filename}`;
+    return photo.url || `/api/photos/${photo.filename}`;
   };
 
   return (

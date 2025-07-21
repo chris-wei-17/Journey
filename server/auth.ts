@@ -28,6 +28,24 @@ export const generateToken = (userId: number): string => {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
 };
 
+// Generate short-lived photo access token
+export const generatePhotoToken = (userId: number): string => {
+  return jwt.sign({ userId, type: 'photo' }, JWT_SECRET, { expiresIn: '1h' });
+};
+
+// Verify photo access token and return user ID
+export const verifyPhotoToken = (token: string): number | null => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    if (decoded.type === 'photo' && decoded.userId) {
+      return decoded.userId;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const authenticateToken = (
   req: Request,
   res: Response,

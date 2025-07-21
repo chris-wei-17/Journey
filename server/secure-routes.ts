@@ -5,7 +5,9 @@ import {
   authenticateToken, 
   hashPassword, 
   comparePassword, 
-  generateToken, 
+  generateToken,
+  generatePhotoToken,
+  verifyPhotoToken,
   checkRateLimit, 
   clearRateLimit,
   type AuthenticatedRequest 
@@ -352,22 +354,51 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get photos by date
+  // Get photos by date with signed URLs
   app.get('/api/photos/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const date = req.params.date;
       const photos = await storage.getPhotosByDate(req.userId!, date);
-      res.json(photos);
+      
+      // Add signed URLs to photos
+      const photoToken = generatePhotoToken(req.userId!);
+      const photosWithUrls = photos.map(photo => ({
+        ...photo,
+        url: `/api/photos/${photo.filename}?token=${photoToken}`,
+        thumbnailUrl: `/api/photos/thumbnail/${photo.thumbnailFilename}?token=${photoToken}`
+      }));
+      
+      res.json(photosWithUrls);
     } catch (error) {
       console.error("Error fetching photos by date:", error);
       res.status(500).json({ message: "Failed to fetch photos" });
     }
   });
 
-  // Serve uploaded photos (public but verified)
+  // Serve uploaded photos with token-based authentication
   app.get('/api/photos/:filename', async (req: any, res) => {
     try {
       const filename = req.params.filename;
+      const token = req.query.token as string;
+      
+      if (!token) {
+        return res.status(401).json({ message: "Access token required" });
+      }
+      
+      // Verify token and get user ID
+      const userId = verifyPhotoToken(token);
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid or expired token" });
+      }
+      
+      // Verify user owns this photo
+      const photos = await storage.getUserPhotos(userId);
+      const photo = photos.find(p => p.filename === filename);
+      
+      if (!photo) {
+        return res.status(404).json({ message: "Photo not found or access denied" });
+      }
+
       const filePath = path.join(uploadDir, filename);
       
       if (fs.existsSync(filePath)) {
@@ -381,10 +412,30 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve thumbnails (public but verified)
+  // Serve thumbnails with token-based authentication
   app.get('/api/photos/thumbnail/:filename', async (req: any, res) => {
     try {
       const filename = req.params.filename;
+      const token = req.query.token as string;
+      
+      if (!token) {
+        return res.status(401).json({ message: "Access token required" });
+      }
+      
+      // Verify token and get user ID
+      const userId = verifyPhotoToken(token);
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid or expired token" });
+      }
+      
+      // Verify user owns this photo
+      const photos = await storage.getUserPhotos(userId);
+      const photo = photos.find(p => p.thumbnailFilename === filename || p.filename === filename);
+      
+      if (!photo) {
+        return res.status(404).json({ message: "Photo not found or access denied" });
+      }
+
       const filePath = path.join(uploadDir, filename);
       
       if (fs.existsSync(filePath)) {
