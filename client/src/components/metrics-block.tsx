@@ -73,6 +73,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
+      // Auto-exit edit mode if no custom fields remain
+      if (customFields.length <= 1) {
+        setIsEditMode(false);
+      }
     },
   });
 
@@ -231,7 +235,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
         <div className="space-y-3 mt-4">
           <Dialog open={isAddingField} onOpenChange={setIsAddingField}>
             <DialogTrigger asChild>
-              <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
+              <Button 
+                className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200"
+                onClick={() => setIsEditMode(false)}
+              >
                 <i className="fas fa-plus mr-2"></i>
                 ADD CUSTOM METRIC
               </Button>
