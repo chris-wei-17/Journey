@@ -5,7 +5,8 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { 
   onboardingSchema,
   insertProgressEntrySchema,
-  insertPhotoSchema 
+  insertPhotoSchema,
+  insertActivitySchema
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -74,12 +75,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { username, gender, birthday, height, weight, bodyType, goals, progress } = result.data;
+      const { gender, birthday, height, weight, bodyType, goals, progress } = result.data;
 
       // Create user profile
       const profile = await storage.createUserProfile({
         userId,
-        username,
         gender,
         birthday: birthday ? birthday : undefined,
         height,
@@ -249,6 +249,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting photo:", error);
       res.status(500).json({ message: "Failed to delete photo" });
+    }
+  });
+
+  // Activity routes
+  
+  // Get activities for a specific date
+  app.get('/api/activities/date/:date', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const date = req.params.date;
+      const activities = await storage.getActivitiesForDate(userId, date);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching activities for date:", error);
+      res.status(500).json({ message: "Failed to fetch activities" });
+    }
+  });
+
+  // Create new activity
+  app.post('/api/activities', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = insertActivitySchema.safeParse({
+        ...req.body,
+        userId,
+      });
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Invalid activity data",
+          errors: result.error.errors 
+        });
+      }
+
+      const activity = await storage.createActivity(result.data);
+      res.json(activity);
+    } catch (error) {
+      console.error("Error creating activity:", error);
+      res.status(500).json({ message: "Failed to create activity" });
+    }
+  });
+
+  // Delete activity
+  app.delete('/api/activities/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const activityId = parseInt(req.params.id);
+      
+      await storage.deleteActivity(activityId, userId);
+      res.json({ message: "Activity deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      res.status(500).json({ message: "Failed to delete activity" });
     }
   });
 

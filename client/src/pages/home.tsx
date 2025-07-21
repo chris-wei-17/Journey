@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { DateNavigation } from "@/components/date-navigation";
+import { MyDayBlock } from "@/components/my-day-block";
 import { format, isToday } from "date-fns";
 
 export default function Home() {
@@ -64,20 +65,8 @@ export default function Home() {
           />
         </div>
 
-        {/* Date-specific content header */}
-        {!isToday(selectedDate) && (
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Progress for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-            </h2>
-            <p className="text-gray-600">
-              {Array.isArray(progressData) && progressData.length > 0 
-                ? `You logged ${progressData.length} progress ${progressData.length === 1 ? 'entry' : 'entries'} on this day.`
-                : 'No progress entries found for this date.'
-              }
-            </p>
-          </div>
-        )}
+        {/* My Day Block */}
+        <MyDayBlock selectedDate={selectedDate} />
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

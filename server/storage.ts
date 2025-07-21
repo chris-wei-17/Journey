@@ -14,6 +14,9 @@ import {
   type InsertProgressEntry,
   type Photo,
   type InsertPhoto,
+  activities,
+  type Activity,
+  type InsertActivity,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, sql } from "drizzle-orm";
@@ -46,6 +49,12 @@ export interface IStorage {
   getUserPhotos(userId: number): Promise<Photo[]>;
   createPhoto(photo: InsertPhoto): Promise<Photo>;
   deletePhoto(id: number, userId: number): Promise<void>;
+
+  // Activity operations
+  getUserActivities(userId: number): Promise<Activity[]>;
+  getActivitiesForDate(userId: number, date: string): Promise<Activity[]>;
+  createActivity(activity: InsertActivity): Promise<Activity>;
+  deleteActivity(id: number, userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -197,6 +206,46 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(photos)
       .where(and(eq(photos.id, id), eq(photos.userId, userId)));
+  }
+
+  // Activity operations
+  async getUserActivities(userId: number): Promise<Activity[]> {
+    return await db
+      .select()
+      .from(activities)
+      .where(eq(activities.userId, userId))
+      .orderBy(activities.date);
+  }
+
+  async getActivitiesForDate(userId: number, date: string): Promise<Activity[]> {
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+    
+    return await db
+      .select()
+      .from(activities)
+      .where(
+        and(
+          eq(activities.userId, userId),
+          sql`DATE(${activities.date}) = DATE(${targetDate.toISOString().split('T')[0]})`
+        )
+      )
+      .orderBy(activities.startTime);
+  }
+
+  async createActivity(activity: InsertActivity): Promise<Activity> {
+    const [newActivity] = await db
+      .insert(activities)
+      .values(activity)
+      .returning();
+    return newActivity;
+  }
+
+  async deleteActivity(id: number, userId: number): Promise<void> {
+    await db
+      .delete(activities)
+      .where(and(eq(activities.id, id), eq(activities.userId, userId)));
   }
 }
 
