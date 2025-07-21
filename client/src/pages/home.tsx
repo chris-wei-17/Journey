@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { Photo, ProgressEntry } from "@shared/schema";
 
@@ -33,17 +34,12 @@ export default function Home() {
         <header className="bg-white shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary-300 to-lavender-300 flex items-center justify-center">
-                {user?.profileImageUrl ? (
-                  <img 
-                    src={user.profileImageUrl} 
-                    alt="Profile" 
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <i className="fas fa-user text-white text-sm"></i>
-                )}
-              </div>
+              <Avatar
+                firstName={user?.firstName}
+                lastName={user?.lastName}
+                profileImageUrl={user?.profileImageUrl}
+                size="md"
+              />
               <div>
                 <h2 className="font-semibold text-gray-800">
                   Welcome back, {user?.profile?.username || user?.firstName || "Fitness Friend"}!

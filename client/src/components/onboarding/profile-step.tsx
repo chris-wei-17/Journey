@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar } from "@/components/ui/avatar";
 import { OnboardingData } from "@/pages/onboarding";
+import { useAuth } from "@/hooks/useAuth";
 
 const profileSchema = z.object({
   gender: z.string().optional(),
@@ -25,6 +27,7 @@ interface ProfileStepProps {
 }
 
 export default function ProfileStep({ data, updateData, onNext }: ProfileStepProps) {
+  const { user } = useAuth();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -35,6 +38,11 @@ export default function ProfileStep({ data, updateData, onNext }: ProfileStepPro
       bodyType: data.bodyType,
     },
   });
+
+  const handleImageUpload = (file: File) => {
+    // TODO: Implement image upload to server
+    console.log("Image uploaded:", file);
+  };
 
   const onSubmit = (formData: ProfileFormData) => {
     updateData(formData);
@@ -48,20 +56,17 @@ export default function ProfileStep({ data, updateData, onNext }: ProfileStepPro
         <p className="text-gray-600 text-center mb-8">Tell us about yourself to personalize your journey</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Profile Picture Placeholder */}
+          {/* Profile Picture */}
           <div className="text-center mb-6">
-            <div className="relative inline-block">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-primary-300 to-lavender-300 flex items-center justify-center">
-                <i className="fas fa-user text-3xl text-white"></i>
-              </div>
-              <button 
-                type="button"
-                className="absolute bottom-0 right-0 bg-secondary-300 text-white p-2 rounded-full text-sm hover:bg-secondary-400 transition-colors"
-              >
-                <i className="fas fa-camera"></i>
-              </button>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">Optional profile picture</p>
+            <Avatar
+              firstName={user?.firstName}
+              lastName={user?.lastName}
+              profileImageUrl={user?.profileImageUrl}
+              size="xl"
+              onImageUpload={handleImageUpload}
+              editable={true}
+            />
+            <p className="text-sm text-gray-500 mt-2">Upload a photo or use your initials</p>
           </div>
 
           <div className="space-y-4">
