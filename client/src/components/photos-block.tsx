@@ -32,7 +32,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
   // Get photos for the selected date
-  const { data: photos = [] } = useQuery({
+  const { data: photos = [] } = useQuery<Photo[]>({
     queryKey: [`/api/photos/date/${dateStr}`],
   });
 
@@ -44,18 +44,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
       });
       formData.append('date', dateStr);
 
-      const response = await fetch('/api/photos', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`${response.status}: ${text}`);
-      }
-
-      return response.json();
+      return apiRequest('/api/photos', 'POST', formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/photos/date/${dateStr}`] });

@@ -12,17 +12,23 @@ export async function apiRequest(
   method: string,
   data?: unknown | undefined,
 ): Promise<any> {
-  const token = localStorage.getItem('authToken');
-  
   const headers: Record<string, string> = {};
-  if (data) headers["Content-Type"] = "application/json";
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  
+  // Handle FormData differently from JSON
+  let body: string | FormData | undefined;
+  if (data instanceof FormData) {
+    body = data;
+    // Don't set Content-Type for FormData, let browser set it with boundary
+  } else if (data) {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(data);
+  }
   
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    body,
+    credentials: "include", // This handles session-based auth
   });
 
   if (!res.ok) {
@@ -30,11 +36,8 @@ export async function apiRequest(
     
     // Handle unauthorized responses
     if (res.status === 401) {
-      localStorage.removeItem('authToken');
-      // Don't redirect if already on auth page
-      if (!window.location.pathname.includes('/auth')) {
-        window.location.reload();
-      }
+      // Redirect to login for Replit auth
+      window.location.href = '/api/login';
     }
     
     throw new Error(`${res.status}: ${text}`);
@@ -56,26 +59,17 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const token = localStorage.getItem('authToken');
-    
-    const headers: Record<string, string> = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    
     const res = await fetch(queryKey.join("/") as string, {
-      headers,
-      credentials: "include",
+      credentials: "include", // This handles session-based auth
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      localStorage.removeItem('authToken');
       return null;
     }
 
     if (res.status === 401) {
-      localStorage.removeItem('authToken');
-      if (!window.location.pathname.includes('/auth')) {
-        window.location.reload();
-      }
+      // Redirect to login for Replit auth
+      window.location.href = '/api/login';
     }
 
     await throwIfResNotOk(res);
