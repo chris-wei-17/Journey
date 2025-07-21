@@ -44,7 +44,15 @@ export default function AddActivity() {
 
   const createActivityMutation = useMutation({
     mutationFn: async (activityData: any) => {
-      return apiRequest('/api/activities', 'POST', activityData);
+      console.log('Frontend sending activity data:', activityData);
+      try {
+        const result = await apiRequest('/api/activities', 'POST', activityData);
+        console.log('Frontend received result:', result);
+        return result;
+      } catch (error) {
+        console.error('Frontend API request error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       // Invalidate activities cache
@@ -56,7 +64,7 @@ export default function AddActivity() {
       setLocation('/');
     },
     onError: (error: Error) => {
-      console.error('Error creating activity:', error);
+      console.error('Frontend mutation error:', error);
       toast({
         title: "Error",
         description: "Failed to add activity. Please try again.",
