@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import ProfileStep from "@/components/onboarding/profile-step";
 import GoalsStep from "@/components/onboarding/goals-step";
 import ProgressStep from "@/components/onboarding/progress-step";
 
 export type OnboardingData = {
-  username: string;
   gender: string;
   birthday: string;
   height: string;
@@ -18,7 +17,6 @@ export type OnboardingData = {
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
-    username: "",
     gender: "",
     birthday: "",
     height: "",
@@ -29,9 +27,9 @@ export default function Onboarding() {
     photos: [],
   });
 
-  const updateData = (newData: Partial<OnboardingData>) => {
+  const updateData = useCallback((newData: Partial<OnboardingData>) => {
     setData(prev => ({ ...prev, ...newData }));
-  };
+  }, []);
 
   const nextStep = () => {
     if (currentStep < 3) {

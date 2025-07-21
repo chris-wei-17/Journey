@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingData } from "@/pages/onboarding";
 
 const profileSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
   gender: z.string().optional(),
   birthday: z.string().optional(),
   height: z.string().optional(),
@@ -29,7 +28,6 @@ export default function ProfileStep({ data, updateData, onNext }: ProfileStepPro
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      username: data.username,
       gender: data.gender,
       birthday: data.birthday,
       height: data.height,
@@ -67,19 +65,6 @@ export default function ProfileStep({ data, updateData, onNext }: ProfileStepPro
           </div>
 
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                {...register("username")}
-                placeholder="Choose a username"
-                className="mt-2"
-              />
-              {errors.username && (
-                <p className="text-sm text-red-500 mt-1">{errors.username.message}</p>
-              )}
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="gender">Gender</Label>
