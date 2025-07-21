@@ -51,7 +51,7 @@ const upload = multer({
 
 export async function registerSecureRoutes(app: Express): Promise<Server> {
   // Public authentication routes
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/register', async (req, res) => {
     try {
       const result = registerSchema.safeParse(req.body);
       
@@ -106,7 +106,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/login', async (req, res) => {
+  app.post('/api/login', async (req, res) => {
     try {
       const result = loginSchema.safeParse(req.body);
       
@@ -162,7 +162,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Protected routes
-  app.get('/api/auth/user', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/user', authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const user = await storage.getUser(req.userId!);
       if (!user) {

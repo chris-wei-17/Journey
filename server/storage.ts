@@ -5,7 +5,7 @@ import {
   progressEntries,
   photos,
   type User,
-  type UpsertUser,
+  type InsertUser,
   type UserProfile,
   type InsertUserProfile,
   type UserGoal,
@@ -38,8 +38,8 @@ export interface IStorage {
   // User operations - secure authentication
   getUser(id: number): Promise<User | undefined>;
   getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined>;
-  createUser(user: Omit<UpsertUser, 'id'>): Promise<User>;
-  updateUser(id: number, user: Partial<UpsertUser>): Promise<User>;
+  createUser(user: Omit<InsertUser, 'id'>): Promise<User>;
+  updateUser(id: number, user: Partial<User>): Promise<User>;
   
   // Profile operations
   getUserProfile(userId: number): Promise<UserProfile | undefined>;
@@ -104,7 +104,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(userData: Omit<UpsertUser, 'id'>): Promise<User> {
+  async createUser(userData: Omit<InsertUser, 'id'>): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(userData)
@@ -112,7 +112,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, userData: Partial<UpsertUser>): Promise<User> {
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
     const [user] = await db
       .update(users)
       .set({ ...userData, updatedAt: new Date() })

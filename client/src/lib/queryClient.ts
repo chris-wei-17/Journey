@@ -12,6 +12,8 @@ export async function apiRequest(
   method: string,
   data?: unknown | undefined,
 ): Promise<any> {
+  const token = localStorage.getItem('authToken');
+  
   const headers: Record<string, string> = {};
   
   // Handle FormData differently from JSON
@@ -24,11 +26,13 @@ export async function apiRequest(
     body = JSON.stringify(data);
   }
   
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  
   const res = await fetch(url, {
     method,
     headers,
     body,
-    credentials: "include", // This handles session-based auth
+    credentials: "include",
   });
 
   if (!res.ok) {
@@ -36,8 +40,11 @@ export async function apiRequest(
     
     // Handle unauthorized responses
     if (res.status === 401) {
-      // Redirect to login for Replit auth
-      window.location.href = '/api/login';
+      localStorage.removeItem('authToken');
+      // Don't redirect if already on auth page
+      if (!window.location.pathname.includes('/auth')) {
+        window.location.reload();
+      }
     }
     
     throw new Error(`${res.status}: ${text}`);
@@ -59,17 +66,27 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const token = localStorage.getItem('authToken');
+    
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    
     const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include", // This handles session-based auth
+      headers,
+      credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      localStorage.removeItem('authToken');
       return null;
     }
 
     if (res.status === 401) {
-      // Redirect to login for Replit auth
-      window.location.href = '/api/login';
+      localStorage.removeItem('authToken');
+      // Don't redirect if already on auth page  
+      if (!window.location.pathname.includes('/auth')) {
+        window.location.reload();
+      }
     }
 
     await throwIfResNotOk(res);

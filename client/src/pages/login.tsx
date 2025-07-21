@@ -22,7 +22,7 @@ export default function Login({ onToggleMode }: LoginProps) {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
-      const response = await apiRequest("POST", "/api/auth/login", data);
+      const response = await apiRequest("POST", "/api/login", data);
       return response;
     },
     onSuccess: (data) => {

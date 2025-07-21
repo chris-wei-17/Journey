@@ -1,113 +1,73 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import type { Request, Response, NextFunction } from 'express';
-import { storage } from './storage';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import type { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const JWT_EXPIRES_IN = '7d';
+// JWT secret - use environment variable in production
+const JWT_SECRET = process.env.JWT_SECRET || "fitjourney-development-secret-key";
+
+// Rate limiting storage (in production, use Redis or database)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 export interface AuthenticatedRequest extends Request {
-  userId?: number;
-  user?: {
-    id: number;
-    username: string;
-    email: string;
-  };
+  userId: number;
 }
 
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12);
-}
+export const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 12;
+  return bcrypt.hash(password, saltRounds);
+};
 
-export async function comparePassword(password: string, hash: string): Promise<boolean> {
+export const comparePassword = async (
+  password: string,
+  hash: string
+): Promise<boolean> => {
   return bcrypt.compare(password, hash);
-}
+};
 
-export function generateToken(userId: number): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-}
+export const generateToken = (userId: number): string => {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+};
 
-export function verifyToken(token: string): { userId: number } | null {
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: number };
-    return payload;
-  } catch (error) {
-    return null;
-  }
-}
-
-export async function authenticateToken(
-  req: AuthenticatedRequest,
+export const authenticateToken = (
+  req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {
+) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+
+  if (!token) {
+    return res.status(401).json({ message: "Access token required" });
+  }
+
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    if (!token) {
-      res.status(401).json({ message: 'Access token required' });
-      return;
-    }
-
-    const payload = verifyToken(token);
-    if (!payload) {
-      res.status(401).json({ message: 'Invalid token' });
-      return;
-    }
-
-    // Verify user still exists
-    const user = await storage.getUser(payload.userId);
-    if (!user) {
-      res.status(401).json({ message: 'User not found' });
-      return;
-    }
-
-    req.userId = payload.userId;
-    req.user = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-    };
-
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+    (req as AuthenticatedRequest).userId = decoded.userId;
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(401).json({ message: 'Authentication failed' });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
-}
+};
 
-// Rate limiting for login attempts (simple in-memory implementation)
-const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
-
-export function checkRateLimit(identifier: string): boolean {
+export const checkRateLimit = (identifier: string, maxRequests = 5): boolean => {
   const now = Date.now();
-  const attempts = loginAttempts.get(identifier);
-
-  if (!attempts) {
-    loginAttempts.set(identifier, { count: 1, lastAttempt: now });
+  const windowMs = 15 * 60 * 1000; // 15 minutes
+  
+  const record = rateLimitStore.get(identifier);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitStore.set(identifier, { count: 1, resetTime: now + windowMs });
     return true;
   }
-
-  // Reset if lockout time has passed
-  if (now - attempts.lastAttempt > LOCKOUT_TIME) {
-    loginAttempts.set(identifier, { count: 1, lastAttempt: now });
-    return true;
-  }
-
-  // Check if rate limited
-  if (attempts.count >= MAX_LOGIN_ATTEMPTS) {
+  
+  if (record.count >= maxRequests) {
     return false;
   }
-
-  // Increment attempts
-  attempts.count++;
-  attempts.lastAttempt = now;
+  
+  record.count++;
   return true;
-}
+};
 
-export function clearRateLimit(identifier: string): void {
-  loginAttempts.delete(identifier);
-}
+export const clearRateLimit = (identifier: string): void => {
+  rateLimitStore.delete(identifier);
+};

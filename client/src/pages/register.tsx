@@ -21,7 +21,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
-      const response = await apiRequest("POST", "/api/auth/register", data);
+      const response = await apiRequest("POST", "/api/register", data);
       return response;
     },
     onSuccess: (data) => {

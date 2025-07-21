@@ -125,18 +125,27 @@ The application follows a monorepo structure with shared types and schemas, enab
 
 ## Recent Changes
 
-### July 21, 2025
-- Implemented "My Day" activity tracking functionality
-- Created activity selection flow with comprehensive activity list (walking, running, cycling, etc.)
-- Added activity creation page with time selection (start/end times)
-- Removed location and date fields - date auto-populates from selected calendar date
-- Added X button to activity creation page for easy dismissal
-- Fixed activity schema validation by removing optional fields from validation
-- Enhanced debug logging for activity creation to identify backend errors
-- Database connection confirmed working properly
+### July 21, 2025 - Authentication System Overhaul for Vercel/Supabase Deployment
+- **REMOVED Replit-specific authentication** - Complete migration to portable JWT authentication
+- **Updated database schema** - Changed from Replit OIDC user IDs (strings) to standard auto-incrementing integers
+- **Implemented secure JWT authentication** - Using bcrypt password hashing and 7-day token expiration
+- **Updated API endpoints** - All auth routes now use standard `/api/login`, `/api/register`, `/api/user` endpoints
+- **Fixed client-side authentication** - Updated token storage and API request headers for JWT
+- **Removed session storage** - No longer dependent on PostgreSQL sessions or Replit domains
+- **Updated storage interface** - All user operations now use standard integer user IDs
+- **Ready for Vercel/Supabase deployment** - All Replit-specific code removed
+
+### Previous Features
+- Activity tracking ("My Day") with time selection and activity types
+- Macro tracking with nutrition summary calculations  
+- Macro targets with editable dialog and right-aligned display
+- Photo upload functionality
+- Progress tracking with goal-based sliders
+- User authentication and onboarding flow
+- All inputs optimized for mobile number pad (inputMode="decimal")
 
 ## Current Issues
-- None currently - all major features working correctly
+- Database schema needs to be pushed to update user table structure
 
 ## Completed Features
 - Activity tracking ("My Day") with time selection and activity types
