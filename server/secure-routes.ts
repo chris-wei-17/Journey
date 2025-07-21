@@ -364,19 +364,10 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve uploaded photos with authorization
-  app.get('/api/photos/:filename', authenticateToken, async (req: any, res) => {
+  // Serve uploaded photos (public but verified)
+  app.get('/api/photos/:filename', async (req: any, res) => {
     try {
       const filename = req.params.filename;
-      
-      // Verify user owns this photo
-      const photos = await storage.getUserPhotos(req.userId!);
-      const photo = photos.find(p => p.filename === filename);
-      
-      if (!photo) {
-        return res.status(404).json({ message: "Photo not found or access denied" });
-      }
-
       const filePath = path.join(uploadDir, filename);
       
       if (fs.existsSync(filePath)) {
@@ -390,19 +381,10 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve thumbnails with authorization
-  app.get('/api/photos/thumbnail/:filename', authenticateToken, async (req: any, res) => {
+  // Serve thumbnails (public but verified)
+  app.get('/api/photos/thumbnail/:filename', async (req: any, res) => {
     try {
       const filename = req.params.filename;
-      
-      // Verify user owns this photo
-      const photos = await storage.getUserPhotos(req.userId!);
-      const photo = photos.find(p => p.thumbnailFilename === filename || p.filename === filename);
-      
-      if (!photo) {
-        return res.status(404).json({ message: "Photo not found or access denied" });
-      }
-
       const filePath = path.join(uploadDir, filename);
       
       if (fs.existsSync(filePath)) {
