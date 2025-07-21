@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PhotoSelectionDialog } from "@/components/ui/photo-selection-dialog";
 
 interface PhotoUploadProps {
   photos: File[];
@@ -10,8 +11,9 @@ interface PhotoUploadProps {
 export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 5 }: PhotoUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
 
-  const handleFileSelect = (files: FileList | null) => {
+  const handleDropFileSelect = (files: FileList | null) => {
     if (!files) return;
 
     const newFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
@@ -26,13 +28,18 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 5 }: P
   };
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    setShowDialog(true);
+  };
+
+  const handleFileSelect = (file: File) => {
+    onPhotosChange([...photos, file]);
+    setShowDialog(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    handleFileSelect(e.dataTransfer.files);
+    handleDropFileSelect(e.dataTransfer.files);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -72,14 +79,10 @@ export default function PhotoUpload({ photos, onPhotosChange, maxPhotos = 5 }: P
         </p>
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => handleFileSelect(e.target.files)}
-        disabled={photos.length >= maxPhotos}
+      <PhotoSelectionDialog
+        isOpen={showDialog}
+        onClose={() => setShowDialog(false)}
+        onFileSelect={handleFileSelect}
       />
 
       {/* Photo Preview Grid */}

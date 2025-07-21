@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { PhotoSelectionDialog } from "@/components/ui/photo-selection-dialog";
+
 
 interface AvatarProps {
   firstName?: string;
@@ -149,8 +149,13 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-            <span className="font-semibold text-black">{initials}</span>
+          <div 
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, hsl(326, 100%, 70%) 0%, hsl(280, 67%, 77%) 100%)'
+            }}
+          >
+            <span className="font-semibold text-black text-lg">{initials}</span>
           </div>
         )}
       </div>
@@ -162,18 +167,22 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setIsPhotoSelectionOpen(true)}
+              onClick={() => document.getElementById('avatar-photo-upload')?.click()}
               className="text-sm text-center"
             >
-              <i className="fas fa-camera mr-2"></i>
-              Upload or Take Photo
+              Choose a different picture
             </Button>
           </div>
 
-          <PhotoSelectionDialog
-            isOpen={isPhotoSelectionOpen}
-            onClose={() => setIsPhotoSelectionOpen(false)}
-            onFileSelect={handleFileSelect}
+          <input
+            id="avatar-photo-upload"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileSelect(file);
+            }}
+            className="hidden"
           />
 
           <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
