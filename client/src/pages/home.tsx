@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { DateNavigation } from "@/components/date-navigation";
 import { MyDayBlock } from "@/components/my-day-block";
+import { MacrosBlock } from "@/components/macros-block";
 import { format, isToday } from "date-fns";
 
 export default function Home() {
@@ -67,6 +68,9 @@ export default function Home() {
 
         {/* My Day Block */}
         <MyDayBlock selectedDate={selectedDate} />
+
+        {/* Macros Block */}
+        <MacrosBlock selectedDate={selectedDate} />
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

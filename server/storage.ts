@@ -17,6 +17,9 @@ import {
   activities,
   type Activity,
   type InsertActivity,
+  macros,
+  type Macro,
+  type InsertMacro,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, sql } from "drizzle-orm";
@@ -55,6 +58,12 @@ export interface IStorage {
   getActivitiesForDate(userId: number, date: string): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
   deleteActivity(id: number, userId: number): Promise<void>;
+
+  // Macro operations
+  getUserMacros(userId: number): Promise<Macro[]>;
+  getMacrosForDate(userId: number, date: string): Promise<Macro[]>;
+  createMacro(macro: InsertMacro): Promise<Macro>;
+  deleteMacro(id: number, userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -252,6 +261,47 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(activities)
       .where(and(eq(activities.id, id), eq(activities.userId, userId)));
+  }
+
+  // Macro operations
+  async getUserMacros(userId: number): Promise<Macro[]> {
+    return await db
+      .select()
+      .from(macros)
+      .where(eq(macros.userId, userId))
+      .orderBy(macros.createdAt);
+  }
+
+  async getMacrosForDate(userId: number, date: string): Promise<Macro[]> {
+    const targetDate = new Date(date);
+    const nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    return await db
+      .select()
+      .from(macros)
+      .where(
+        and(
+          eq(macros.userId, userId),
+          sql`${macros.date} >= ${targetDate}`,
+          sql`${macros.date} < ${nextDay}`
+        )
+      )
+      .orderBy(macros.createdAt);
+  }
+
+  async createMacro(macroData: InsertMacro): Promise<Macro> {
+    const [macro] = await db
+      .insert(macros)
+      .values(macroData)
+      .returning();
+    return macro;
+  }
+
+  async deleteMacro(id: number, userId: number): Promise<void> {
+    await db
+      .delete(macros)
+      .where(and(eq(macros.id, id), eq(macros.userId, userId)));
   }
 }
 

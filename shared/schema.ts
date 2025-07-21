@@ -9,6 +9,7 @@ import {
   integer,
   boolean,
   date,
+  numeric,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -158,6 +159,26 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
 
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type Activity = typeof activities.$inferSelect;
+
+// Macros table for nutrition tracking
+export const macros = pgTable("macros", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  description: text("description").notNull(),
+  protein: numeric("protein", { precision: 5, scale: 1 }).notNull(), // grams
+  fats: numeric("fats", { precision: 5, scale: 1 }).notNull(), // grams
+  carbs: numeric("carbs", { precision: 5, scale: 1 }).notNull(), // grams
+  date: timestamp("date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMacroSchema = createInsertSchema(macros).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMacro = z.infer<typeof insertMacroSchema>;
+export type Macro = typeof macros.$inferSelect;
 
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type InsertUserProfile = typeof userProfiles.$inferInsert;

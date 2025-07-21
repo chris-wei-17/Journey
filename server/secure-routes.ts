@@ -16,7 +16,8 @@ import {
   onboardingSchema,
   insertProgressEntrySchema,
   insertPhotoSchema,
-  insertActivitySchema 
+  insertActivitySchema,
+  insertMacroSchema 
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -446,6 +447,75 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching progress for date:", error);
       res.status(500).json({ message: "Failed to fetch progress" });
+    }
+  });
+
+  // Macro routes for nutrition tracking
+  app.get('/api/macros/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      const date = req.params.date;
+      const macros = await storage.getMacrosForDate(userId, date);
+      res.json(macros);
+    } catch (error) {
+      console.error("Error fetching macros for date:", error);
+      res.status(500).json({ message: "Failed to fetch macros" });
+    }
+  });
+
+  app.post('/api/macros', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    console.log('=== MACRO CREATION START ===');
+    try {
+      const userId = req.userId!;
+      console.log('Creating macro for user:', userId);
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+      
+      const macroData = {
+        userId,
+        description: req.body.description,
+        protein: req.body.protein,
+        fats: req.body.fats,
+        carbs: req.body.carbs,
+        date: new Date(req.body.date),
+      };
+      
+      console.log('Processed macro data:', JSON.stringify(macroData, null, 2));
+      
+      const result = insertMacroSchema.safeParse(macroData);
+      
+      if (!result.success) {
+        console.log('Validation errors:', JSON.stringify(result.error.errors, null, 2));
+        return res.status(400).json({ 
+          message: "Invalid macro data",
+          errors: result.error.errors 
+        });
+      }
+
+      console.log('Validated macro data:', JSON.stringify(result.data, null, 2));
+      const macro = await storage.createMacro(result.data);
+      console.log('Created macro:', JSON.stringify(macro, null, 2));
+      res.status(201).json(macro);
+    } catch (error) {
+      console.error("=== MACRO CREATION ERROR ===");
+      console.error("Error creating macro:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : JSON.stringify(error));
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
+      console.error("=== END ERROR ===");
+      res.status(500).json({ message: "Failed to create macro", error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.delete('/api/macros/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.userId!;
+      const macroId = parseInt(req.params.id);
+      
+      await storage.deleteMacro(macroId, userId);
+      res.json({ message: "Macro deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting macro:", error);
+      res.status(500).json({ message: "Failed to delete macro" });
     }
   });
 
