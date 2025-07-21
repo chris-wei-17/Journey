@@ -26,14 +26,16 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table.
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+// User storage table - updated for secure authentication
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
+  id: serial("id").primaryKey(),
+  email: varchar("email").unique().notNull(),
+  username: varchar("username").unique().notNull(),
+  passwordHash: varchar("password_hash").notNull(), // Store hashed passwords
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  isEmailVerified: boolean("is_email_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -41,8 +43,7 @@ export const users = pgTable("users", {
 // User profiles table for additional fitness-specific information
 export const userProfiles = pgTable("user_profiles", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  username: varchar("username").unique().notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
   gender: varchar("gender"),
   birthday: date("birthday"),
   height: varchar("height"),
@@ -56,7 +57,7 @@ export const userProfiles = pgTable("user_profiles", {
 // User goals table
 export const userGoals = pgTable("user_goals", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   goalType: varchar("goal_type").notNull(), // general-fitness, cardio, strength, muscle-mass, weight-loss, improve-diet
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -65,7 +66,7 @@ export const userGoals = pgTable("user_goals", {
 // Progress tracking table
 export const progressEntries = pgTable("progress_entries", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   goalType: varchar("goal_type").notNull(),
   progressValue: integer("progress_value").notNull(), // 0-100
   createdAt: timestamp("created_at").defaultNow(),
@@ -74,12 +75,21 @@ export const progressEntries = pgTable("progress_entries", {
 // Photos table
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   filename: varchar("filename").notNull(),
   originalName: varchar("original_name").notNull(),
   mimeType: varchar("mime_type").notNull(),
   size: integer("size").notNull(),
   uploadDate: timestamp("upload_date").defaultNow(),
+});
+
+// Sessions table for JWT token management
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  tokenHash: varchar("token_hash").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Relations
@@ -137,11 +147,23 @@ export type InsertProgressEntry = typeof progressEntries.$inferInsert;
 export type Photo = typeof photos.$inferSelect;
 export type InsertPhoto = typeof photos.$inferInsert;
 
+// Extended types for API responses
+export type UserWithProfile = User & {
+  profile?: UserProfile;
+  goals?: string[];
+  onboardingCompleted?: boolean;
+};
+
 // Zod schemas for validation
 export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertUserGoalSchema = createInsertSchema(userGoals).omit({
@@ -159,9 +181,22 @@ export const insertPhotoSchema = createInsertSchema(photos).omit({
   uploadDate: true,
 });
 
+// Authentication schemas
+export const loginSchema = z.object({
+  usernameOrEmail: z.string().min(1, "Username or email is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+});
+
 // Extended schemas for frontend
 export const onboardingSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
   gender: z.string().optional(),
   birthday: z.string().optional(),
   height: z.string().optional(),
@@ -171,4 +206,6 @@ export const onboardingSchema = z.object({
   progress: z.record(z.string(), z.number().min(0).max(100)),
 });
 
+export type LoginData = z.infer<typeof loginSchema>;
+export type RegisterData = z.infer<typeof registerSchema>;
 export type OnboardingData = z.infer<typeof onboardingSchema>;

@@ -81,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         username,
         gender,
-        birthday: birthday ? new Date(birthday) : undefined,
+        birthday: birthday ? birthday : undefined,
         height,
         weight,
         bodyType,

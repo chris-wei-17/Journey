@@ -16,59 +16,71 @@ import {
   type InsertPhoto,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
-  // User operations (mandatory for Replit Auth)
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  // User operations - secure authentication
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined>;
+  createUser(user: Omit<UpsertUser, 'id'>): Promise<User>;
+  updateUser(id: number, user: Partial<UpsertUser>): Promise<User>;
   
   // Profile operations
-  getUserProfile(userId: string): Promise<UserProfile | undefined>;
+  getUserProfile(userId: number): Promise<UserProfile | undefined>;
   createUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
-  updateUserProfile(userId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile>;
+  updateUserProfile(userId: number, profile: Partial<InsertUserProfile>): Promise<UserProfile>;
   
   // Goal operations
-  getUserGoals(userId: string): Promise<UserGoal[]>;
+  getUserGoals(userId: number): Promise<UserGoal[]>;
   createUserGoal(goal: InsertUserGoal): Promise<UserGoal>;
-  deleteUserGoals(userId: string): Promise<void>;
+  deleteUserGoals(userId: number): Promise<void>;
   
   // Progress operations
-  getUserProgress(userId: string): Promise<ProgressEntry[]>;
+  getUserProgress(userId: number): Promise<ProgressEntry[]>;
   createProgressEntry(entry: InsertProgressEntry): Promise<ProgressEntry>;
-  getLatestProgressByGoal(userId: string, goalType: string): Promise<ProgressEntry | undefined>;
+  getLatestProgressByGoal(userId: number, goalType: string): Promise<ProgressEntry | undefined>;
   
   // Photo operations
-  getUserPhotos(userId: string): Promise<Photo[]>;
+  getUserPhotos(userId: number): Promise<Photo[]>;
   createPhoto(photo: InsertPhoto): Promise<Photo>;
-  deletePhoto(id: number, userId: string): Promise<void>;
+  deletePhoto(id: number, userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations (mandatory for Replit Auth)
-  async getUser(id: string): Promise<User | undefined> {
+  // User operations - secure authentication
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail)));
+    return user;
+  }
+
+  async createUser(userData: Omit<UpsertUser, 'id'>): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, userData: Partial<UpsertUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ ...userData, updatedAt: new Date() })
+      .where(eq(users.id, id))
       .returning();
     return user;
   }
 
   // Profile operations
-  async getUserProfile(userId: string): Promise<UserProfile | undefined> {
+  async getUserProfile(userId: number): Promise<UserProfile | undefined> {
     const [profile] = await db
       .select()
       .from(userProfiles)
@@ -84,7 +96,7 @@ export class DatabaseStorage implements IStorage {
     return newProfile;
   }
 
-  async updateUserProfile(userId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile> {
+  async updateUserProfile(userId: number, profile: Partial<InsertUserProfile>): Promise<UserProfile> {
     const [updatedProfile] = await db
       .update(userProfiles)
       .set({ ...profile, updatedAt: new Date() })
@@ -94,7 +106,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Goal operations
-  async getUserGoals(userId: string): Promise<UserGoal[]> {
+  async getUserGoals(userId: number): Promise<UserGoal[]> {
     return await db
       .select()
       .from(userGoals)
@@ -109,7 +121,7 @@ export class DatabaseStorage implements IStorage {
     return newGoal;
   }
 
-  async deleteUserGoals(userId: string): Promise<void> {
+  async deleteUserGoals(userId: number): Promise<void> {
     await db
       .update(userGoals)
       .set({ isActive: false })
@@ -117,7 +129,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Progress operations
-  async getUserProgress(userId: string): Promise<ProgressEntry[]> {
+  async getUserProgress(userId: number): Promise<ProgressEntry[]> {
     return await db
       .select()
       .from(progressEntries)
@@ -132,7 +144,7 @@ export class DatabaseStorage implements IStorage {
     return newEntry;
   }
 
-  async getLatestProgressByGoal(userId: string, goalType: string): Promise<ProgressEntry | undefined> {
+  async getLatestProgressByGoal(userId: number, goalType: string): Promise<ProgressEntry | undefined> {
     const [entry] = await db
       .select()
       .from(progressEntries)
@@ -146,7 +158,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Photo operations
-  async getUserPhotos(userId: string): Promise<Photo[]> {
+  async getUserPhotos(userId: number): Promise<Photo[]> {
     return await db
       .select()
       .from(photos)
@@ -162,7 +174,7 @@ export class DatabaseStorage implements IStorage {
     return newPhoto;
   }
 
-  async deletePhoto(id: number, userId: string): Promise<void> {
+  async deletePhoto(id: number, userId: number): Promise<void> {
     await db
       .delete(photos)
       .where(and(eq(photos.id, id), eq(photos.userId, userId)));

@@ -2,15 +2,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
+import { Photo, ProgressEntry } from "@shared/schema";
 
 export default function Home() {
   const { user } = useAuth();
   
-  const { data: photos } = useQuery({
+  const { data: photos } = useQuery<Photo[]>({
     queryKey: ["/api/photos"],
   });
 
-  const { data: progress } = useQuery({
+  const { data: progress } = useQuery<ProgressEntry[]>({
     queryKey: ["/api/progress"],
   });
 
@@ -104,7 +105,7 @@ export default function Home() {
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Progress</h3>
                 <div className="space-y-3">
-                  {progress.slice(0, 3).map((entry: any) => (
+                  {progress.slice(0, 3).map((entry) => (
                     <div key={entry.id} className="flex justify-between items-center">
                       <span className="text-sm text-gray-700 capitalize">
                         {entry.goalType.replace('-', ' ')}
@@ -125,7 +126,7 @@ export default function Home() {
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Photos</h3>
                 <div className="grid grid-cols-3 gap-3">
-                  {photos.slice(0, 6).map((photo: any) => (
+                  {photos.slice(0, 6).map((photo) => (
                     <div key={photo.id} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                       <img 
                         src={`/api/photos/${photo.filename}`}
