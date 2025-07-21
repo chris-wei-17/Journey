@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Auth from "@/pages/auth";
 import Home from "@/pages/home";
 import Onboarding from "@/pages/onboarding";
+import Profile from "@/pages/profile";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -29,7 +30,10 @@ function Router() {
           {!user?.onboardingCompleted ? (
             <Route path="/" component={Onboarding} />
           ) : (
-            <Route path="/" component={Home} />
+            <>
+              <Route path="/" component={Home} />
+              <Route path="/profile" component={Profile} />
+            </>
           )}
         </>
       )}

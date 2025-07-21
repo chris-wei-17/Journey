@@ -1,161 +1,168 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
-import { Photo, ProgressEntry } from "@shared/schema";
+import { Header } from "@/components/ui/header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export default function Home() {
   const { user } = useAuth();
-  
-  const { data: photos } = useQuery<Photo[]>({
-    queryKey: ["/api/photos"],
-  });
 
-  const { data: progress } = useQuery<ProgressEntry[]>({
+  const { data: progressData = [] } = useQuery({
     queryKey: ["/api/progress"],
   });
 
-  const handleLogout = () => {
-    // Clear the auth token and reload to show auth page
-    localStorage.removeItem('authToken');
-    window.location.reload();
+  const { data: photos = [] } = useQuery({
+    queryKey: ["/api/photos"],
+  });
+
+  const getMotivationalMessage = () => {
+    const messages = [
+      "Every step counts! Keep pushing forward.",
+      "You're stronger than yesterday.",
+      "Progress, not perfection.",
+      "Your only competition is who you were yesterday.",
+      "Believe in yourself and keep going!"
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
   };
 
-  const handleSettings = () => {
-    // TODO: Implement settings/profile editing
-    console.log("Settings clicked");
+  const getProgressSummary = () => {
+    if (!progressData || !Array.isArray(progressData) || progressData.length === 0) return null;
+    
+    const avgProgress = progressData.reduce((sum: number, item: any) => sum + (item.progressValue || 0), 0) / progressData.length;
+    return Math.round(avgProgress);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-md mx-auto bg-white min-h-screen">
-        {/* Header */}
-        <header className="bg-white shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Avatar
-                firstName={user?.firstName}
-                lastName={user?.lastName}
-                profileImageUrl={user?.profileImageUrl}
-                size="md"
-              />
-              <div>
-                <h2 className="font-semibold text-gray-800">
-                  Welcome back, {user?.profile?.username || user?.firstName || "Fitness Friend"}!
-                </h2>
-                <p className="text-sm text-gray-600">Ready for today's journey?</p>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={handleSettings}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <i className="fas fa-cog text-xl"></i>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={handleLogout}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <i className="fas fa-sign-out-alt text-xl"></i>
-              </Button>
-            </div>
-          </div>
-        </header>
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-lavender-50 to-secondary-50">
+      <Header />
+      
+      <main className="p-4 max-w-6xl mx-auto">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Welcome back, {user?.firstName || user?.username}!
+          </h1>
+          <p className="text-gray-600 text-lg">
+            {getMotivationalMessage()}
+          </p>
+        </div>
 
-        {/* Content */}
-        <div className="p-4 space-y-6">
-          {/* Welcome Card */}
-          <Card className="bg-gradient-to-r from-primary-300 to-lavender-300 text-white">
-            <CardContent className="p-6 text-center">
-              <h3 className="text-xl font-semibold mb-2">Welcome to FitJourney!</h3>
-              <p className="text-primary-100">Your personalized fitness experience awaits!</p>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+                <i className="fas fa-chart-line text-primary-300 mr-2"></i>
+                Overall Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-800">
+                {getProgressSummary() || 0}%
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Average across all goals</p>
             </CardContent>
           </Card>
 
-          {/* Goals Summary */}
-          {user?.goals && user.goals.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Goals</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {user.goals.map((goal: string) => (
-                    <div key={goal} className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-secondary-300 rounded-full"></div>
-                      <span className="text-sm text-gray-700 capitalize">
-                        {goal.replace('-', ' ')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Recent Progress */}
-          {progress && progress.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Progress</h3>
-                <div className="space-y-3">
-                  {progress.slice(0, 3).map((entry) => (
-                    <div key={entry.id} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700 capitalize">
-                        {entry.goalType.replace('-', ' ')}
-                      </span>
-                      <span className="text-sm font-semibold text-primary-300">
-                        {entry.progressValue}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Recent Photos */}
-          {photos && photos.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Photos</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {photos.slice(0, 6).map((photo) => (
-                    <div key={photo.id} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                      <img 
-                        src={`/api/photos/${photo.filename}`}
-                        alt="Progress photo"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Quick Actions */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Button className="bg-secondary-300 hover:bg-secondary-400 text-white">
-                  <i className="fas fa-camera mr-2"></i>
-                  Add Photo
-                </Button>
-                <Button className="bg-accent-300 hover:bg-accent-400 text-gray-800">
-                  <i className="fas fa-chart-line mr-2"></i>
-                  Update Progress
-                </Button>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+                <i className="fas fa-camera text-secondary-300 mr-2"></i>
+                Progress Photos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-800">
+                {Array.isArray(photos) ? photos.length : 0}
               </div>
+              <p className="text-xs text-gray-500 mt-1">Photos uploaded</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+                <i className="fas fa-target text-accent-300 mr-2"></i>
+                Active Goals
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-800">
+                {Array.isArray(progressData) ? progressData.length : 0}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Goals being tracked</p>
             </CardContent>
           </Card>
         </div>
-      </div>
+
+        {/* Quick Actions */}
+        <Card className="bg-white/80 backdrop-blur-sm shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-gray-800">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link href="/progress">
+                <Button className="w-full h-20 bg-gradient-to-br from-primary-300 to-primary-400 hover:from-primary-400 hover:to-primary-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <i className="fas fa-plus text-lg"></i>
+                  <span className="text-sm">Log Progress</span>
+                </Button>
+              </Link>
+
+              <Link href="/photos">
+                <Button className="w-full h-20 bg-gradient-to-br from-secondary-300 to-secondary-400 hover:from-secondary-400 hover:to-secondary-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <i className="fas fa-camera text-lg"></i>
+                  <span className="text-sm">Add Photos</span>
+                </Button>
+              </Link>
+
+              <Link href="/goals">
+                <Button className="w-full h-20 bg-gradient-to-br from-accent-300 to-accent-400 hover:from-accent-400 hover:to-accent-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <i className="fas fa-target text-lg"></i>
+                  <span className="text-sm">View Goals</span>
+                </Button>
+              </Link>
+
+              <Link href="/workouts">
+                <Button className="w-full h-20 bg-gradient-to-br from-lavender-300 to-lavender-400 hover:from-lavender-400 hover:to-lavender-500 text-white flex flex-col items-center space-y-2 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <i className="fas fa-dumbbell text-lg"></i>
+                  <span className="text-sm">Workouts</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Progress */}
+        {Array.isArray(progressData) && progressData.length > 0 && (
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg mt-8">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-800">Recent Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {progressData.slice(0, 3).map((item: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-primary-300 rounded-full"></div>
+                      <span className="font-medium text-gray-700 capitalize">
+                        {item.goalType.replace('-', ' ')}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lg font-semibold text-primary-600">
+                        {item.progressValue}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </main>
     </div>
   );
 }
