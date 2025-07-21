@@ -59,6 +59,7 @@ export interface IStorage {
   
   // Photo operations
   getUserPhotos(userId: number): Promise<Photo[]>;
+  getPhotosByDate(userId: number, date: string): Promise<Photo[]>;
   createPhoto(photo: InsertPhoto): Promise<Photo>;
   deletePhoto(id: number, userId: number): Promise<void>;
 
@@ -222,6 +223,24 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(photos)
       .where(eq(photos.userId, userId))
+      .orderBy(photos.uploadDate);
+  }
+
+  async getPhotosByDate(userId: number, date: string): Promise<Photo[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return await db
+      .select()
+      .from(photos)
+      .where(
+        and(
+          eq(photos.userId, userId),
+          sql`${photos.date} >= ${startOfDay} AND ${photos.date} <= ${endOfDay}`
+        )
+      )
       .orderBy(photos.uploadDate);
   }
 

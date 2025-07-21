@@ -9,6 +9,7 @@ import { DateNavigation } from "@/components/date-navigation";
 import { MyDayBlock } from "@/components/my-day-block";
 import { MacrosBlock } from "@/components/macros-block";
 import { MetricsBlock } from "@/components/metrics-block";
+import { PhotosBlock } from "@/components/photos-block";
 import { format, isToday } from "date-fns";
 
 export default function Home() {
@@ -75,6 +76,9 @@ export default function Home() {
 
         {/* Metrics Block */}
         <MetricsBlock selectedDate={selectedDate} />
+
+        {/* Photos Block */}
+        <PhotosBlock selectedDate={selectedDate} />
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-6">

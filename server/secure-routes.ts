@@ -300,19 +300,36 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   app.post('/api/photos', authenticateToken, upload.array('photos', 5), async (req: AuthenticatedRequest, res) => {
     try {
       const files = req.files as Express.Multer.File[];
+      const dateStr = req.body.date;
       
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "No photos uploaded" });
       }
 
+      if (!dateStr) {
+        return res.status(400).json({ message: "Date is required" });
+      }
+
       const savedPhotos = [];
       for (const file of files) {
+        // Generate thumbnail
+        const sharp = require('sharp');
+        const thumbnailFilename = `thumb_${file.filename}`;
+        const thumbnailPath = path.join(uploadDir, thumbnailFilename);
+        
+        await sharp(file.path)
+          .resize(200, 200, { fit: 'cover' })
+          .jpeg({ quality: 80 })
+          .toFile(thumbnailPath);
+
         const photo = await storage.createPhoto({
           userId: req.userId!,
           filename: file.filename,
           originalName: file.originalname,
+          thumbnailFilename: thumbnailFilename,
           mimeType: file.mimetype,
           size: file.size,
+          date: new Date(dateStr),
         });
         savedPhotos.push(photo);
       }
@@ -331,6 +348,18 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       res.json(photos);
     } catch (error) {
       console.error("Error fetching photos:", error);
+      res.status(500).json({ message: "Failed to fetch photos" });
+    }
+  });
+
+  // Get photos by date
+  app.get('/api/photos/date/:date', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const date = req.params.date;
+      const photos = await storage.getPhotosByDate(req.userId!, date);
+      res.json(photos);
+    } catch (error) {
+      console.error("Error fetching photos by date:", error);
       res.status(500).json({ message: "Failed to fetch photos" });
     }
   });
@@ -361,10 +390,53 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve thumbnails with authorization
+  app.get('/api/photos/thumbnail/:filename', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const filename = req.params.filename;
+      
+      // Verify user owns this photo
+      const photos = await storage.getUserPhotos(req.userId!);
+      const photo = photos.find(p => p.thumbnailFilename === filename || p.filename === filename);
+      
+      if (!photo) {
+        return res.status(404).json({ message: "Photo not found or access denied" });
+      }
+
+      const filePath = path.join(uploadDir, filename);
+      
+      if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+      } else {
+        res.status(404).json({ message: "Photo file not found" });
+      }
+    } catch (error) {
+      console.error("Error serving thumbnail:", error);
+      res.status(500).json({ message: "Failed to serve thumbnail" });
+    }
+  });
+
   // Delete photo
   app.delete('/api/photos/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const photoId = parseInt(req.params.id);
+      
+      // Get photo details before deletion to clean up files
+      const photos = await storage.getUserPhotos(req.userId!);
+      const photo = photos.find(p => p.id === photoId);
+      
+      if (photo) {
+        // Delete files from filesystem
+        const originalPath = path.join(uploadDir, photo.filename);
+        const thumbnailPath = photo.thumbnailFilename ? path.join(uploadDir, photo.thumbnailFilename) : null;
+        
+        if (fs.existsSync(originalPath)) {
+          fs.unlinkSync(originalPath);
+        }
+        if (thumbnailPath && fs.existsSync(thumbnailPath)) {
+          fs.unlinkSync(thumbnailPath);
+        }
+      }
       
       await storage.deletePhoto(photoId, req.userId!);
       res.json({ message: "Photo deleted successfully" });

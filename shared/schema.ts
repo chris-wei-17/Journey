@@ -81,8 +81,10 @@ export const photos = pgTable("photos", {
   userId: integer("user_id").notNull().references(() => users.id),
   filename: varchar("filename").notNull(),
   originalName: varchar("original_name").notNull(),
+  thumbnailFilename: varchar("thumbnail_filename"),
   mimeType: varchar("mime_type").notNull(),
   size: integer("size").notNull(),
+  date: timestamp("date").notNull(), // The date this photo was taken/belongs to
   uploadDate: timestamp("upload_date").defaultNow(),
 });
 
