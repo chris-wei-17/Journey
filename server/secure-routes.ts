@@ -56,6 +56,16 @@ const upload = multer({
 });
 
 export async function registerSecureRoutes(app: Express): Promise<Server> {
+  // Health check endpoint for debugging
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'unknown',
+      vercel: !!process.env.VERCEL
+    });
+  });
+
   // Public authentication routes
   app.post('/api/register', async (req, res) => {
     try {

@@ -5,6 +5,13 @@ import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
+import { fileURLToPath } from "url";
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const isProduction = process.env.NODE_ENV === "production";
 
 const viteLogger = createLogger();
 
@@ -41,12 +48,19 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  
+  // Catch-all handler for SPA - but skip API routes
+  app.get("*", async (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+
     const url = req.originalUrl;
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        __dirname,
         "..",
         "client",
         "index.html",
@@ -68,18 +82,29 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  const distPath = path.resolve(__dirname, "..", "dist/public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Could not find the build output at "${distPath}". ` +
+        `Make sure to build the client first.`,
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, { index: false }));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // SPA fallback for client-side routing
+  app.get("*", (req, res, next) => {
+    // Skip API routes and other dynamic routes
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+
+    const htmlPath = path.join(distPath, "index.html");
+    if (fs.existsSync(htmlPath)) {
+      res.sendFile(htmlPath);
+    } else {
+      next();
+    }
   });
 }
