@@ -125,6 +125,14 @@ The application follows a monorepo structure with shared types and schemas, enab
 
 ## Recent Changes
 
+### July 22, 2025 - Secure Photo System & Vercel Deployment Guide
+- **Implemented secure photo serving** - JWT token-based authentication with 1-hour expiring photo tokens
+- **Added ownership verification** - Users can only access their own photos with cross-user access blocked  
+- **Created signed URLs** - Server generates pre-signed photo URLs for secure client display
+- **Added comprehensive Vercel deployment guide** - Complete step-by-step instructions in Vercel.md
+- **Security implementation** - Photo endpoints require valid tokens and ownership checks
+- **Updated client photo handling** - Uses server-provided signed URLs instead of direct API calls
+
 ### July 21, 2025 - Authentication System Overhaul for Vercel/Supabase Deployment
 - **REMOVED Replit-specific authentication** - Complete migration to portable JWT authentication
 - **Updated database schema** - Changed from Replit OIDC user IDs (strings) to standard auto-incrementing integers
