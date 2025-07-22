@@ -90,8 +90,13 @@ if (process.env.NODE_ENV === "development") {
   })();
 }
 
-// For production (Vercel)
+// For production (Vercel) - cache the initialized app
+let prodApp: any = null;
+
 export default async function handler(req: any, res: any) {
-  const { app: prodApp } = await initializeApp();
+  if (!prodApp) {
+    const { app } = await initializeApp();
+    prodApp = app;
+  }
   return prodApp(req, res);
 }

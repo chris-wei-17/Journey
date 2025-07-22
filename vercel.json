@@ -10,10 +10,21 @@
     },
     {
       "src": "api/[...all].ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 30
+      }
     }
   ],
   "routes": [
+    {
+      "src": "/api/register",
+      "dest": "/api/[...all]"
+    },
+    {
+      "src": "/api/login", 
+      "dest": "/api/[...all]"
+    },
     {
       "src": "/api/(.*)",
       "dest": "/api/[...all]"
@@ -22,5 +33,6 @@
       "src": "/(.*)",
       "dest": "/dist/public/$1"
     }
-  ]
+  ],
+  "outputDirectory": "dist/public"
 }

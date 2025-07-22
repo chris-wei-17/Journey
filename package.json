@@ -12,7 +12,6 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "vite": "^5.4.19",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
@@ -49,6 +48,7 @@
     "@types/memoizee": "^0.4.12",
     "@types/multer": "^2.0.0",
     "@types/sharp": "^0.31.1",
+    "@vercel/node": "^5.3.6",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -84,6 +84,7 @@
     "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.2.5",
     "vaul": "^1.1.2",
+    "vite": "^5.4.19",
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
     "zod": "^3.24.2",
