@@ -2,11 +2,8 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/**", "uploads/**"]
-      }
+      "src": "dist/index.js",
+      "use": "@vercel/node"
     },
     {
       "src": "package.json",
@@ -23,7 +20,7 @@
     },
     {
       "src": "/api/(.*)",
-      "dest": "/server/index.ts"
+      "dest": "/dist/index.js"
     },
     {
       "src": "/(.*)",
