@@ -1,0 +1,112 @@
+[13:27:29.929] Running build in Washington, D.C., USA (East) – iad1
+[13:27:29.938] Build machine configuration: 2 cores, 8 GB
+[13:27:29.980] Cloning github.com/chris-wei-17/Journey (Branch: main, Commit: 8e71409)
+[13:27:31.899] Cloning completed: 1.919s
+[13:27:32.107] Restored build cache from previous deployment (3N2U9fbbnfksgxyoj5Q97i5G3Xya)
+[13:27:34.278] Running "vercel build"
+[13:27:35.172] Vercel CLI 44.5.0
+[13:27:35.350] WARN! Due to `builds` existing in your configuration file, the Build and Development Settings defined in your Project Settings will not apply. Learn More: https://vercel.link/unused-build-settings
+[13:27:35.897] Installing dependencies...
+[13:27:39.617] 
+[13:27:39.618] added 88 packages in 3s
+[13:27:39.619] 
+[13:27:39.619] 80 packages are looking for funding
+[13:27:39.619]   run `npm fund` for details
+[13:27:39.662] Running "npm run vercel-build"
+[13:27:39.824] 
+[13:27:39.824] > rest-express@1.0.0 vercel-build
+[13:27:39.824] > npm run build
+[13:27:39.824] 
+[13:27:39.940] 
+[13:27:39.941] > rest-express@1.0.0 build
+[13:27:39.941] > vite build && esbuild server/**/*.ts --platform=node --packages=external --format=esm --outdir=dist --target=node18
+[13:27:39.941] 
+[13:27:40.253] [36mvite v5.4.19 [32mbuilding for production...[36m[39m
+[13:27:40.571] transforming...
+[13:27:40.629] Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+[13:27:40.630]   npx update-browserslist-db@latest
+[13:27:40.630]   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[13:27:45.886] [32m✓[39m 2153 modules transformed.
+[13:27:46.319] rendering chunks...
+[13:27:46.336] computing gzip size...
+[13:27:46.354] [2m../dist/public/[22m[32mindex.html                 [39m[1m[2m  0.63 kB[22m[1m[22m[2m │ gzip:   0.38 kB[22m
+[13:27:46.354] [2m../dist/public/[22m[2massets/[22m[35mindex-zNiEBhwy.css  [39m[1m[2m 66.86 kB[22m[1m[22m[2m │ gzip:  11.71 kB[22m
+[13:27:46.354] [2m../dist/public/[22m[2massets/[22m[36mindex-CWwFUG4t.js   [39m[1m[33m571.45 kB[39m[22m[2m │ gzip: 170.79 kB[22m
+[13:27:46.355] [33m
+[13:27:46.355] (!) Some chunks are larger than 500 kB after minification. Consider:
+[13:27:46.355] - Using dynamic import() to code-split the application
+[13:27:46.355] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[13:27:46.355] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[13:27:46.355] [32m✓ built in 5.81s[39m
+[13:27:46.417] 
+[13:27:46.418]   dist/secure-routes.js  22.1kb
+[13:27:46.418]   dist/storage.js         8.3kb
+[13:27:46.418]   dist/index.js           2.3kb
+[13:27:46.418]   dist/vite.js            2.0kb
+[13:27:46.418]   dist/auth.js            1.9kb
+[13:27:46.418]   dist/db.js              490b 
+[13:27:46.418] 
+[13:27:46.418] ⚡ Done in 11ms
+[13:27:46.468] Running "npm run vercel-build"
+[13:27:46.576] 
+[13:27:46.581] > rest-express@1.0.0 vercel-build
+[13:27:46.581] > npm run build
+[13:27:46.581] 
+[13:27:46.691] 
+[13:27:46.691] > rest-express@1.0.0 build
+[13:27:46.691] > vite build && esbuild server/**/*.ts --platform=node --packages=external --format=esm --outdir=dist --target=node18
+[13:27:46.691] 
+[13:27:46.926] [36mvite v5.4.19 [32mbuilding for production...[36m[39m
+[13:27:46.973] transforming...
+[13:27:47.218] Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+[13:27:47.218]   npx update-browserslist-db@latest
+[13:27:47.219]   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[13:27:52.136] [32m✓[39m 2153 modules transformed.
+[13:27:52.550] rendering chunks...
+[13:27:52.566] computing gzip size...
+[13:27:52.584] [2m../dist/public/[22m[32mindex.html                 [39m[1m[2m  0.63 kB[22m[1m[22m[2m │ gzip:   0.38 kB[22m
+[13:27:52.592] [2m../dist/public/[22m[2massets/[22m[35mindex-zNiEBhwy.css  [39m[1m[2m 66.86 kB[22m[1m[22m[2m │ gzip:  11.71 kB[22m
+[13:27:52.592] [2m../dist/public/[22m[2massets/[22m[36mindex-CWwFUG4t.js   [39m[1m[33m571.45 kB[39m[22m[2m │ gzip: 170.79 kB[22m
+[13:27:52.592] [32m✓ built in 5.64s[39m
+[13:27:52.593] [33m
+[13:27:52.593] (!) Some chunks are larger than 500 kB after minification. Consider:
+[13:27:52.593] - Using dynamic import() to code-split the application
+[13:27:52.593] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[13:27:52.593] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[13:27:52.628] 
+[13:27:52.628]   dist/secure-routes.js  22.1kb
+[13:27:52.628]   dist/storage.js         8.3kb
+[13:27:52.628]   dist/index.js           2.3kb
+[13:27:52.628]   dist/vite.js            2.0kb
+[13:27:52.628]   dist/auth.js            1.9kb
+[13:27:52.628]   dist/db.js              490b 
+[13:27:52.628] 
+[13:27:52.628] ⚡ Done in 7ms
+[13:27:52.890] Using TypeScript 5.6.3 (local user-provided)
+[13:28:00.988] server/storage.ts(337,15): error TS2769: No overload matches this call.
+[13:28:00.989]   Overload 1 of 2, '(value: { date: Date | SQL<unknown> | Placeholder<string, any>; userId: number | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 4 more ...; createdAt?: Date | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+[13:28:00.989]     Argument of type '{ date: Date; userId: number; description: string; protein: number; fats: number; carbs: number; }' is not assignable to parameter of type '{ date: Date | SQL<unknown> | Placeholder<string, any>; userId: number | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 4 more ...; createdAt?: Date | ... 3 more ... | undefined; }'.
+[13:28:00.990]       Types of property 'protein' are incompatible.
+[13:28:00.990]         Type 'number' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+[13:28:00.990]   Overload 2 of 2, '(values: { date: Date | SQL<unknown> | Placeholder<string, any>; userId: number | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 4 more ...; createdAt?: Date | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+[13:28:00.991]     Argument of type '{ date: Date; userId: number; description: string; protein: number; fats: number; carbs: number; }' is not assignable to parameter of type '{ date: Date | SQL<unknown> | Placeholder<string, any>; userId: number | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 4 more ...; createdAt?: Date | ... 3 more ... | undefined; }[]'.
+[13:28:00.991]       Type '{ date: Date; userId: number; description: string; protein: number; fats: number; carbs: number; }' is missing the following properties from type '{ date: Date | SQL<unknown> | Placeholder<string, any>; userId: number | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 4 more ...; createdAt?: Date | ... 3 more ... | undefined; }[]': length, pop, push, concat, and 35 more.
+[13:28:00.991] server/storage.ts(360,15): error TS2769: No overload matches this call.
+[13:28:00.991]   Overload 1 of 2, '(value: { userId: number | SQL<unknown> | Placeholder<string, any>; id?: number | SQL<unknown> | Placeholder<string, any> | undefined; createdAt?: Date | SQL<...> | Placeholder<...> | null | undefined; updatedAt?: Date | ... 3 more ... | undefined; proteinTarget?: string | ... 2 more ... | undefined; fatsTarget?: string | ... 2 more ... | undefined; carbsTarget?: string | ... 2 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+[13:28:00.993]     Argument of type '{ userId: number; proteinTarget: number; fatsTarget: number; carbsTarget: number; }' is not assignable to parameter of type '{ userId: number | SQL<unknown> | Placeholder<string, any>; id?: number | SQL<unknown> | Placeholder<string, any> | undefined; createdAt?: Date | SQL<...> | Placeholder<...> | null | undefined; updatedAt?: Date | ... 3 more ... | undefined; proteinTarget?: string | ... 2 more ... | undefined; fatsTarget?: string | ....'.
+[13:28:00.994]       Types of property 'proteinTarget' are incompatible.
+[13:28:00.994]         Type 'number' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any> | undefined'.
+[13:28:00.994]   Overload 2 of 2, '(values: { userId: number | SQL<unknown> | Placeholder<string, any>; id?: number | SQL<unknown> | Placeholder<string, any> | undefined; createdAt?: Date | SQL<...> | Placeholder<...> | null | undefined; updatedAt?: Date | ... 3 more ... | undefined; proteinTarget?: string | ... 2 more ... | undefined; fatsTarget?: string | ... 2 more ... | undefined; carbsTarget?: string | ... 2 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+[13:28:00.995]     Argument of type '{ userId: number; proteinTarget: number; fatsTarget: number; carbsTarget: number; }' is not assignable to parameter of type '{ userId: number | SQL<unknown> | Placeholder<string, any>; id?: number | SQL<unknown> | Placeholder<string, any> | undefined; createdAt?: Date | SQL<...> | Placeholder<...> | null | undefined; updatedAt?: Date | ... 3 more ... | undefined; proteinTarget?: string | ... 2 more ... | undefined; fatsTarget?: string | ....'.
+[13:28:00.996]       Type '{ userId: number; proteinTarget: number; fatsTarget: number; carbsTarget: number; }' is missing the following properties from type '{ userId: number | SQL<unknown> | Placeholder<string, any>; id?: number | SQL<unknown> | Placeholder<string, any> | undefined; createdAt?: Date | SQL<...> | Placeholder<...> | null | undefined; updatedAt?: Date | ... 3 more ... | undefined; proteinTarget?: string | ... 2 more ... | undefined; fatsTarget?: string | ....': length, pop, push, concat, and 35 more.
+[13:28:00.997] server/storage.ts(364,11): error TS2322: Type 'number' is not assignable to type 'string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined'.
+[13:28:00.997] server/storage.ts(365,11): error TS2322: Type 'number' is not assignable to type 'string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined'.
+[13:28:00.997] server/storage.ts(366,11): error TS2322: Type 'number' is not assignable to type 'string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined'.
+[13:28:00.997] 
+[13:28:09.939] Build Completed in /vercel/output [34s]
+[13:28:10.194] Deploying outputs...
+[13:28:19.501] 
+[13:28:19.649] Deployment completed
+[13:28:42.763] Uploading build cache [120.43 MB]...
+[13:28:44.070] Build cache uploaded: 1.307s
+[13:28:46.418] Exiting build container

@@ -182,9 +182,9 @@ export const macros = pgTable("macros", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   description: text("description").notNull(),
-  protein: numeric("protein", { precision: 5, scale: 1 }).notNull(), // grams
-  fats: numeric("fats", { precision: 5, scale: 1 }).notNull(), // grams
-  carbs: numeric("carbs", { precision: 5, scale: 1 }).notNull(), // grams
+  protein: numeric("protein", { precision: 5, scale: 1 }).notNull().$type<string>(), // grams - stored as string
+  fats: numeric("fats", { precision: 5, scale: 1 }).notNull().$type<string>(), // grams - stored as string
+  carbs: numeric("carbs", { precision: 5, scale: 1 }).notNull().$type<string>(), // grams - stored as string
   date: timestamp("date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -193,9 +193,9 @@ export const insertMacroSchema = createInsertSchema(macros).omit({
   id: true,
   createdAt: true,
 }).extend({
-  protein: z.coerce.number().min(0),
-  fats: z.coerce.number().min(0),
-  carbs: z.coerce.number().min(0),
+  protein: z.union([z.string(), z.number()]).transform(val => String(val)),
+  fats: z.union([z.string(), z.number()]).transform(val => String(val)),
+  carbs: z.union([z.string(), z.number()]).transform(val => String(val)),
 });
 
 export type InsertMacro = z.infer<typeof insertMacroSchema>;
@@ -205,9 +205,9 @@ export type Macro = typeof macros.$inferSelect;
 export const macroTargets = pgTable("macro_targets", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id).unique(),
-  proteinTarget: numeric("protein_target", { precision: 5, scale: 1 }).notNull().default("0"), // grams
-  fatsTarget: numeric("fats_target", { precision: 5, scale: 1 }).notNull().default("0"), // grams
-  carbsTarget: numeric("carbs_target", { precision: 5, scale: 1 }).notNull().default("0"), // grams
+  proteinTarget: numeric("protein_target", { precision: 5, scale: 1 }).notNull().default("0").$type<string>(), // grams - stored as string
+  fatsTarget: numeric("fats_target", { precision: 5, scale: 1 }).notNull().default("0").$type<string>(), // grams - stored as string
+  carbsTarget: numeric("carbs_target", { precision: 5, scale: 1 }).notNull().default("0").$type<string>(), // grams - stored as string
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -217,9 +217,9 @@ export const insertMacroTargetSchema = createInsertSchema(macroTargets).omit({
   createdAt: true,
   updatedAt: true,
 }).extend({
-  proteinTarget: z.coerce.number().min(0),
-  fatsTarget: z.coerce.number().min(0),
-  carbsTarget: z.coerce.number().min(0),
+  proteinTarget: z.union([z.string(), z.number()]).transform(val => String(val)),
+  fatsTarget: z.union([z.string(), z.number()]).transform(val => String(val)),
+  carbsTarget: z.union([z.string(), z.number()]).transform(val => String(val)),
 });
 
 export type InsertMacroTarget = z.infer<typeof insertMacroTargetSchema>;

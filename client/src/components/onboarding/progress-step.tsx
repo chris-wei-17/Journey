@@ -43,7 +43,7 @@ export default function ProgressStep({ data, updateData }: ProgressStepProps) {
     mutationFn: async () => {
       // First complete onboarding
       await apiRequest("POST", "/api/onboarding/complete", {
-        username: data.username,
+        // username is already part of the user object, not in onboarding data
         gender: data.gender,
         birthday: data.birthday,
         height: data.height,

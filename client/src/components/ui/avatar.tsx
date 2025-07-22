@@ -4,9 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 
 interface AvatarProps {
-  firstName?: string;
-  lastName?: string;
-  profileImageUrl?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  profileImageUrl?: string | null;
   size?: "sm" | "md" | "lg" | "xl";
   onImageUpload?: (file: File) => void;
   editable?: boolean;
@@ -19,13 +19,13 @@ const sizeClasses = {
   xl: "w-32 h-32 text-3xl"
 };
 
-function getInitials(firstName?: string, lastName?: string): string {
+function getInitials(firstName?: string | null, lastName?: string | null): string {
   const first = firstName?.charAt(0)?.toUpperCase() || "";
   const last = lastName?.charAt(0)?.toUpperCase() || "";
   return first + last || "U";
 }
 
-function getGradientFromName(firstName?: string, lastName?: string): string {
+function getGradientFromName(firstName?: string | null, lastName?: string | null): string {
   // Always use the app's primary pink gradient
   return "from-primary-300 to-lavender-300";
 }
