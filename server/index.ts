@@ -83,14 +83,4 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
   });
-if (process.env.VERCEL) {
-  // Export for Vercel's serverless runtime
-  export default app;
-} else {
-  // Local dev: start the server manually
-  const port = parseInt(process.env.PORT || '5000', 10);
-  const server = app.listen(port, () => {
-    log(`🚀 Server listening on port ${port}`);
-  });
-}
 })();
