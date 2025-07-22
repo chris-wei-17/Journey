@@ -1,5 +1,3 @@
-This is index.ts
-
 import express, { type Request, Response, NextFunction } from "express";
 import { registerSecureRoutes } from "./secure-routes";
 import { setupVite, serveStatic, log } from "./vite";
