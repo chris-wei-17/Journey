@@ -98,5 +98,7 @@ export default async function handler(req: any, res: any) {
     const { app } = await initializeApp();
     prodApp = app;
   }
-  return prodApp(req, res);
+  
+  // Call the Express app directly - it should handle the request/response
+  prodApp(req, res);
 }
