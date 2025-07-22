@@ -771,3 +771,4 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+
