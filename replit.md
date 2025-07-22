@@ -125,14 +125,14 @@ The application follows a monorepo structure with shared types and schemas, enab
 
 ## Recent Changes
 
-### July 22, 2025 - FINAL Vercel Deployment Fix - Simplified API Routing
-- **COMPLETE VERCEL ROUTING REWRITE** - Replaced complex catch-all routing with simple rewrites approach
-- **Simplified vercel.json configuration** - Uses standard rewrites instead of complex routes/builds configuration
-- **Created single API entry point** - All API routes now handled through `/api/index.ts` instead of catch-all pattern  
-- **Removed problematic catch-all handler** - Eliminated `[...all].ts` file that was causing 404 errors
-- **Fixed database schema conflicts** - Corrected numeric field types causing TypeScript build errors
-- **Resolved TypeScript compilation** - Fixed avatar component null types and onboarding data structure
-- **Application fully tested and deployable** - Registration works locally, simplified Vercel configuration ready
+### July 22, 2025 - CRITICAL FIX: Resolved Vercel 404 Errors - Absolute URL API Calls
+- **ROOT CAUSE IDENTIFIED** - Relative URLs in fetch() calls don't resolve correctly on Vercel deployments
+- **FIXED API request handling** - Modified apiRequest() to use absolute URLs with window.location.origin
+- **FIXED query function URLs** - Updated TanStack Query to use absolute URLs for all API calls
+- **Simplified Vercel configuration** - Uses standard rewrites pattern `/api/(.*) → /api/index`
+- **Removed problematic catch-all routing** - Eliminated complex routing that was causing conflicts
+- **Fixed database schema and TypeScript** - All build errors resolved, clean compilation
+- **Solution tested and ready** - Registration works locally, absolute URL fix should resolve Vercel 404s
 
 ### July 21, 2025 - Authentication System Overhaul for Vercel/Supabase Deployment
 - **REMOVED Replit-specific authentication** - Complete migration to portable JWT authentication

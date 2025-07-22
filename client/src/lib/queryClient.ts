@@ -28,7 +28,10 @@ export async function apiRequest(
   
   if (token) headers["Authorization"] = `Bearer ${token}`;
   
-  const res = await fetch(url, {
+  // Ensure absolute URL for production deployments
+  const apiUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+  
+  const res = await fetch(apiUrl, {
     method,
     headers,
     body,
@@ -71,7 +74,11 @@ export const getQueryFn: <T>(options: {
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
     
-    const res = await fetch(queryKey.join("/") as string, {
+    // Ensure absolute URL for production deployments
+    const queryUrl = queryKey.join("/") as string;
+    const apiUrl = queryUrl.startsWith('http') ? queryUrl : `${window.location.origin}${queryUrl}`;
+    
+    const res = await fetch(apiUrl, {
       headers,
       credentials: "include",
     });
