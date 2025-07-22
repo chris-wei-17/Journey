@@ -5,17 +5,11 @@ import handler from '../server/index';
 export default async function(req: VercelRequest, res: VercelResponse) {
   try {
     // Log for debugging
-    console.log('Vercel API - Original URL:', req.url);
-    console.log('Vercel API - Method:', req.method);
-    console.log('Vercel API - Headers:', req.headers);
-    
-    // The Vercel rewrite already prefixes with /api, so we need to handle it properly
-    // If URL doesn't start with /api, prepend it
-    if (req.url && !req.url.startsWith('/api')) {
-      req.url = `/api${req.url}`;
-    }
-    
-    console.log('Vercel API - Final URL:', req.url);
+    console.log('=== Vercel API Handler ===');
+    console.log('Original URL:', req.url);
+    console.log('Method:', req.method);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', req.body);
     
     // Set CORS headers for all API requests
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -24,15 +18,34 @@ export default async function(req: VercelRequest, res: VercelResponse) {
     
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
+      console.log('Handling OPTIONS request');
       return res.status(200).end();
     }
     
-    return await handler(req, res);
+    // The Vercel rewrite already prefixes with /api, so we need to handle it properly
+    // If URL doesn't start with /api, prepend it
+    if (req.url && !req.url.startsWith('/api')) {
+      req.url = `/api${req.url}`;
+    }
+    
+    console.log('Final URL:', req.url);
+    console.log('Calling Express handler...');
+    
+    // Call the Express app handler
+    await handler(req, res);
+    
+    console.log('Express handler completed');
+    
   } catch (error) {
     console.error('Vercel API Error:', error);
-    return res.status(500).json({ 
-      message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
+    // Only send response if not already sent
+    if (!res.headersSent) {
+      return res.status(500).json({ 
+        message: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   }
 }

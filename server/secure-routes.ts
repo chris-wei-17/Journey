@@ -66,12 +66,33 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Test POST endpoint for debugging
+  app.post('/api/test', (req, res) => {
+    console.log('=== TEST POST ROUTE CALLED ===');
+    console.log('Method:', req.method);
+    console.log('URL:', req.url);
+    console.log('Body:', req.body);
+    res.json({ 
+      message: 'POST test successful',
+      body: req.body,
+      method: req.method,
+      url: req.url
+    });
+  });
+
   // Public authentication routes
   app.post('/api/register', async (req, res) => {
     try {
+      console.log('=== REGISTER ROUTE CALLED ===');
+      console.log('Method:', req.method);
+      console.log('URL:', req.url);
+      console.log('Body:', JSON.stringify(req.body, null, 2));
+      console.log('Headers:', JSON.stringify(req.headers, null, 2));
+      
       const result = registerSchema.safeParse(req.body);
       
       if (!result.success) {
+        console.log('Validation failed:', result.error.errors);
         return res.status(400).json({ 
           message: "Invalid registration data",
           errors: result.error.errors 
@@ -79,6 +100,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       }
 
       const { username, email, password, firstName, lastName } = result.data;
+      console.log('Registration attempt for username:', username, 'email:', email);
 
       // Check if user already exists
       const existingUser = await storage.getUserByUsernameOrEmail(username);
@@ -778,7 +800,23 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   app.get('/api/logout', (req, res) => {
     // Since we're using JWT tokens stored client-side, 
     // logout is primarily handled by the client removing the token
-    res.json({ message: "Logout successful" });
+    res.json({ message: "Logged out successfully" });
+  });
+
+  // Debug catch-all route for API
+  app.all('/api/*', (req, res) => {
+    console.log('=== UNMATCHED API ROUTE ===');
+    console.log('Method:', req.method);
+    console.log('URL:', req.url);
+    console.log('Path:', req.path);
+    console.log('Original URL:', req.originalUrl);
+    res.status(404).json({ 
+      message: 'API route not found', 
+      method: req.method,
+      url: req.url,
+      path: req.path,
+      originalUrl: req.originalUrl
+    });
   });
 
   const httpServer = createServer(app);

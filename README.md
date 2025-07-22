@@ -62,12 +62,26 @@ This version includes fixes for common deployment issues:
 
 ### Troubleshooting
 
-If you encounter 404 errors:
+If you encounter 405 errors (Method Not Allowed):
+
+1. **Test the API routing**: Check `https://yourdomain.com/api/health` (GET request)
+2. **Test POST functionality**: Try `https://yourdomain.com/api/test` with a POST request
+3. **Check the logs**: Look at the Vercel function logs for detailed error information
+4. **Verify environment variables**: Ensure all required environment variables are set
+
+If you encounter other issues:
 
 1. Check the health endpoint: `https://yourdomain.com/api/health`
 2. Verify environment variables are set correctly
 3. Ensure database is accessible from your deployment platform
 4. Check the browser console and network tab for detailed error messages
+
+### Debug Endpoints
+
+The following endpoints are available for debugging:
+
+- `GET /api/health` - Health check and environment info
+- `POST /api/test` - Simple POST test to verify routing works
 
 ## 🏗️ Architecture
 
