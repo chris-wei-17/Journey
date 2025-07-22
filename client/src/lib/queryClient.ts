@@ -7,6 +7,17 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Function to get the correct API base URL
+function getApiBaseUrl(): string {
+  // Check if we're in development mode (Vite dev server)
+  if (import.meta.env.DEV) {
+    return '';  // Vite will proxy to the backend
+  }
+  
+  // In production, use current origin (works for both Vercel and other deployments)
+  return window.location.origin;
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -28,8 +39,11 @@ export async function apiRequest(
   
   if (token) headers["Authorization"] = `Bearer ${token}`;
   
-  // Ensure absolute URL for production deployments
-  const apiUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+  // Construct the full URL
+  const baseUrl = getApiBaseUrl();
+  const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+  
+  console.log('API Request:', method, apiUrl);
   
   const res = await fetch(apiUrl, {
     method,
@@ -40,6 +54,8 @@ export async function apiRequest(
 
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    
+    console.error('API Error:', res.status, text);
     
     // Handle unauthorized responses
     if (res.status === 401) {
@@ -74,9 +90,12 @@ export const getQueryFn: <T>(options: {
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
     
-    // Ensure absolute URL for production deployments
+    // Construct the full URL
+    const baseUrl = getApiBaseUrl();
     const queryUrl = queryKey.join("/") as string;
-    const apiUrl = queryUrl.startsWith('http') ? queryUrl : `${window.location.origin}${queryUrl}`;
+    const apiUrl = queryUrl.startsWith('http') ? queryUrl : `${baseUrl}${queryUrl}`;
+    
+    console.log('Query Request:', apiUrl);
     
     const res = await fetch(apiUrl, {
       headers,
