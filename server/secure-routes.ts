@@ -31,9 +31,12 @@ import path from "path";
 import fs from "fs";
 import sharp from "sharp";
 
-// Configure multer for photo uploads
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
+// Configure multer for photo uploads - handle Vercel's read-only filesystem
+const uploadDir = process.env.NODE_ENV === 'production' 
+  ? '/tmp' // Vercel's writable temp directory
+  : path.join(process.cwd(), "uploads");
+
+if (process.env.NODE_ENV !== 'production' && !fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 

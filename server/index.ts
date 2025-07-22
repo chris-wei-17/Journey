@@ -63,8 +63,8 @@ async function initializeApp() {
     throw err;
   });
 
-  // Setup static serving for production
-  if (app.get("env") !== "development") {
+  // Setup static serving for production (skip on Vercel)
+  if (app.get("env") !== "development" && !process.env.VERCEL) {
     serveStatic(app);
   }
 
