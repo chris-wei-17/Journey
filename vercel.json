@@ -7,31 +7,12 @@
       "config": {
         "distDir": "dist/public"
       }
-    },
-    {
-      "src": "api/[...all].ts",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 30
-      }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/register",
-      "dest": "/api/[...all]"
-    },
-    {
-      "src": "/api/login", 
-      "dest": "/api/[...all]"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/[...all]"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/public/$1"
+      "source": "/api/(.*)",
+      "destination": "/api/index"
     }
   ],
   "outputDirectory": "dist/public"
