@@ -7,13 +7,6 @@
       "config": {
         "includeFiles": ["dist/**", "uploads/**"]
       }
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/public"
-      }
     }
   ],
   "routes": [
@@ -35,4 +28,6 @@
       "maxDuration": 30
     }
   }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/public"
 }
