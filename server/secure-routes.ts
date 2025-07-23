@@ -170,10 +170,32 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         console.error('Processed error message:', errorMessage);
         console.error('Processed error details:', errorDetails);
         
+        // Specific handling for authentication errors
+        let specificMessage = "Database connection failed";
+        let troubleshooting = undefined;
+        
+        if (errorMessage.includes('SASL') || errorMessage.includes('SCRAM')) {
+          specificMessage = "Database authentication failed - please check your connection string credentials";
+          console.error('🔴 AUTHENTICATION ERROR: This suggests the username/password in DATABASE_URL is incorrect');
+          console.error('Please verify:');
+          console.error('1. The password in your DATABASE_URL is correct');
+          console.error('2. You are using the pooler connection string (not direct connection)');
+          console.error('3. The username format matches your Supabase project');
+          troubleshooting = {
+            issue: "Authentication failed",
+            solution: "Check your DATABASE_URL password and ensure you're using the pooler connection string"
+          };
+        } else if (errorMessage.includes('ENOTFOUND')) {
+          specificMessage = "Database host not found - please check your connection string";
+        } else if (errorMessage.includes('timeout')) {
+          specificMessage = "Database connection timeout - please try again";
+        }
+        
         return res.status(500).json({ 
-          message: "Database connection failed",
+          message: specificMessage,
           error: errorMessage,
           errorType: dbError?.constructor?.name || typeof dbError,
+          troubleshooting,
           details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
         });
       }

@@ -13,7 +13,17 @@ if (!process.env.DATABASE_URL) {
 console.log('Configuring PostgreSQL connection for serverless...');
 console.log('Using standard PostgreSQL driver (no WebSocket issues)');
 
-// Create connection pool with proper SSL configuration
+// Parse the connection string for debugging
+const url = new URL(process.env.DATABASE_URL);
+console.log('Connection details:', {
+  host: url.hostname,
+  port: url.port,
+  database: url.pathname,
+  username: url.username,
+  hasPassword: !!url.password
+});
+
+// Create connection pool with proper SSL and authentication configuration
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { 
@@ -22,7 +32,12 @@ const pool = new Pool({
   // Optimize for serverless
   max: 1, // Reduce connection pool size for serverless
   idleTimeoutMillis: 0,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000, // Increase timeout
+  // Explicitly set application name for debugging
+  application_name: 'fitjourney-vercel',
+  // Handle authentication issues
+  statement_timeout: 30000,
+  query_timeout: 30000,
 });
 
 console.log('Initializing Drizzle ORM with PostgreSQL driver...');
