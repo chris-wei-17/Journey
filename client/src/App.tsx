@@ -28,6 +28,9 @@ function Router() {
 
   return (
     <Switch>
+      {/* Debug route accessible without authentication */}
+      <Route path="/debug-photos" component={DebugPhotos} />
+      
       {!isAuthenticated ? (
         <Route path="/" component={Auth} />
       ) : (
@@ -39,7 +42,6 @@ function Router() {
               <Route path="/" component={Home} />
               <Route path="/profile" component={Profile} />
               <Route path="/photos" component={Photos} />
-              <Route path="/debug-photos" component={DebugPhotos} />
               <Route path="/add-activity" component={AddActivity} />
               <Route path="/select-activity" component={SelectActivity} />
               <Route path="/add-macros" component={AddMacros} />
