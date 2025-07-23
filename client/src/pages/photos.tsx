@@ -37,14 +37,7 @@ export default function Photos() {
     queryKey: ['/api/photos'],
   });
 
-  // Debug logging
-  console.log('Photos page - allPhotos:', allPhotos);
-  console.log('Photos page - isLoading:', isLoading);
-  console.log('Photos page - allPhotos length:', allPhotos.length);
-  
-  // Additional debug info
-  console.log('Photos page - authToken:', localStorage.getItem('authToken') ? 'Present' : 'Missing');
-  console.log('Photos page - query key:', ['/api/photos']);
+
 
   // Group photos by date
   const photosByDate: PhotosByDate = {};
@@ -56,8 +49,7 @@ export default function Photos() {
     photosByDate[dateKey].push(photo);
   });
 
-  console.log('Photos page - photosByDate:', photosByDate);
-  console.log('Photos page - Object.keys(photosByDate):', Object.keys(photosByDate));
+
 
   // Sort dates and get sorted date keys
   const sortedDates = Object.keys(photosByDate).sort((a, b) => {
@@ -68,7 +60,7 @@ export default function Photos() {
     }
   });
 
-  console.log('Photos page - sortedDates:', sortedDates);
+
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -171,17 +163,6 @@ export default function Photos() {
         />
         
         <div className="pt-20 px-4 pb-6">
-          {/* Debug Info */}
-          <div className="mb-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-            <h3 className="font-semibold text-sm mb-2">Debug Info:</h3>
-            <div className="text-xs space-y-1">
-              <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
-              <div>Photos count: {allPhotos.length}</div>
-              <div>Auth token: {localStorage.getItem('authToken') ? 'Present' : 'Missing'}</div>
-              <div>First photo: {allPhotos.length > 0 ? JSON.stringify(allPhotos[0], null, 2) : 'None'}</div>
-            </div>
-          </div>
-
           {/* Sort Controls */}
           <div className="flex justify-end mb-6">
             <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">

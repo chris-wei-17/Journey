@@ -566,11 +566,8 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         const imageUrl = signedUrls[photo.imagePath] || null;
         const thumbnailUrl = signedUrls[photo.thumbnailPath] || null;
         
-        console.log(`📷 Photo ${photo.id} (${photo.filename}):`);
-        console.log(`  📁 Image path: ${photo.imagePath}`);
-        console.log(`  📁 Thumbnail path: ${photo.thumbnailPath}`);
-        console.log(`  🔗 Image URL: ${imageUrl ? imageUrl.substring(0, 100) + '...' : 'NULL'}`);
-        console.log(`  🔗 Thumbnail URL: ${thumbnailUrl ? thumbnailUrl.substring(0, 100) + '...' : 'NULL'}`);
+        
+
         
         return {
           ...photo,
@@ -582,14 +579,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         };
       });
       
-      // Count how many photos have null URLs
-      const nullImageUrls = photosWithUrls.filter(p => !p.imageUrl).length;
-      const nullThumbnailUrls = photosWithUrls.filter(p => !p.thumbnailUrl).length;
-      if (nullImageUrls > 0 || nullThumbnailUrls > 0) {
-        console.log(`⚠️  Warning: ${nullImageUrls} photos missing imageUrl, ${nullThumbnailUrls} photos missing thumbnailUrl`);
-      }
-      
-      console.log(`✅ Returning ${photosWithUrls.length} photos with URLs`);
+
       res.json(photosWithUrls);
     } catch (error) {
       console.error("Error fetching photos:", error);
@@ -683,60 +673,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Simple test endpoint to verify photos API is working
-  app.get('/api/photos/test', authenticateToken, async (req: any, res) => {
-    try {
-      const photos = await storage.getUserPhotos(req.userId!);
-      res.json({
-        success: true,
-        userId: req.userId,
-        photoCount: photos.length,
-        photos: photos.map(p => ({
-          id: p.id,
-          filename: p.filename,
-          originalName: p.originalName,
-          hasImagePath: !!p.imagePath,
-          hasThumbnailPath: !!p.thumbnailPath
-        })),
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Error in test endpoint:", error);
-      res.status(500).json({ 
-        success: false, 
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
-  });
 
-  // Debug endpoint to check photo data structure
-  app.get('/api/photos/debug', authenticateToken, async (req: any, res) => {
-    try {
-      const photos = await storage.getUserPhotos(req.userId!);
-      
-      const debugInfo = photos.map(photo => ({
-        id: photo.id,
-        filename: photo.filename,
-        originalName: photo.originalName,
-        hasImagePath: !!photo.imagePath,
-        hasThumbPath: !!photo.thumbnailPath,
-        imagePath: photo.imagePath,
-        thumbnailPath: photo.thumbnailPath,
-        // Show all fields for debugging
-        allFields: Object.keys(photo)
-      }));
-      
-      res.json({
-        totalPhotos: photos.length,
-        userId: req.userId,
-        photos: debugInfo
-      });
-    } catch (error) {
-      console.error("Error in debug endpoint:", error);
-      res.status(500).json({ message: "Debug failed", error: error.message });
-    }
-  });
 
   // Refresh photo URLs (useful for client-side caching)
   app.post('/api/photos/refresh-urls', authenticateToken, async (req: any, res) => {

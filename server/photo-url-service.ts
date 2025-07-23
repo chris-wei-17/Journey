@@ -8,7 +8,7 @@ export class PhotoUrlService {
 
   // Generate signed URL with caching
   async getSignedUrl(filePath: string): Promise<string> {
-    console.log(`🔗 PhotoUrlService.getSignedUrl called for: ${filePath}`);
+
     
     if (!filePath) {
       console.error('❌ FilePath is null or undefined');

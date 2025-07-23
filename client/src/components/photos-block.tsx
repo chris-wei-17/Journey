@@ -38,9 +38,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
     queryKey: [`/api/photos/date/${dateStr}`],
   });
 
-  // Debug logging
-  console.log(`PhotosBlock for ${dateStr} - photos:`, photos);
-  console.log(`PhotosBlock for ${dateStr} - photos length:`, photos.length);
+
 
   const uploadPhotosMutation = useMutation({
     mutationFn: async (files: FileList) => {

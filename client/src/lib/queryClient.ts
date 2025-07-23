@@ -43,7 +43,7 @@ export async function apiRequest(
   const baseUrl = getApiBaseUrl();
   const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
   
-  console.log('API Request:', method, apiUrl);
+
   
   const res = await fetch(apiUrl, {
     method,
@@ -95,7 +95,7 @@ export const getQueryFn: <T>(options: {
     const queryUrl = queryKey.join("/") as string;
     const apiUrl = queryUrl.startsWith('http') ? queryUrl : `${baseUrl}${queryUrl}`;
     
-    console.log('Query Request:', apiUrl);
+
     
     const res = await fetch(apiUrl, {
       headers,

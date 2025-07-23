@@ -13,7 +13,6 @@ import AddActivity from "@/pages/add-activity";
 import SelectActivity from "@/pages/select-activity";
 import AddMacros from "@/pages/add-macros";
 import Photos from "@/pages/photos";
-import DebugPhotos from "@/pages/debug-photos";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -28,9 +27,6 @@ function Router() {
 
   return (
     <Switch>
-      {/* Debug route accessible without authentication */}
-      <Route path="/debug-photos" component={DebugPhotos} />
-      
       {!isAuthenticated ? (
         <Route path="/" component={Auth} />
       ) : (
