@@ -5,9 +5,9 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "../shared/schema.js";
 
 if (!process.env.DATABASE_URL) {
-  console.warn("DATABASE_URL not set - this will fail but continuing for debugging");
-  // Set a fake DATABASE_URL for local debugging (will fail but won't crash immediately)
-  process.env.DATABASE_URL = "postgresql://fake:fake@localhost:5432/fake";
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
 }
 
 console.log('Configuring PostgreSQL connection for serverless...');
