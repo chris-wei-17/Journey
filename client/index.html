@@ -11,14 +11,14 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- Theme Colors -->
-    <meta name="theme-color" content="#3b82f6" />
-    <meta name="msapplication-TileColor" content="#3b82f6" />
-    <meta name="msapplication-navbutton-color" content="#3b82f6" />
+    <!-- Theme Colors - Updated to match new indigo theme -->
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    <meta name="msapplication-navbutton-color" content="#6366f1" />
     
     <!-- iOS Specific Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="FitJourney" />
     <link rel="apple-touch-icon" href="/pwa-icon-apple-touch.svg" />
     
@@ -128,15 +128,41 @@
     
     <!-- Optional: Add PWA-specific CSS -->
     <style>
+      /* Full-screen gradient background */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background: linear-gradient(135deg, 
+          #6366f1 0%,     /* Bold indigo */
+          #0ea5e9 50%,    /* Bold sky blue */
+          #f59e0b 100%    /* Bold amber */
+        );
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+      }
+      
+      #root {
+        min-height: 100vh;
+        background: transparent;
+      }
+      
       /* PWA-specific styles */
       .pwa-mode {
         /* Add any styling for when app runs as PWA */
       }
       
       .ios-pwa {
-        /* iOS-specific PWA styling */
+        /* iOS-specific PWA styling with safe areas */
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
+      }
+      
+      /* Handle status bar area on mobile */
+      @supports (padding-top: env(safe-area-inset-top)) {
+        body {
+          padding-top: env(safe-area-inset-top);
+        }
       }
       
       /* Prevent text selection for app-like feel */

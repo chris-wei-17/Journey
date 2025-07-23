@@ -99,7 +99,8 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background: transparent !important;
   }
 }
 
@@ -113,11 +114,8 @@
   }
 
   .app-gradient-bg {
-    background: linear-gradient(135deg, 
-      #6366f1 0%,     /* Bold indigo */
-      #0ea5e9 50%,    /* Bold sky blue */
-      #f59e0b 100%    /* Bold amber */
-    );
+    /* Background now handled by HTML/body for full-screen coverage */
+    background: transparent;
     min-height: 100vh;
   }
 
