@@ -71,16 +71,21 @@ export default function Register({ onToggleMode }: RegisterProps) {
             <p className="text-gray-600">Create your account</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="on">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="on" data-form-type="register">
+            {/* Hidden field to help iOS Safari recognize this as registration form */}
+            <input type="hidden" name="signup-form" value="true" />
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
                   id="firstName"
+                  name="given-name"
                   {...register("firstName")}
                   placeholder="First name"
                   className="mt-2"
                   autoComplete="given-name"
+                  data-form-type="register"
                 />
                 {errors.firstName && (
                   <p className="text-sm text-red-500 mt-1">{errors.firstName.message}</p>
@@ -90,10 +95,12 @@ export default function Register({ onToggleMode }: RegisterProps) {
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
+                  name="family-name"
                   {...register("lastName")}
                   placeholder="Last name"
                   className="mt-2"
                   autoComplete="family-name"
+                  data-form-type="register"
                 />
                 {errors.lastName && (
                   <p className="text-sm text-red-500 mt-1">{errors.lastName.message}</p>
@@ -102,13 +109,15 @@ export default function Register({ onToggleMode }: RegisterProps) {
             </div>
 
             <div>
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="register-username">Username</Label>
               <Input
-                id="username"
+                id="register-username"
+                name="username"
                 {...register("username")}
                 placeholder="Choose a unique username"
                 className="mt-2"
                 autoComplete="username"
+                data-form-type="register"
               />
               {errors.username && (
                 <p className="text-sm text-red-500 mt-1">{errors.username.message}</p>
@@ -116,14 +125,16 @@ export default function Register({ onToggleMode }: RegisterProps) {
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="register-email">Email</Label>
               <Input
-                id="email"
+                id="register-email"
+                name="email"
                 type="email"
                 {...register("email")}
                 placeholder="Enter your email address"
                 className="mt-2"
                 autoComplete="email"
+                data-form-type="register"
               />
               {errors.email && (
                 <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
@@ -131,14 +142,16 @@ export default function Register({ onToggleMode }: RegisterProps) {
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="register-password">Password</Label>
               <Input
-                id="password"
+                id="register-password"
+                name="password"
                 type="password"
                 {...register("password")}
                 placeholder="Create a secure password"
                 className="mt-2"
                 autoComplete="new-password"
+                data-form-type="register"
               />
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>

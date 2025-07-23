@@ -1,7 +1,7 @@
 // FitJourney Service Worker - PWA Support  
-// Updated to fix authentication caching issue - exclude /api/user from cache
-const CACHE_NAME = 'fitjourney-v3';
-const STATIC_CACHE_NAME = 'fitjourney-static-v3';
+// Updated to fix iOS password suggestion and form recognition
+const CACHE_NAME = 'fitjourney-v4';
+const STATIC_CACHE_NAME = 'fitjourney-static-v4';
 
 // Files to cache for offline functionality
 const STATIC_ASSETS = [

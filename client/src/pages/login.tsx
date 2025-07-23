@@ -72,16 +72,21 @@ export default function Login({ onToggleMode }: LoginProps) {
             <p className="text-gray-600">Welcome back!</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="on">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="on" data-form-type="login">
+            {/* Hidden field to help iOS Safari recognize this as login form */}
+            <input type="hidden" name="login-form" value="true" />
+            
             <div>
-              <Label htmlFor="usernameOrEmail">Username or Email</Label>
+              <Label htmlFor="login-username">Username or Email</Label>
               <Input
-                id="usernameOrEmail"
+                id="login-username"
+                name="username"
                 {...register("usernameOrEmail")}
                 placeholder="Enter your username or email"
                 className="mt-2"
                 autoComplete="username"
                 inputMode="email"
+                data-form-type="login"
               />
               {errors.usernameOrEmail && (
                 <p className="text-sm text-red-500 mt-1">{errors.usernameOrEmail.message}</p>
@@ -89,14 +94,16 @@ export default function Login({ onToggleMode }: LoginProps) {
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="login-password">Password</Label>
               <Input
-                id="password"
+                id="login-password"
+                name="password"
                 type="password"
                 {...register("password")}
                 placeholder="Enter your password"
                 className="mt-2"
                 autoComplete="current-password"
+                data-form-type="login"
               />
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
