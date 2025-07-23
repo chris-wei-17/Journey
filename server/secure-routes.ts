@@ -128,22 +128,53 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         console.log('DATABASE_URL format:', process.env.DATABASE_URL ? 
           'postgres://' + process.env.DATABASE_URL.split('@')[1] : 'Not set');
         
-        // Simple test query that should work with any database
+        // Test raw database connection first
+        console.log('Testing raw database connection...');
+        const { db } = await import("./db.js");
+        
+        // Use sql template for raw query
+        const { sql } = await import("drizzle-orm");
+        const rawResult = await db.execute(sql`SELECT 1 as test`);
+        console.log('Raw database query successful:', rawResult);
+        
+        // Then test through storage layer
+        console.log('Testing storage layer...');
         const testResult = await storage.getUser(1);
-        console.log('Database connection successful, test query returned:', testResult ? 'user found' : 'no user found');
+        console.log('Storage layer test successful, query returned:', testResult ? 'user found' : 'no user found');
       } catch (dbError) {
         console.error('Database connection failed:', dbError);
-        console.error('Error details:', {
-          name: dbError instanceof Error ? dbError.name : 'Unknown',
-          message: dbError instanceof Error ? dbError.message : 'Unknown error',
-          stack: dbError instanceof Error ? dbError.stack : 'No stack trace',
-          cause: dbError instanceof Error ? dbError.cause : undefined
-        });
+        console.error('Error type:', typeof dbError);
+        console.error('Error constructor:', dbError?.constructor?.name);
+        console.error('Error keys:', Object.keys(dbError || {}));
+        console.error('Full error object:', JSON.stringify(dbError, null, 2));
+        
+        // Try to extract meaningful error information
+        let errorMessage = 'Unknown database error';
+        let errorDetails = {};
+        
+        if (dbError instanceof Error) {
+          errorMessage = dbError.message;
+          errorDetails = {
+            name: dbError.name,
+            stack: dbError.stack,
+            cause: dbError.cause
+          };
+        } else if (dbError && typeof dbError === 'object') {
+          // Handle non-Error objects
+          errorMessage = dbError.message || dbError.error || dbError.toString() || 'Unknown database error';
+          errorDetails = dbError;
+        } else {
+          errorMessage = String(dbError);
+        }
+        
+        console.error('Processed error message:', errorMessage);
+        console.error('Processed error details:', errorDetails);
         
         return res.status(500).json({ 
           message: "Database connection failed",
-          error: dbError instanceof Error ? dbError.message : 'Unknown database error',
-          errorType: dbError instanceof Error ? dbError.constructor.name : typeof dbError
+          error: errorMessage,
+          errorType: dbError?.constructor?.name || typeof dbError,
+          details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
         });
       }
       
