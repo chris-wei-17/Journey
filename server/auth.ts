@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 
 // JWT secret - use environment variable in production
-const JWT_SECRET = process.env.JWT_SECRET || "fitjourney-development-secret-key";
+export const JWT_SECRET = process.env.JWT_SECRET || "fitjourney-development-secret-key";
 
 // Rate limiting storage (in production, use Redis or database)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();

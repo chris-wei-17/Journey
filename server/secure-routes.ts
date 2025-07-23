@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import jwt from "jsonwebtoken";
 import { storage } from "./storage.js";
 import { 
   authenticateToken, 
@@ -10,6 +11,7 @@ import {
   verifyPhotoToken,
   checkRateLimit, 
   clearRateLimit,
+  JWT_SECRET,
   type AuthenticatedRequest 
 } from "./auth.js";
 import { 
@@ -627,11 +629,20 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Access token required" });
       }
       
-      // Verify token and get user ID
-      const userId = verifyPhotoToken(token);
+      // Verify token and get user ID - try photo token first, then regular auth token
+      let userId = verifyPhotoToken(token);
       if (!userId) {
-        console.log('❌ Invalid token');
-        return res.status(401).json({ message: "Invalid or expired token" });
+        // Try regular auth token as fallback
+        try {
+          const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+          userId = decoded.userId;
+          console.log(`✅ Using regular auth token for user ${userId}`);
+        } catch (error) {
+          console.log('❌ Invalid token (neither photo nor auth token)');
+          return res.status(401).json({ message: "Invalid or expired token" });
+        }
+      } else {
+        console.log(`✅ Using photo token for user ${userId}`);
       }
       
       console.log(`👤 User ${userId} requesting photo ${filename}`);
