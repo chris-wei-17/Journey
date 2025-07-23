@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ interface LoginProps {
 
 export default function Login({ onToggleMode }: LoginProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { register, handleSubmit, formState: { errors } } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
   });
@@ -25,7 +26,7 @@ export default function Login({ onToggleMode }: LoginProps) {
       const response = await apiRequest("POST", "/api/login", data);
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // Store token in localStorage
       localStorage.setItem('authToken', data.token);
       
@@ -34,8 +35,16 @@ export default function Login({ onToggleMode }: LoginProps) {
         description: "You have been logged in successfully.",
       });
       
-      // Reload page to trigger auth check
-      window.location.reload();
+      // Instead of reloading, fetch user data and update cache
+      try {
+        const userResponse = await apiRequest("GET", "/api/user");
+        queryClient.setQueryData(["/api/user"], userResponse);
+        console.log("Login successful, user data updated:", userResponse);
+      } catch (error) {
+        console.error("Failed to fetch user data after login:", error);
+        // If user fetch fails, fall back to reload
+        window.location.reload();
+      }
     },
     onError: (error: any) => {
       toast({

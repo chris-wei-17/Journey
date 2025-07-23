@@ -1,7 +1,7 @@
-// FitJourney Service Worker - PWA Support
-// Updated to fix authentication caching issue
-const CACHE_NAME = 'fitjourney-v2';
-const STATIC_CACHE_NAME = 'fitjourney-static-v2';
+// FitJourney Service Worker - PWA Support  
+// Updated to fix authentication caching issue - exclude /api/user from cache
+const CACHE_NAME = 'fitjourney-v3';
+const STATIC_CACHE_NAME = 'fitjourney-static-v3';
 
 // Files to cache for offline functionality
 const STATIC_ASSETS = [
@@ -28,7 +28,8 @@ const API_NO_CACHE_PATTERNS = [
   '/api/register',
   '/api/logout',
   '/api/auth',
-  '/api/token'
+  '/api/token',
+  '/api/user'  // Add user endpoint to prevent caching auth state
 ];
 
 // Install event - cache static assets
