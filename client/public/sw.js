@@ -1,6 +1,7 @@
 // FitJourney Service Worker - PWA Support
-const CACHE_NAME = 'fitjourney-v1';
-const STATIC_CACHE_NAME = 'fitjourney-static-v1';
+// Updated to fix authentication caching issue
+const CACHE_NAME = 'fitjourney-v2';
+const STATIC_CACHE_NAME = 'fitjourney-static-v2';
 
 // Files to cache for offline functionality
 const STATIC_ASSETS = [
@@ -13,12 +14,21 @@ const STATIC_ASSETS = [
   '/pwa-icon-apple-touch.svg'
 ];
 
-// API routes to cache
+// API routes to cache (excluding authentication routes)
 const API_CACHE_PATTERNS = [
   '/api/user',
   '/api/photos',
   '/api/activities',
   '/api/metrics'
+];
+
+// API routes to NEVER cache (authentication, critical operations)
+const API_NO_CACHE_PATTERNS = [
+  '/api/login',
+  '/api/register',
+  '/api/logout',
+  '/api/auth',
+  '/api/token'
 ];
 
 // Install event - cache static assets
@@ -75,8 +85,20 @@ self.addEventListener('fetch', (event) => {
       // HTML files - Network first, cache fallback
       event.respondWith(networkFirstStrategy(request));
     } else if (url.pathname.startsWith('/api/')) {
-      // API requests - Network first with cache fallback
-      event.respondWith(apiCacheStrategy(request));
+      // Check if this is an auth route that should never be cached
+      const isAuthRoute = API_NO_CACHE_PATTERNS.some(pattern => 
+        url.pathname.startsWith(pattern)
+      );
+      
+      if (isAuthRoute) {
+        // Auth routes - Never cache, always go to network
+        console.log('Service Worker: Auth route detected, bypassing cache:', url.pathname);
+        event.respondWith(fetch(request));
+      } else {
+        // Other API requests - Network first with cache fallback
+        console.log('Service Worker: API route, using cache strategy:', url.pathname);
+        event.respondWith(apiCacheStrategy(request));
+      }
     } else if (url.pathname.startsWith('/static/') || url.pathname.includes('.')) {
       // Static assets - Cache first
       event.respondWith(cacheFirstStrategy(request));
