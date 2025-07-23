@@ -59,7 +59,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-400 to-lavender-400">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-600 to-lavender-600">
       <Card className="w-full max-w-md card-shadow">
         <CardContent className="p-8">
           {/* App Logo */}

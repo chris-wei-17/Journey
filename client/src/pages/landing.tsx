@@ -8,7 +8,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 app-gradient-bg">
-      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl border-0" style={{
+      <Card className="w-full max-w-md bg-white/75 backdrop-blur-sm shadow-xl border-0" style={{
         boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
       }}>
         <CardContent className="p-8">

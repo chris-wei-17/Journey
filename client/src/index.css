@@ -114,9 +114,9 @@
 
   .app-gradient-bg {
     background: linear-gradient(135deg, 
-      #f0f4ff 0%,     /* Light indigo */
-      #f0f9ff 50%,    /* Light blue */
-      #fefcf3 100%    /* Light cream */
+      #6366f1 0%,     /* Bold indigo */
+      #0ea5e9 50%,    /* Bold sky blue */
+      #f59e0b 100%    /* Bold amber */
     );
     min-height: 100vh;
   }

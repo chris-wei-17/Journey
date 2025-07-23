@@ -140,7 +140,7 @@ export default function Photos() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-400 to-lavender-400">
+      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
         <Header 
           title="Photos"
           showBackButton={true}
@@ -155,7 +155,7 @@ export default function Photos() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-primary-400 to-lavender-400">
+      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
         <Header 
           title="Photos"
           showBackButton={true}
@@ -165,7 +165,7 @@ export default function Photos() {
         <div className="pt-20 px-4 pb-6">
           {/* Sort Controls */}
           <div className="flex justify-end mb-6">
-            <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+            <div className="bg-white/75 backdrop-blur-sm rounded-lg p-1 shadow-lg">
               <Button
                 variant={sortOrder === 'newest' ? 'default' : 'ghost'}
                 size="sm"
@@ -199,7 +199,7 @@ export default function Photos() {
                   <div key={dateStr} className="space-y-3">
                     {/* Date Header - Right Aligned */}
                     <div className="flex justify-end">
-                      <div className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+                      <div className="bg-white/75 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
                         <h2 className="text-lg font-semibold text-gray-800">
                           {formatDisplayDate(dateStr)}
                         </h2>
@@ -210,7 +210,7 @@ export default function Photos() {
                     </div>
 
                     {/* Photo Thumbnails */}
-                    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-xl">
+                    <div className="bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl">
                       <div 
                         className="grid gap-3"
                         style={{
@@ -260,7 +260,7 @@ export default function Photos() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-8 shadow-xl max-w-md mx-auto">
+              <div className="bg-white/75 backdrop-blur-sm rounded-xl p-8 shadow-xl max-w-md mx-auto">
                 <i className="fas fa-camera text-4xl text-gray-400 mb-4"></i>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   No Photos Yet

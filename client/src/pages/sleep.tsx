@@ -15,7 +15,7 @@ export default function Sleep() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-400 to-lavender-400">
+    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
       <Header 
         title="Sleep"
         showBackButton={true}
@@ -25,7 +25,7 @@ export default function Sleep() {
       <div className="pt-20 px-4 pb-6">
         <div className="space-y-6">
           {/* Main Content Card */}
-          <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-0">
+          <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
                 <i className="fas fa-moon text-indigo-500 mr-3"></i>
@@ -56,7 +56,7 @@ export default function Sleep() {
 
           {/* Sleep Metrics */}
           <div className="grid grid-cols-2 gap-4">
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+            <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
                 <i className="fas fa-clock text-blue-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Duration</p>
@@ -64,7 +64,7 @@ export default function Sleep() {
               </CardContent>
             </Card>
             
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+            <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
                 <i className="fas fa-star text-yellow-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Quality</p>
@@ -72,7 +72,7 @@ export default function Sleep() {
               </CardContent>
             </Card>
             
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+            <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
                 <i className="fas fa-bed text-purple-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Bedtime</p>
@@ -80,7 +80,7 @@ export default function Sleep() {
               </CardContent>
             </Card>
             
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+            <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
                 <i className="fas fa-sun text-orange-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Wake Time</p>
