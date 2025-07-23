@@ -50,7 +50,15 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
       return apiRequest('POST', '/api/photos', formData);
     },
     onSuccess: () => {
+      // Invalidate all photo-related queries
       queryClient.invalidateQueries({ queryKey: [`/api/photos/date/${dateStr}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/photos'] });
+      // Also invalidate any other potential photo queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          return query.queryKey[0]?.toString().includes('/api/photos');
+        }
+      });
       toast({
         title: "Success",
         description: "Photos uploaded successfully!",
@@ -70,7 +78,15 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
       return apiRequest("DELETE", `/api/photos/${photoId}`);
     },
     onSuccess: () => {
+      // Invalidate all photo-related queries
       queryClient.invalidateQueries({ queryKey: [`/api/photos/date/${dateStr}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/photos'] });
+      // Also invalidate any other potential photo queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          return query.queryKey[0]?.toString().includes('/api/photos');
+        }
+      });
       toast({
         title: "Success",
         description: "Photo deleted successfully!",
