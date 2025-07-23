@@ -53,19 +53,41 @@ npm start
 
 This version includes fixes for common deployment issues:
 
+- ✅ **Vercel Compatibility**: Migrated from Express server to Vercel's file-based API routing
 - ✅ **Node.js Compatibility**: Replaced `import.meta.dirname` with cross-platform equivalent
-- ✅ **API Routing**: Fixed Vercel serverless function routing
+- ✅ **API Routing**: Individual API route files following Vercel conventions
 - ✅ **CORS Configuration**: Proper CORS headers for all environments
 - ✅ **Static File Serving**: SPA fallback routing for client-side navigation
 - ✅ **Database Connections**: WebSocket fallback for serverless environments
 - ✅ **Build Configuration**: Optimized for both development and production
+
+### ⚡ Vercel File-Based API Routes
+
+The application now uses Vercel's recommended file-based API routing instead of a custom Express server:
+
+```
+api/
+├── _auth.ts          # Shared authentication utilities
+├── health.ts         # GET /api/health
+├── register.ts       # POST /api/register
+├── login.ts          # POST /api/login
+├── user.ts           # GET /api/user
+└── onboarding/
+    └── complete.ts   # POST /api/onboarding/complete
+```
+
+This approach ensures:
+- ✅ Native Vercel serverless function support
+- ✅ Automatic API route discovery
+- ✅ Better performance and cold start times
+- ✅ Proper method validation and CORS handling
 
 ### Troubleshooting
 
 If you encounter 405 errors (Method Not Allowed):
 
 1. **Test the API routing**: Check `https://yourdomain.com/api/health` (GET request)
-2. **Test POST functionality**: Try `https://yourdomain.com/api/test` with a POST request
+2. **Test registration**: Try `https://yourdomain.com/api/register` with a POST request
 3. **Check the logs**: Look at the Vercel function logs for detailed error information
 4. **Verify environment variables**: Ensure all required environment variables are set
 
@@ -81,15 +103,14 @@ If you encounter other issues:
 The following endpoints are available for debugging:
 
 - `GET /api/health` - Health check and environment info
-- `POST /api/test` - Simple POST test to verify routing works
 
 ## 🏗️ Architecture
 
 - **Frontend**: React + TypeScript + Vite
-- **Backend**: Express.js + TypeScript
+- **Backend**: Vercel Serverless Functions (file-based API routes)
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: JWT-based
-- **Deployment**: Vercel-ready with serverless functions
+- **Deployment**: Vercel-native serverless functions
 
 ## 📝 API Endpoints
 
