@@ -1,7 +1,6 @@
-// FitJourney Service Worker - PWA Support  
-// Updated to fix iOS password suggestion and form recognition
-const CACHE_NAME = 'fitjourney-v4';
-const STATIC_CACHE_NAME = 'fitjourney-static-v4';
+// FitJourney Service Worker - PWA Support (Simplified)
+const CACHE_NAME = 'fitjourney-v5';
+const STATIC_CACHE_NAME = 'fitjourney-static-v5';
 
 // Files to cache for offline functionality
 const STATIC_ASSETS = [
@@ -12,24 +11,6 @@ const STATIC_ASSETS = [
   '/pwa-icon-192.svg',
   '/pwa-icon-512.svg',
   '/pwa-icon-apple-touch.svg'
-];
-
-// API routes to cache (excluding authentication routes)
-const API_CACHE_PATTERNS = [
-  '/api/user',
-  '/api/photos',
-  '/api/activities',
-  '/api/metrics'
-];
-
-// API routes to NEVER cache (authentication, critical operations)
-const API_NO_CACHE_PATTERNS = [
-  '/api/login',
-  '/api/register',
-  '/api/logout',
-  '/api/auth',
-  '/api/token',
-  '/api/user'  // Add user endpoint to prevent caching auth state
 ];
 
 // Install event - cache static assets
@@ -44,7 +25,7 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         console.log('Service Worker: Installation complete');
-        return self.skipWaiting(); // Activate immediately
+        return self.skipWaiting();
       })
       .catch((error) => {
         console.error('Service Worker: Installation failed', error);
@@ -70,52 +51,40 @@ self.addEventListener('activate', (event) => {
       })
       .then(() => {
         console.log('Service Worker: Activation complete');
-        return self.clients.claim(); // Take control immediately
+        return self.clients.claim();
       })
   );
 });
 
-// Fetch event - implement caching strategy
+// Fetch event - simplified strategy to avoid headers issues
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // Handle different types of requests
-  if (request.method === 'GET') {
-    if (url.pathname === '/' || url.pathname.endsWith('.html')) {
-      // HTML files - Network first, cache fallback
-      event.respondWith(networkFirstStrategy(request));
-    } else if (url.pathname.startsWith('/api/')) {
-      // Check if this is an auth route that should never be cached
-      const isAuthRoute = API_NO_CACHE_PATTERNS.some(pattern => 
-        url.pathname.startsWith(pattern)
-      );
-      
-      if (isAuthRoute) {
-        // Auth routes - Never cache, always go to network
-        console.log('Service Worker: Auth route detected, bypassing cache:', url.pathname);
-        event.respondWith(fetch(request));
-      } else {
-        // Other API requests - Network first with cache fallback
-        console.log('Service Worker: API route, using cache strategy:', url.pathname);
-        event.respondWith(apiCacheStrategy(request));
-      }
-    } else if (url.pathname.startsWith('/static/') || url.pathname.includes('.')) {
-      // Static assets - Cache first
-      event.respondWith(cacheFirstStrategy(request));
-    } else {
-      // Other requests - Network first
-      event.respondWith(networkFirstStrategy(request));
-    }
+  // Only handle GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+  
+  // Let API requests pass through to network without interference
+  if (url.pathname.startsWith('/api/')) {
+    console.log('Service Worker: API request, passing through:', url.pathname);
+    return; // Don't intercept API requests
+  }
+  
+  // Handle static assets
+  if (url.pathname.startsWith('/static/') || url.pathname.includes('.')) {
+    event.respondWith(cacheFirstStrategy(request));
+  } else if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(networkFirstStrategy(request));
   }
 });
 
-// Network First Strategy (good for HTML and API)
+// Network First Strategy
 async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
     
-    // Cache successful responses
     if (networkResponse.ok) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
@@ -123,14 +92,14 @@ async function networkFirstStrategy(request) {
     
     return networkResponse;
   } catch (error) {
-    console.log('Service Worker: Network failed, trying cache', error);
+    console.log('Service Worker: Network failed, trying cache');
     const cachedResponse = await caches.match(request);
     
     if (cachedResponse) {
       return cachedResponse;
     }
     
-    // Return offline page for navigation requests
+    // Return simple offline page
     if (request.mode === 'navigate') {
       return new Response(
         `<!DOCTYPE html>
@@ -138,18 +107,12 @@ async function networkFirstStrategy(request) {
         <head>
           <title>FitJourney - Offline</title>
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            body { font-family: -apple-system, sans-serif; text-align: center; padding: 50px; }
-            .offline { color: #666; }
-          </style>
         </head>
-        <body>
+        <body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
           <h1>🏋️ FitJourney</h1>
-          <div class="offline">
-            <h2>You're offline</h2>
-            <p>Please check your internet connection and try again.</p>
-            <button onclick="window.location.reload()">Retry</button>
-          </div>
+          <h2>You're offline</h2>
+          <p>Please check your internet connection and try again.</p>
+          <button onclick="window.location.reload()">Retry</button>
         </body>
         </html>`,
         {
@@ -162,7 +125,7 @@ async function networkFirstStrategy(request) {
   }
 }
 
-// Cache First Strategy (good for static assets)
+// Cache First Strategy
 async function cacheFirstStrategy(request) {
   const cachedResponse = await caches.match(request);
   
@@ -175,7 +138,7 @@ async function cacheFirstStrategy(request) {
         });
       }
     }).catch(() => {
-      // Ignore network errors for background updates
+      // Ignore network errors
     });
     
     return cachedResponse;
@@ -192,79 +155,4 @@ async function cacheFirstStrategy(request) {
   return networkResponse;
 }
 
-// API Cache Strategy (network first with intelligent caching)
-async function apiCacheStrategy(request) {
-  try {
-    const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok) {
-      // Only cache GET requests for user data
-      const url = new URL(request.url);
-      const shouldCache = API_CACHE_PATTERNS.some(pattern => 
-        url.pathname.startsWith(pattern)
-      );
-      
-      if (shouldCache) {
-        const cache = await caches.open(CACHE_NAME);
-        // Cache for 5 minutes for API responses
-        const responseToCache = networkResponse.clone();
-        responseToCache.headers.set('sw-cache-timestamp', Date.now().toString());
-        cache.put(request, responseToCache);
-      }
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    console.log('Service Worker: API request failed, checking cache');
-    
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      // Check if cache is still fresh (5 minutes)
-      const timestamp = cachedResponse.headers.get('sw-cache-timestamp');
-      const isStale = timestamp && (Date.now() - parseInt(timestamp)) > 5 * 60 * 1000;
-      
-      if (!isStale) {
-        console.log('Service Worker: Returning cached API response');
-        return cachedResponse;
-      }
-    }
-    
-    throw error;
-  }
-}
-
-// Background sync for when connection is restored
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    console.log('Service Worker: Background sync triggered');
-    // Here you could implement background sync for offline actions
-  }
-});
-
-// Push notification support (for future features)
-self.addEventListener('push', (event) => {
-  if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body,
-      icon: '/pwa-icon-192.svg',
-      badge: '/pwa-icon-192.svg',
-      data: data.data || {}
-    };
-    
-    event.waitUntil(
-      self.registration.showNotification(data.title || 'FitJourney', options)
-    );
-  }
-});
-
-// Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url || '/')
-  );
-});
-
-console.log('Service Worker: Loaded successfully');
+console.log('Service Worker: Simplified version loaded successfully');
