@@ -25,7 +25,7 @@ import {
   insertCustomMetricFieldSchema,
   type MetricEntry,
   type CustomMetricField
-} from "@shared/schema";
+} from "../shared/schema.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";

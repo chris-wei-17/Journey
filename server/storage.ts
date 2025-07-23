@@ -29,7 +29,7 @@ import {
   customMetricFields,
   type CustomMetricField,
   type InsertCustomMetricField,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { db } from "./db.js";
 import { eq, and, or, sql } from "drizzle-orm";
 
