@@ -8,17 +8,29 @@ export class PhotoUrlService {
 
   // Generate signed URL with caching
   async getSignedUrl(filePath: string): Promise<string> {
+    console.log(`🔗 PhotoUrlService.getSignedUrl called for: ${filePath}`);
+    
+    if (!filePath) {
+      console.error('❌ FilePath is null or undefined');
+      throw new Error('FilePath is required');
+    }
+    
     const cached = this.urlCache.get(filePath);
     const now = Date.now();
     
     // Check if we have a valid cached URL (with buffer time)
     if (cached && now < (cached.expiresAt - this.REFRESH_BUFFER_MINUTES * 60 * 1000)) {
+      console.log(`✅ Using cached URL for: ${filePath}`);
       return cached.url;
     }
+    
+    console.log(`🔄 Generating new signed URL for: ${filePath}`);
     
     // Generate new signed URL
     const signedUrl = await generateSignedUrl(filePath, this.URL_EXPIRY_HOURS * 3600);
     const expiresAt = now + (this.URL_EXPIRY_HOURS * 60 * 60 * 1000);
+    
+    console.log(`✅ Generated signed URL: ${signedUrl.substring(0, 100)}...`);
     
     // Cache the URL
     this.urlCache.set(filePath, { url: signedUrl, expiresAt });

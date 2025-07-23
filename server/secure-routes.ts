@@ -551,20 +551,35 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   app.get('/api/photos', authenticateToken, async (req: any, res) => {
     try {
       const photos = await storage.getUserPhotos(req.userId!);
+      console.log(`📋 Found ${photos.length} photos for user ${req.userId}`);
       
       // Generate signed URLs for each photo using the service (with caching)
       const filePaths = photos.flatMap(photo => [photo.imagePath, photo.thumbnailPath]);
+      console.log(`🔗 Generating signed URLs for ${filePaths.length} file paths`);
+      
       const signedUrls = await photoUrlService.getSignedUrls(filePaths);
       
-      const photosWithUrls = photos.map(photo => ({
-        ...photo,
-        imageUrl: signedUrls[photo.imagePath] || null,
-        thumbnailUrl: signedUrls[photo.thumbnailPath] || null,
-        // Remove internal paths from response for security
-        imagePath: undefined,
-        thumbnailPath: undefined,
-      }));
+      const photosWithUrls = photos.map(photo => {
+        const imageUrl = signedUrls[photo.imagePath] || null;
+        const thumbnailUrl = signedUrls[photo.thumbnailPath] || null;
+        
+        console.log(`📷 Photo ${photo.id} (${photo.filename}):`);
+        console.log(`  📁 Image path: ${photo.imagePath}`);
+        console.log(`  📁 Thumbnail path: ${photo.thumbnailPath}`);
+        console.log(`  🔗 Image URL: ${imageUrl ? imageUrl.substring(0, 100) + '...' : 'NULL'}`);
+        console.log(`  🔗 Thumbnail URL: ${thumbnailUrl ? thumbnailUrl.substring(0, 100) + '...' : 'NULL'}`);
+        
+        return {
+          ...photo,
+          imageUrl,
+          thumbnailUrl,
+          // Remove internal paths from response for security
+          imagePath: undefined,
+          thumbnailPath: undefined,
+        };
+      });
       
+      console.log(`✅ Returning ${photosWithUrls.length} photos with URLs`);
       res.json(photosWithUrls);
     } catch (error) {
       console.error("Error fetching photos:", error);
@@ -598,38 +613,82 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get photo URL with authentication
+  // Legacy photo URL route - for backward compatibility
   app.get('/api/photos/:filename', async (req: any, res) => {
     try {
       const filename = req.params.filename;
       const token = req.query.token as string;
       const thumbnail = req.query.thumbnail === 'true';
       
+      console.log(`🔍 Legacy photo route accessed: ${filename}, thumbnail: ${thumbnail}`);
+      
       if (!token) {
+        console.log('❌ No token provided');
         return res.status(401).json({ message: "Access token required" });
       }
       
       // Verify token and get user ID
       const userId = verifyPhotoToken(token);
       if (!userId) {
+        console.log('❌ Invalid token');
         return res.status(401).json({ message: "Invalid or expired token" });
       }
+      
+      console.log(`👤 User ${userId} requesting photo ${filename}`);
       
       // Verify user owns this photo
       const photos = await storage.getUserPhotos(userId);
       const photo = photos.find(p => p.filename === filename);
       
       if (!photo) {
+        console.log('❌ Photo not found or access denied');
+        console.log('Available photos:', photos.map(p => p.filename));
         return res.status(404).json({ message: "Photo not found or access denied" });
       }
 
+      console.log(`✅ Photo found: ${photo.filename}`);
+      console.log(`📁 Image path: ${photo.imagePath}`);
+      console.log(`📁 Thumbnail path: ${photo.thumbnailPath}`);
+
       // Generate signed URL for secure access to private bucket (with caching)
       const filePath = thumbnail ? photo.thumbnailPath : photo.imagePath;
+      console.log(`🔗 Generating signed URL for: ${filePath}`);
+      
       const signedUrl = await photoUrlService.getSignedUrl(filePath);
+      console.log(`✅ Signed URL generated: ${signedUrl.substring(0, 100)}...`);
+      
       res.redirect(signedUrl);
     } catch (error) {
       console.error("Error serving photo:", error);
       res.status(500).json({ message: "Failed to serve photo" });
+    }
+  });
+
+  // Debug endpoint to check photo data structure
+  app.get('/api/photos/debug', authenticateToken, async (req: any, res) => {
+    try {
+      const photos = await storage.getUserPhotos(req.userId!);
+      
+      const debugInfo = photos.map(photo => ({
+        id: photo.id,
+        filename: photo.filename,
+        originalName: photo.originalName,
+        hasImagePath: !!photo.imagePath,
+        hasThumbPath: !!photo.thumbnailPath,
+        imagePath: photo.imagePath,
+        thumbnailPath: photo.thumbnailPath,
+        // Show all fields for debugging
+        allFields: Object.keys(photo)
+      }));
+      
+      res.json({
+        totalPhotos: photos.length,
+        userId: req.userId,
+        photos: debugInfo
+      });
+    } catch (error) {
+      console.error("Error in debug endpoint:", error);
+      res.status(500).json({ message: "Debug failed", error: error.message });
     }
   });
 
