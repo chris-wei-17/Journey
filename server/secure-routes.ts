@@ -560,6 +560,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       console.log(`🔗 Generating signed URLs for ${filePaths.length} file paths`);
       
       const signedUrls = await photoUrlService.getSignedUrls(filePaths);
+      console.log(`🔗 Signed URLs result:`, Object.keys(signedUrls).length, 'URLs generated');
       
       const photosWithUrls = photos.map(photo => {
         const imageUrl = signedUrls[photo.imagePath] || null;
@@ -580,6 +581,13 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
           thumbnailPath: undefined,
         };
       });
+      
+      // Count how many photos have null URLs
+      const nullImageUrls = photosWithUrls.filter(p => !p.imageUrl).length;
+      const nullThumbnailUrls = photosWithUrls.filter(p => !p.thumbnailUrl).length;
+      if (nullImageUrls > 0 || nullThumbnailUrls > 0) {
+        console.log(`⚠️  Warning: ${nullImageUrls} photos missing imageUrl, ${nullThumbnailUrls} photos missing thumbnailUrl`);
+      }
       
       console.log(`✅ Returning ${photosWithUrls.length} photos with URLs`);
       res.json(photosWithUrls);
@@ -672,6 +680,33 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error serving photo:", error);
       res.status(500).json({ message: "Failed to serve photo" });
+    }
+  });
+
+  // Simple test endpoint to verify photos API is working
+  app.get('/api/photos/test', authenticateToken, async (req: any, res) => {
+    try {
+      const photos = await storage.getUserPhotos(req.userId!);
+      res.json({
+        success: true,
+        userId: req.userId,
+        photoCount: photos.length,
+        photos: photos.map(p => ({
+          id: p.id,
+          filename: p.filename,
+          originalName: p.originalName,
+          hasImagePath: !!p.imagePath,
+          hasThumbnailPath: !!p.thumbnailPath
+        })),
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error in test endpoint:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
     }
   });
 
