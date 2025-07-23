@@ -29,6 +29,7 @@ import {
 import multer from "multer";
 import sharp from "sharp";
 import { supabase, PHOTOS_BUCKET, generateSignedUrl } from "./supabase-client.js";
+import { photoUrlService } from "./photo-url-service.js";
 
 // Configure multer for photo uploads - use memory storage since we're storing in database
 const upload = multer({
@@ -551,33 +552,18 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     try {
       const photos = await storage.getUserPhotos(req.userId!);
       
-      // Generate signed URLs for each photo
-      const photosWithUrls = await Promise.all(
-        photos.map(async (photo) => {
-          try {
-            const imageUrl = await generateSignedUrl(photo.imagePath, 3600);
-            const thumbnailUrl = await generateSignedUrl(photo.thumbnailPath, 3600);
-            
-            return {
-              ...photo,
-              imageUrl,
-              thumbnailUrl,
-              // Remove internal paths from response for security
-              imagePath: undefined,
-              thumbnailPath: undefined,
-            };
-          } catch (error) {
-            console.error(`Error generating signed URLs for photo ${photo.id}:`, error);
-            return {
-              ...photo,
-              imageUrl: null,
-              thumbnailUrl: null,
-              imagePath: undefined,
-              thumbnailPath: undefined,
-            };
-          }
-        })
-      );
+      // Generate signed URLs for each photo using the service (with caching)
+      const filePaths = photos.flatMap(photo => [photo.imagePath, photo.thumbnailPath]);
+      const signedUrls = await photoUrlService.getSignedUrls(filePaths);
+      
+      const photosWithUrls = photos.map(photo => ({
+        ...photo,
+        imageUrl: signedUrls[photo.imagePath] || null,
+        thumbnailUrl: signedUrls[photo.thumbnailPath] || null,
+        // Remove internal paths from response for security
+        imagePath: undefined,
+        thumbnailPath: undefined,
+      }));
       
       res.json(photosWithUrls);
     } catch (error) {
@@ -592,33 +578,18 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       const date = req.params.date;
       const photos = await storage.getPhotosByDate(req.userId!, date);
       
-      // Generate signed URLs for each photo
-      const photosWithUrls = await Promise.all(
-        photos.map(async (photo) => {
-          try {
-            const imageUrl = await generateSignedUrl(photo.imagePath, 3600);
-            const thumbnailUrl = await generateSignedUrl(photo.thumbnailPath, 3600);
-            
-            return {
-              ...photo,
-              imageUrl,
-              thumbnailUrl,
-              // Remove internal paths from response for security
-              imagePath: undefined,
-              thumbnailPath: undefined,
-            };
-          } catch (error) {
-            console.error(`Error generating signed URLs for photo ${photo.id}:`, error);
-            return {
-              ...photo,
-              imageUrl: null,
-              thumbnailUrl: null,
-              imagePath: undefined,
-              thumbnailPath: undefined,
-            };
-          }
-        })
-      );
+      // Generate signed URLs for each photo using the service (with caching)
+      const filePaths = photos.flatMap(photo => [photo.imagePath, photo.thumbnailPath]);
+      const signedUrls = await photoUrlService.getSignedUrls(filePaths);
+      
+      const photosWithUrls = photos.map(photo => ({
+        ...photo,
+        imageUrl: signedUrls[photo.imagePath] || null,
+        thumbnailUrl: signedUrls[photo.thumbnailPath] || null,
+        // Remove internal paths from response for security
+        imagePath: undefined,
+        thumbnailPath: undefined,
+      }));
       
       res.json(photosWithUrls);
     } catch (error) {
@@ -652,13 +623,42 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Photo not found or access denied" });
       }
 
-      // Generate signed URL for secure access to private bucket
+      // Generate signed URL for secure access to private bucket (with caching)
       const filePath = thumbnail ? photo.thumbnailPath : photo.imagePath;
-      const signedUrl = await generateSignedUrl(filePath, 3600); // 1 hour expiry
+      const signedUrl = await photoUrlService.getSignedUrl(filePath);
       res.redirect(signedUrl);
     } catch (error) {
       console.error("Error serving photo:", error);
       res.status(500).json({ message: "Failed to serve photo" });
+    }
+  });
+
+  // Refresh photo URLs (useful for client-side caching)
+  app.post('/api/photos/refresh-urls', authenticateToken, async (req: any, res) => {
+    try {
+      const { filePaths } = req.body;
+      
+      if (!filePaths || !Array.isArray(filePaths)) {
+        return res.status(400).json({ message: "filePaths array is required" });
+      }
+      
+      // Verify user owns these photos (security check)
+      const userPhotos = await storage.getUserPhotos(req.userId!);
+      const userFilePaths = userPhotos.flatMap(photo => [photo.imagePath, photo.thumbnailPath]);
+      
+      const validFilePaths = filePaths.filter(path => userFilePaths.includes(path));
+      
+      if (validFilePaths.length === 0) {
+        return res.status(403).json({ message: "No valid file paths found" });
+      }
+      
+      // Generate fresh signed URLs
+      const refreshedUrls = await photoUrlService.getSignedUrls(validFilePaths);
+      
+      res.json({ urls: refreshedUrls });
+    } catch (error) {
+      console.error("Error refreshing photo URLs:", error);
+      res.status(500).json({ message: "Failed to refresh URLs" });
     }
   });
 
@@ -674,11 +674,12 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       const photo = photos.find(p => p.id === photoId);
       
       if (photo) {
+        // Clear URLs from cache
+        photoUrlService.clearCacheForFile(photo.imagePath);
+        photoUrlService.clearCacheForFile(photo.thumbnailPath);
+        
         // Delete files from Supabase Storage
-        const filesToDelete = [
-          `${photo.bucketPath}/${photo.filename}`,
-          `${photo.bucketPath}/${photo.filename.replace(/\.[^/.]+$/, '_thumb.jpg')}`
-        ];
+        const filesToDelete = [photo.imagePath, photo.thumbnailPath];
         
         const { error: storageError } = await supabase.storage
           .from(PHOTOS_BUCKET)
