@@ -12,7 +12,6 @@ interface Photo {
   userId: number;
   filename: string;
   originalName: string;
-  thumbnailFilename?: string;
   mimeType: string;
   size: number;
   date: string;
@@ -158,11 +157,21 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
   }, [isPreviewOpen, photos.length]);
 
   const getThumbnailUrl = (photo: Photo) => {
-    return photo.thumbnailUrl || `/api/photos/thumbnail/${photo.thumbnailFilename || photo.filename}`;
+    if (photo.thumbnailUrl) {
+      return photo.thumbnailUrl;
+    }
+    // Fallback to legacy API route with authentication
+    const token = localStorage.getItem('authToken');
+    return token ? `/api/photos/${photo.filename}?thumbnail=true&token=${token}` : '/placeholder-image.jpg';
   };
 
   const getFullImageUrl = (photo: Photo) => {
-    return photo.imageUrl || `/api/photos/${photo.filename}`;
+    if (photo.imageUrl) {
+      return photo.imageUrl;
+    }
+    // Fallback to legacy API route with authentication
+    const token = localStorage.getItem('authToken');
+    return token ? `/api/photos/${photo.filename}?token=${token}` : '/placeholder-image.jpg';
   };
 
   return (

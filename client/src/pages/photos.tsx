@@ -11,7 +11,6 @@ interface Photo {
   userId: number;
   filename: string;
   originalName: string;
-  thumbnailFilename?: string;
   mimeType: string;
   size: number;
   date: string;
@@ -76,11 +75,21 @@ export default function Photos() {
   };
 
   const getThumbnailUrl = (photo: Photo): string => {
-    return photo.thumbnailUrl || '/placeholder-image.jpg';
+    if (photo.thumbnailUrl) {
+      return photo.thumbnailUrl;
+    }
+    // Fallback to legacy API route with authentication
+    const token = localStorage.getItem('authToken');
+    return token ? `/api/photos/${photo.filename}?thumbnail=true&token=${token}` : '/placeholder-image.jpg';
   };
 
   const getFullImageUrl = (photo: Photo): string => {
-    return photo.imageUrl || '/placeholder-image.jpg';
+    if (photo.imageUrl) {
+      return photo.imageUrl;
+    }
+    // Fallback to legacy API route with authentication
+    const token = localStorage.getItem('authToken');
+    return token ? `/api/photos/${photo.filename}?token=${token}` : '/placeholder-image.jpg';
   };
 
   const openPreview = (photo: Photo, datePhotos: Photo[]) => {
