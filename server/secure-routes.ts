@@ -125,13 +125,25 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       // Test database connection first
       try {
         console.log('Testing database connection...');
-        await storage.getUser(1); // Simple test query
-        console.log('Database connection successful');
+        console.log('DATABASE_URL format:', process.env.DATABASE_URL ? 
+          'postgres://' + process.env.DATABASE_URL.split('@')[1] : 'Not set');
+        
+        // Simple test query that should work with any database
+        const testResult = await storage.getUser(1);
+        console.log('Database connection successful, test query returned:', testResult ? 'user found' : 'no user found');
       } catch (dbError) {
         console.error('Database connection failed:', dbError);
+        console.error('Error details:', {
+          name: dbError instanceof Error ? dbError.name : 'Unknown',
+          message: dbError instanceof Error ? dbError.message : 'Unknown error',
+          stack: dbError instanceof Error ? dbError.stack : 'No stack trace',
+          cause: dbError instanceof Error ? dbError.cause : undefined
+        });
+        
         return res.status(500).json({ 
           message: "Database connection failed",
-          error: dbError instanceof Error ? dbError.message : 'Unknown database error'
+          error: dbError instanceof Error ? dbError.message : 'Unknown database error',
+          errorType: dbError instanceof Error ? dbError.constructor.name : typeof dbError
         });
       }
       
