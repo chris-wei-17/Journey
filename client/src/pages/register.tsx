@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ interface RegisterProps {
 
 export default function Register({ onToggleMode }: RegisterProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
   });
@@ -24,7 +25,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
       const response = await apiRequest("POST", "/api/register", data);
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // Store token in localStorage
       localStorage.setItem('authToken', data.token);
       
@@ -33,8 +34,16 @@ export default function Register({ onToggleMode }: RegisterProps) {
         description: "Welcome to FitJourney! Let's set up your profile.",
       });
       
-      // Reload page to trigger auth check and redirect to onboarding
-      window.location.reload();
+      // Instead of reloading, fetch user data and update cache
+      try {
+        const userResponse = await apiRequest("GET", "/api/user");
+        queryClient.setQueryData(["/api/user"], userResponse);
+        console.log("Registration successful, user data updated:", userResponse);
+      } catch (error) {
+        console.error("Failed to fetch user data after registration:", error);
+        // If user fetch fails, fall back to reload
+        window.location.reload();
+      }
     },
     onError: (error: any) => {
       toast({
@@ -62,7 +71,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
             <p className="text-gray-600">Create your account</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="on">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName">First Name</Label>
@@ -71,6 +80,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
                   {...register("firstName")}
                   placeholder="First name"
                   className="mt-2"
+                  autoComplete="given-name"
                 />
                 {errors.firstName && (
                   <p className="text-sm text-red-500 mt-1">{errors.firstName.message}</p>
@@ -83,6 +93,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
                   {...register("lastName")}
                   placeholder="Last name"
                   className="mt-2"
+                  autoComplete="family-name"
                 />
                 {errors.lastName && (
                   <p className="text-sm text-red-500 mt-1">{errors.lastName.message}</p>
@@ -97,6 +108,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
                 {...register("username")}
                 placeholder="Choose a unique username"
                 className="mt-2"
+                autoComplete="username"
               />
               {errors.username && (
                 <p className="text-sm text-red-500 mt-1">{errors.username.message}</p>
@@ -111,6 +123,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
                 {...register("email")}
                 placeholder="Enter your email address"
                 className="mt-2"
+                autoComplete="email"
               />
               {errors.email && (
                 <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
@@ -125,6 +138,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
                 {...register("password")}
                 placeholder="Create a secure password"
                 className="mt-2"
+                autoComplete="new-password"
               />
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>

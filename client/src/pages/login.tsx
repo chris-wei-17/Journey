@@ -72,7 +72,7 @@ export default function Login({ onToggleMode }: LoginProps) {
             <p className="text-gray-600">Welcome back!</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="on">
             <div>
               <Label htmlFor="usernameOrEmail">Username or Email</Label>
               <Input
@@ -80,6 +80,8 @@ export default function Login({ onToggleMode }: LoginProps) {
                 {...register("usernameOrEmail")}
                 placeholder="Enter your username or email"
                 className="mt-2"
+                autoComplete="username"
+                inputMode="email"
               />
               {errors.usernameOrEmail && (
                 <p className="text-sm text-red-500 mt-1">{errors.usernameOrEmail.message}</p>
@@ -94,6 +96,7 @@ export default function Login({ onToggleMode }: LoginProps) {
                 {...register("password")}
                 placeholder="Enter your password"
                 className="mt-2"
+                autoComplete="current-password"
               />
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
