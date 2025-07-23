@@ -30,24 +30,37 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 4. Make it **Private** 🔒 (for security - access via signed URLs)
 5. Click **Create bucket**
 
-## 3. Configure Bucket Policies (Enhanced Security)
+## 3. Configure Bucket Policies (Optional - Skip This Step)
 
-The private bucket uses signed URLs for secure access. You can optionally add Row Level Security policies:
+⚠️ **IMPORTANT**: **Skip this step for now!** 
+
+The RLS policies shown below are designed for Supabase Auth, but your app uses custom JWT authentication. These policies won't work as written.
+
+**Your current setup is already secure:**
+- ✅ Private bucket (not publicly accessible)
+- ✅ Server-side authentication via JWT tokens  
+- ✅ User validation in API endpoints
+- ✅ Service role key protects all operations
+
+**If you want extra security** (advanced users only), see `CUSTOM_RLS_POLICIES.sql` for policies that work with custom authentication.
 
 ```sql
+-- DON'T RUN THESE - They won't work with custom JWT auth
+-- These are for reference only
+
 -- Allow authenticated users to upload their own photos
 CREATE POLICY "Users can upload their own photos" ON storage.objects FOR INSERT WITH CHECK (
-  auth.uid()::text = (storage.foldername(name))[1]
+  auth.uid()::text = (storage.foldername(name))[1]  -- ❌ auth.uid() will be null
 );
 
--- Allow users to view their own photos
+-- Allow users to view their own photos  
 CREATE POLICY "Users can view their own photos" ON storage.objects FOR SELECT USING (
-  auth.uid()::text = (storage.foldername(name))[1]
+  auth.uid()::text = (storage.foldername(name))[1]  -- ❌ auth.uid() will be null
 );
 
 -- Allow users to delete their own photos
 CREATE POLICY "Users can delete their own photos" ON storage.objects FOR DELETE USING (
-  auth.uid()::text = (storage.foldername(name))[1]
+  auth.uid()::text = (storage.foldername(name))[1]  -- ❌ auth.uid() will be null
 );
 ```
 
