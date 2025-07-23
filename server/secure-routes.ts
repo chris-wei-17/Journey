@@ -28,7 +28,7 @@ import {
 } from "../shared/schema.js";
 import multer from "multer";
 import sharp from "sharp";
-import { supabase, PHOTOS_BUCKET } from "./supabase-client.js";
+import { supabase, PHOTOS_BUCKET, generateSignedUrl } from "./supabase-client.js";
 
 // Configure multer for photo uploads - use memory storage since we're storing in database
 const upload = multer({
@@ -523,24 +523,15 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
           throw new Error(`Failed to upload thumbnail: ${thumbnailError.message}`);
         }
 
-        // Get public URLs for the uploaded files
-        const { data: imageUrlData } = supabase.storage
-          .from(PHOTOS_BUCKET)
-          .getPublicUrl(fullImagePath);
-          
-        const { data: thumbnailUrlData } = supabase.storage
-          .from(PHOTOS_BUCKET)
-          .getPublicUrl(thumbnailPath);
-
-        // Save photo metadata to database
+        // Save photo metadata to database with file paths (not URLs for security)
         const photo = await storage.createPhoto({
           userId: req.userId!,
           filename: filename,
           originalName: file.originalname,
           mimeType: file.mimetype,
           size: file.size,
-          imageUrl: imageUrlData.publicUrl,
-          thumbnailUrl: thumbnailUrlData.publicUrl,
+          imagePath: fullImagePath,
+          thumbnailPath: thumbnailPath,
           bucketPath: bucketPath,
           date: new Date(dateStr),
         });
@@ -555,30 +546,79 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user photos
+  // Get user photos with signed URLs for secure access
   app.get('/api/photos', authenticateToken, async (req: any, res) => {
     try {
       const photos = await storage.getUserPhotos(req.userId!);
-      res.json(photos);
+      
+      // Generate signed URLs for each photo
+      const photosWithUrls = await Promise.all(
+        photos.map(async (photo) => {
+          try {
+            const imageUrl = await generateSignedUrl(photo.imagePath, 3600);
+            const thumbnailUrl = await generateSignedUrl(photo.thumbnailPath, 3600);
+            
+            return {
+              ...photo,
+              imageUrl,
+              thumbnailUrl,
+              // Remove internal paths from response for security
+              imagePath: undefined,
+              thumbnailPath: undefined,
+            };
+          } catch (error) {
+            console.error(`Error generating signed URLs for photo ${photo.id}:`, error);
+            return {
+              ...photo,
+              imageUrl: null,
+              thumbnailUrl: null,
+              imagePath: undefined,
+              thumbnailPath: undefined,
+            };
+          }
+        })
+      );
+      
+      res.json(photosWithUrls);
     } catch (error) {
       console.error("Error fetching photos:", error);
       res.status(500).json({ message: "Failed to fetch photos" });
     }
   });
 
-  // Get photos by date with signed URLs
+  // Get photos by date with signed URLs for secure access
   app.get('/api/photos/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const date = req.params.date;
       const photos = await storage.getPhotosByDate(req.userId!, date);
       
-      // Add signed URLs to photos
-      const photoToken = generatePhotoToken(req.userId!);
-      const photosWithUrls = photos.map(photo => ({
-        ...photo,
-        url: `/api/photos/${photo.filename}?token=${photoToken}`,
-        thumbnailUrl: `/api/photos/thumbnail/${photo.thumbnailFilename}?token=${photoToken}`
-      }));
+      // Generate signed URLs for each photo
+      const photosWithUrls = await Promise.all(
+        photos.map(async (photo) => {
+          try {
+            const imageUrl = await generateSignedUrl(photo.imagePath, 3600);
+            const thumbnailUrl = await generateSignedUrl(photo.thumbnailPath, 3600);
+            
+            return {
+              ...photo,
+              imageUrl,
+              thumbnailUrl,
+              // Remove internal paths from response for security
+              imagePath: undefined,
+              thumbnailPath: undefined,
+            };
+          } catch (error) {
+            console.error(`Error generating signed URLs for photo ${photo.id}:`, error);
+            return {
+              ...photo,
+              imageUrl: null,
+              thumbnailUrl: null,
+              imagePath: undefined,
+              thumbnailPath: undefined,
+            };
+          }
+        })
+      );
       
       res.json(photosWithUrls);
     } catch (error) {
@@ -612,9 +652,10 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Photo not found or access denied" });
       }
 
-      // Redirect to the appropriate Supabase Storage URL
-      const redirectUrl = thumbnail ? photo.thumbnailUrl : photo.imageUrl;
-      res.redirect(redirectUrl);
+      // Generate signed URL for secure access to private bucket
+      const filePath = thumbnail ? photo.thumbnailPath : photo.imagePath;
+      const signedUrl = await generateSignedUrl(filePath, 3600); // 1 hour expiry
+      res.redirect(signedUrl);
     } catch (error) {
       console.error("Error serving photo:", error);
       res.status(500).json({ message: "Failed to serve photo" });

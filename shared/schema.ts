@@ -63,7 +63,7 @@ export const progressEntries = pgTable("progress_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Photos table - store image URLs from Supabase Storage
+// Photos table - store file paths (not URLs) for private bucket access
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
@@ -71,9 +71,9 @@ export const photos = pgTable("photos", {
   originalName: varchar("original_name").notNull(),
   mimeType: varchar("mime_type").notNull(),
   size: integer("size").notNull(),
-  imageUrl: varchar("image_url").notNull(), // Full resolution image URL in Supabase Storage
-  thumbnailUrl: varchar("thumbnail_url").notNull(), // Thumbnail image URL in Supabase Storage
-  bucketPath: varchar("bucket_path").notNull(), // Path in storage bucket for easy management
+  imagePath: varchar("image_path").notNull(), // File path in private Supabase Storage bucket
+  thumbnailPath: varchar("thumbnail_path").notNull(), // Thumbnail file path in private bucket
+  bucketPath: varchar("bucket_path").notNull(), // Base folder path for organization
   date: timestamp("date").notNull(), // The date this photo was taken/belongs to
   uploadDate: timestamp("upload_date").defaultNow(),
 });

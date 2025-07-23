@@ -22,3 +22,17 @@ export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
 
 // Storage bucket name for photos
 export const PHOTOS_BUCKET = 'photos';
+
+// Generate signed URL for secure access to private bucket
+export const generateSignedUrl = async (filePath: string, expiresIn: number = 3600) => {
+  const { data, error } = await supabase.storage
+    .from(PHOTOS_BUCKET)
+    .createSignedUrl(filePath, expiresIn);
+    
+  if (error) {
+    console.error('Error generating signed URL:', error);
+    throw new Error(`Failed to generate signed URL: ${error.message}`);
+  }
+  
+  return data.signedUrl;
+};

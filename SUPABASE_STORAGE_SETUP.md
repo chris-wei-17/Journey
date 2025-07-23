@@ -27,12 +27,12 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 1. In Supabase Dashboard, go to **Storage**
 2. Click **Create Bucket**
 3. Set bucket name: `photos`
-4. Make it **Public** (for direct URL access)
+4. Make it **Private** 🔒 (for security - access via signed URLs)
 5. Click **Create bucket**
 
-## 3. Configure Bucket Policies (Optional Security)
+## 3. Configure Bucket Policies (Enhanced Security)
 
-If you want to restrict access, you can set up Row Level Security:
+The private bucket uses signed URLs for secure access. You can optionally add Row Level Security policies:
 
 ```sql
 -- Allow authenticated users to upload their own photos
@@ -60,10 +60,10 @@ Execute the SQL migration in your Supabase SQL Editor:
 ALTER TABLE photos DROP COLUMN IF EXISTS image_data;
 ALTER TABLE photos DROP COLUMN IF EXISTS thumbnail_data;
 
--- Add new columns for Supabase Storage URLs
+-- Add new columns for Supabase Storage file paths
 ALTER TABLE photos 
-ADD COLUMN IF NOT EXISTS image_url VARCHAR,
-ADD COLUMN IF NOT EXISTS thumbnail_url VARCHAR,
+ADD COLUMN IF NOT EXISTS image_path VARCHAR,
+ADD COLUMN IF NOT EXISTS thumbnail_path VARCHAR,
 ADD COLUMN IF NOT EXISTS bucket_path VARCHAR;
 ```
 
@@ -90,19 +90,22 @@ photos/
     └── ...
 ```
 
-## Benefits of This Approach
+## Benefits of This Secure Approach
 
-✅ **Viewable Images**: Direct URLs that can be viewed in browser  
-✅ **Analytics Ready**: Easy to download and analyze images  
+✅ **Secure Access**: Private bucket with time-limited signed URLs  
+✅ **User Privacy**: Only authenticated users can access their own photos  
+✅ **Analytics Ready**: Easy to download and analyze images with proper auth  
 ✅ **Better Performance**: CDN-served images with caching  
 ✅ **Scalable**: Supabase handles file storage and delivery  
 ✅ **Organized**: Files organized by user and date  
-✅ **Bidirectional**: Easy upload and download access  
+✅ **Bidirectional**: Easy upload and download access with security  
+✅ **No URL Guessing**: Signed URLs prevent unauthorized access  
 
 ## Testing
 
 After setup, test by:
 1. Uploading a photo through the app
-2. Check the `photos` table - should have `image_url` and `thumbnail_url`
-3. Visit the URLs directly - should display the images
-4. Check Supabase Storage dashboard - should see files organized by user/date
+2. Check the `photos` table - should have `image_path` and `thumbnail_path`
+3. Test API endpoints - should return signed URLs that display images
+4. Check Supabase Storage dashboard - should see files in private bucket organized by user/date
+5. Verify URLs expire after 1 hour (signed URLs are time-limited)
