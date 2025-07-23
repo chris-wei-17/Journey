@@ -1,8 +1,17 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerSecureRoutes } from "./secure-routes.js";
-import { setupVite, serveStatic, log } from "./vite.js";
 
 const app = express();
+
+// Simple logging function for production
+function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
 
 // CORS middleware - Allow all origins for development
 app.use((req, res, next) => {
@@ -53,6 +62,7 @@ app.use((req, res, next) => {
 
 // Initialize the app for both development and production
 async function initializeApp() {
+  const { registerSecureRoutes } = await import("./secure-routes.js");
   const server = await registerSecureRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -65,6 +75,7 @@ async function initializeApp() {
 
   // Setup static serving for production (skip on Vercel)
   if (app.get("env") !== "development" && !process.env.VERCEL) {
+    const { serveStatic } = await import("./vite.js");
     serveStatic(app);
   }
 
@@ -77,6 +88,7 @@ if (process.env.NODE_ENV === "development") {
     const { app: devApp, server } = await initializeApp();
     
     // Setup Vite in development
+    const { setupVite, log } = await import("./vite.js");
     await setupVite(devApp, server);
     
     const port = parseInt(process.env.PORT || '5000', 10);
