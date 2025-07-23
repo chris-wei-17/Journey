@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function DebugPhotos() {
   const [debugInfo, setDebugInfo] = useState<any>({});
@@ -24,35 +25,48 @@ export default function DebugPhotos() {
       info.localStorage.error = e.message;
     }
 
-    // Test API endpoints
+    // Test API endpoints using the proper API client
     const endpoints = [
       '/api/photos',
-      '/api/photos/test',
-      '/api/auth/check'
+      '/api/photos/test'
     ];
 
     for (const endpoint of endpoints) {
       try {
-        const token = localStorage.getItem('authToken');
-        const headers: any = {};
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
-        const response = await fetch(endpoint, {
-          headers,
-          credentials: "include",
-        });
-
+        const result = await apiRequest('GET', endpoint);
         info.apiTests[endpoint] = {
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-          body: response.ok ? await response.json() : await response.text()
+          success: true,
+          data: result
         };
       } catch (e) {
         info.apiTests[endpoint] = {
+          success: false,
           error: e.message
         };
       }
+    }
+
+    // Test manual fetch for comparison
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers: any = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const response = await fetch('/api/photos', {
+        headers,
+        credentials: "include",
+      });
+
+      info.manualFetchTest = {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: response.ok ? await response.json() : await response.text()
+      };
+    } catch (e) {
+      info.manualFetchTest = {
+        error: e.message
+      };
     }
 
     setDebugInfo(info);
