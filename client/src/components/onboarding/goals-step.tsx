@@ -66,7 +66,7 @@ export default function GoalsStep({ data, updateData, onNext }: GoalsStepProps) 
         <Button 
           onClick={handleNext}
           disabled={selectedGoals.length === 0}
-          className="w-full bg-gradient-to-r from-primary-300 to-lavender-300 hover:from-primary-400 hover:to-lavender-400 text-white py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-center"
+                          className="w-full bg-gradient-to-r from-primary-500 to-lavender-500 hover:from-primary-600 hover:to-lavender-600 text-white py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-center"
         >
           Continue
         </Button>

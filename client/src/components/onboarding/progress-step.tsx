@@ -153,7 +153,7 @@ export default function ProgressStep({ data, updateData }: ProgressStepProps) {
         <Button 
           onClick={handleComplete}
           disabled={completeMutation.isPending}
-          className="w-full bg-gradient-to-r from-primary-300 to-lavender-300 hover:from-primary-400 hover:to-lavender-400 text-white py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 text-center"
+                          className="w-full bg-gradient-to-r from-primary-500 to-lavender-500 hover:from-primary-600 hover:to-lavender-600 text-white py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 text-center"
         >
           {completeMutation.isPending ? "Creating Account..." : "Create My Account"}
         </Button>

@@ -133,7 +133,7 @@ export default function ProfileStep({ data, updateData, onNext }: ProfileStepPro
 
           <Button 
             type="submit"
-            className="w-full bg-gradient-to-r from-primary-300 to-lavender-300 hover:from-primary-400 hover:to-lavender-400 text-white py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-center"
+                            className="w-full bg-gradient-to-r from-primary-500 to-lavender-500 hover:from-primary-600 hover:to-lavender-600 text-white py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-center"
           >
             Continue
           </Button>

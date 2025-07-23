@@ -60,12 +60,12 @@ export default function Login({ onToggleMode }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-300 to-lavender-300">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-400 to-lavender-400">
       <Card className="w-full max-w-md card-shadow">
         <CardContent className="p-8">
           {/* App Logo */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-300 to-lavender-300 rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-500 to-lavender-500 rounded-full flex items-center justify-center">
               <i className="fas fa-dumbbell text-3xl text-white"></i>
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">FitJourney</h1>
@@ -113,7 +113,7 @@ export default function Login({ onToggleMode }: LoginProps) {
             <Button 
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full bg-gradient-to-r from-primary-300 to-lavender-300 hover:from-primary-400 hover:to-lavender-400 text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                              className="w-full bg-gradient-to-r from-primary-500 to-lavender-500 hover:from-primary-600 hover:to-lavender-600 text-white py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               {loginMutation.isPending ? "Signing In..." : "Sign In"}
             </Button>

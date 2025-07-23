@@ -15,7 +15,7 @@ export default function Progress() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-300 to-lavender-300">
+    <div className="min-h-screen bg-gradient-to-br from-primary-400 to-lavender-400">
       <Header 
         title="Progress"
         showBackButton={true}
