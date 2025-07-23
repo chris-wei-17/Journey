@@ -63,15 +63,16 @@ export const progressEntries = pgTable("progress_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Photos table
+// Photos table - store images as base64 data in database
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   filename: varchar("filename").notNull(),
   originalName: varchar("original_name").notNull(),
-  thumbnailFilename: varchar("thumbnail_filename"),
   mimeType: varchar("mime_type").notNull(),
   size: integer("size").notNull(),
+  imageData: text("image_data").notNull(), // Base64 encoded full image
+  thumbnailData: text("thumbnail_data").notNull(), // Base64 encoded thumbnail
   date: timestamp("date").notNull(), // The date this photo was taken/belongs to
   uploadDate: timestamp("upload_date").defaultNow(),
 });

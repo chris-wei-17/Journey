@@ -27,21 +27,11 @@ import {
   type CustomMetricField
 } from "../shared/schema.js";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
 import sharp from "sharp";
 
-// Configure multer for photo uploads - handle Vercel's read-only filesystem
-const uploadDir = process.env.NODE_ENV === 'production' 
-  ? '/tmp' // Vercel's writable temp directory
-  : path.join(process.cwd(), "uploads");
-
-if (process.env.NODE_ENV !== 'production' && !fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
+// Configure multer for photo uploads - use memory storage since we're storing in database
 const upload = multer({
-  dest: uploadDir,
+  storage: multer.memoryStorage(), // Store in memory instead of filesystem
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
     files: 5, // Maximum 5 files
@@ -464,7 +454,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload photos
+  // Upload photos - store as base64 in database
   app.post('/api/photos', authenticateToken, upload.array('photos', 5), async (req: any, res) => {
     try {
       const files = req.files as Express.Multer.File[];
@@ -480,24 +470,35 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
 
       const savedPhotos = [];
       for (const file of files) {
-        // Generate thumbnail
-        const thumbnailFilename = `thumb_${file.filename}`;
-        const thumbnailPath = path.join(uploadDir, thumbnailFilename);
+        // File is already in memory with multer.memoryStorage()
+        const imageBuffer = file.buffer;
         
-        await sharp(file.path)
+        // Generate thumbnail using Sharp
+        const thumbnailBuffer = await sharp(imageBuffer)
           .resize(200, 200, { fit: 'cover' })
           .jpeg({ quality: 80 })
-          .toFile(thumbnailPath);
+          .toBuffer();
+        
+        // Convert to base64
+        const imageData = imageBuffer.toString('base64');
+        const thumbnailData = thumbnailBuffer.toString('base64');
+        
+        // Generate a unique filename
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const filename = `${timestamp}_${randomSuffix}_${file.originalname}`;
 
         const photo = await storage.createPhoto({
           userId: req.userId!,
-          filename: file.filename,
+          filename: filename,
           originalName: file.originalname,
-          thumbnailFilename: thumbnailFilename,
           mimeType: file.mimetype,
           size: file.size,
+          imageData: imageData,
+          thumbnailData: thumbnailData,
           date: new Date(dateStr),
         });
+        
         savedPhotos.push(photo);
       }
 
@@ -545,6 +546,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     try {
       const filename = req.params.filename;
       const token = req.query.token as string;
+      const thumbnail = req.query.thumbnail === 'true';
       
       if (!token) {
         return res.status(401).json({ message: "Access token required" });
@@ -564,78 +566,31 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Photo not found or access denied" });
       }
 
-      const filePath = path.join(uploadDir, filename);
+      // Serve the appropriate image data
+      const imageData = thumbnail ? photo.thumbnailData : photo.imageData;
+      const buffer = Buffer.from(imageData, 'base64');
       
-      if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-      } else {
-        res.status(404).json({ message: "Photo file not found" });
-      }
+      res.set({
+        'Content-Type': photo.mimeType,
+        'Content-Length': buffer.length.toString(),
+        'Cache-Control': 'private, max-age=3600' // Cache for 1 hour
+      });
+      
+      res.send(buffer);
     } catch (error) {
       console.error("Error serving photo:", error);
       res.status(500).json({ message: "Failed to serve photo" });
     }
   });
 
-  // Serve thumbnails with token-based authentication
-  app.get('/api/photos/thumbnail/:filename', async (req: any, res) => {
-    try {
-      const filename = req.params.filename;
-      const token = req.query.token as string;
-      
-      if (!token) {
-        return res.status(401).json({ message: "Access token required" });
-      }
-      
-      // Verify token and get user ID
-      const userId = verifyPhotoToken(token);
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid or expired token" });
-      }
-      
-      // Verify user owns this photo
-      const photos = await storage.getUserPhotos(userId);
-      const photo = photos.find(p => p.thumbnailFilename === filename || p.filename === filename);
-      
-      if (!photo) {
-        return res.status(404).json({ message: "Photo not found or access denied" });
-      }
-
-      const filePath = path.join(uploadDir, filename);
-      
-      if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-      } else {
-        res.status(404).json({ message: "Photo file not found" });
-      }
-    } catch (error) {
-      console.error("Error serving thumbnail:", error);
-      res.status(500).json({ message: "Failed to serve thumbnail" });
-    }
-  });
+  // Note: Thumbnails are now served via the main photo route with ?thumbnail=true parameter
 
   // Delete photo
   app.delete('/api/photos/:id', authenticateToken, async (req: any, res) => {
     try {
       const photoId = parseInt(req.params.id);
       
-      // Get photo details before deletion to clean up files
-      const photos = await storage.getUserPhotos(req.userId!);
-      const photo = photos.find(p => p.id === photoId);
-      
-      if (photo) {
-        // Delete files from filesystem
-        const originalPath = path.join(uploadDir, photo.filename);
-        const thumbnailPath = photo.thumbnailFilename ? path.join(uploadDir, photo.thumbnailFilename) : null;
-        
-        if (fs.existsSync(originalPath)) {
-          fs.unlinkSync(originalPath);
-        }
-        if (thumbnailPath && fs.existsSync(thumbnailPath)) {
-          fs.unlinkSync(thumbnailPath);
-        }
-      }
-      
+      // Simply delete from database (no file cleanup needed anymore)
       await storage.deletePhoto(photoId, req.userId!);
       res.json({ message: "Photo deleted successfully" });
     } catch (error) {
