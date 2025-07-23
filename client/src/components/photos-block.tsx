@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ interface PhotosBlockProps {
 export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -105,16 +106,36 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
 
   const openPreview = (index: number) => {
     setCurrentPhotoIndex(index);
+    setImageLoaded(false); // Reset loading state for new image
     setIsPreviewOpen(true);
   };
 
   const navigatePhoto = (direction: 'prev' | 'next') => {
+    setImageLoaded(false); // Reset loading state when switching images
     if (direction === 'prev') {
       setCurrentPhotoIndex(prev => prev > 0 ? prev - 1 : photos.length - 1);
     } else {
       setCurrentPhotoIndex(prev => prev < photos.length - 1 ? prev + 1 : 0);
     }
   };
+
+  // Keyboard navigation for modal
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!isPreviewOpen) return;
+      
+      if (e.key === 'Escape') {
+        setIsPreviewOpen(false);
+      } else if (e.key === 'ArrowLeft' && photos.length > 1) {
+        navigatePhoto('prev');
+      } else if (e.key === 'ArrowRight' && photos.length > 1) {
+        navigatePhoto('next');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [isPreviewOpen, photos.length]);
 
   const getThumbnailUrl = (photo: Photo) => {
     return photo.thumbnailUrl || `/api/photos/thumbnail/${photo.thumbnailFilename || photo.filename}`;
@@ -201,35 +222,48 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
         </CardContent>
       </Card>
 
-      {/* Photo Preview Modal */}
+      {/* Photo Preview Modal - Responsive sizing */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="p-4 pb-0">
-            <DialogTitle>
+        <DialogContent className="max-w-[98vw] max-h-[98vh] w-auto h-auto p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="p-4 pb-2 flex-shrink-0 border-b">
+            <DialogTitle className="text-center text-lg font-semibold">
               Progress Photo {currentPhotoIndex + 1} of {photos.length}
             </DialogTitle>
           </DialogHeader>
           
           {photos.length > 0 && (
-            <div className="relative flex items-center justify-center p-4">
+            <div className="relative flex items-center justify-center min-h-0 flex-1">
               {/* Left Arrow */}
               {photos.length > 1 && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => navigatePhoto('prev')}
-                  className="absolute left-2 z-10 bg-black/50 text-white hover:bg-black/70"
+                  className="absolute left-4 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-10 h-10"
                 >
                   <i className="fas fa-chevron-left"></i>
                 </Button>
               )}
 
-              {/* Image */}
-              <div className="max-w-full max-h-[60vh] overflow-hidden rounded-lg">
+              {/* Image Container - Dynamic sizing */}
+              <div className="flex items-center justify-center p-4 min-w-0 min-h-0 max-w-[calc(98vw-2rem)] max-h-[calc(98vh-10rem)]">
+                {!imageLoaded && (
+                  <div className="flex items-center justify-center w-32 h-32">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  </div>
+                )}
                 <img
                   src={getFullImageUrl(photos[currentPhotoIndex])}
                   alt={`Progress photo ${currentPhotoIndex + 1}`}
-                  className="max-w-full max-h-full object-contain"
+                  className={`max-w-full max-h-full object-contain rounded-lg shadow-lg transition-opacity duration-200 ${
+                    imageLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  style={{ 
+                    maxWidth: 'calc(98vw - 2rem)',
+                    maxHeight: 'calc(98vh - 10rem)'
+                  }}
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
                 />
               </div>
 
@@ -239,7 +273,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigatePhoto('next')}
-                  className="absolute right-2 z-10 bg-black/50 text-white hover:bg-black/70"
+                  className="absolute right-4 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-10 h-10"
                 >
                   <i className="fas fa-chevron-right"></i>
                 </Button>
@@ -247,7 +281,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
             </div>
           )}
 
-          <div className="p-4 pt-0 flex justify-between items-center">
+          <div className="p-4 pt-2 flex justify-between items-center flex-shrink-0 border-t bg-gray-50/50">
             <div className="text-sm text-gray-500">
               {photos[currentPhotoIndex]?.originalName}
             </div>
