@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerSecureRoutes } from "./secure-routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { registerSecureRoutes } from "./secure-routes.js";
+import { setupVite, serveStatic, log } from "./vite.js";
 
 const app = express();
 

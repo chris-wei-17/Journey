@@ -30,7 +30,7 @@ import {
   type CustomMetricField,
   type InsertCustomMetricField,
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, and, or, sql } from "drizzle-orm";
 
 // Interface for storage operations

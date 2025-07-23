@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 import { 
   authenticateToken, 
   hashPassword, 
@@ -11,7 +11,7 @@ import {
   checkRateLimit, 
   clearRateLimit,
   type AuthenticatedRequest 
-} from "./auth";
+} from "./auth.js";
 import { 
   loginSchema,
   registerSchema,

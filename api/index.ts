@@ -1,6 +1,6 @@
 // Main Vercel API handler - handles all API routes
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import handler from '../server/index';
+import handler from '../server/index.js';
 
 export default async function(req: VercelRequest, res: VercelResponse) {
   try {
