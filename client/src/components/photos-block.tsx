@@ -17,7 +17,7 @@ interface Photo {
   size: number;
   date: string;
   createdAt: string;
-  url?: string;
+  imageUrl?: string;  // Updated to match new API response
   thumbnailUrl?: string;
 }
 
@@ -121,7 +121,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
   };
 
   const getFullImageUrl = (photo: Photo) => {
-    return photo.url || `/api/photos/${photo.filename}`;
+    return photo.imageUrl || `/api/photos/${photo.filename}`;
   };
 
   return (
