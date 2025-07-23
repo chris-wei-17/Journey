@@ -4,13 +4,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Profile() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint for server-side logging and cleanup
+      await apiRequest("POST", "/api/logout");
+      
+      // Clear authentication token
+      localStorage.removeItem('authToken');
+      
+      // Clear all cached queries
+      queryClient.clear();
+      
+      // Show success message
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out. See you next time!",
+      });
+      
+      // Small delay to show the toast, then redirect
+      setTimeout(() => {
+        // Force reload to reset app state and redirect to login
+        window.location.href = '/';
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if server call fails, still logout locally
+      localStorage.removeItem('authToken');
+      queryClient.clear();
+      window.location.href = '/';
+    }
   };
 
   const handleBack = () => {
