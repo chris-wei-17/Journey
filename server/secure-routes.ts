@@ -28,6 +28,7 @@ import {
 } from "../shared/schema.js";
 import multer from "multer";
 import sharp from "sharp";
+import { supabase, PHOTOS_BUCKET } from "./supabase-client.js";
 
 // Configure multer for photo uploads - use memory storage since we're storing in database
 const upload = multer({
@@ -454,7 +455,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload photos - store as base64 in database
+  // Upload photos - store in Supabase Storage
   app.post('/api/photos', authenticateToken, upload.array('photos', 5), async (req: any, res) => {
     try {
       const files = req.files as Express.Multer.File[];
@@ -479,23 +480,68 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
           .jpeg({ quality: 80 })
           .toBuffer();
         
-        // Convert to base64
-        const imageData = imageBuffer.toString('base64');
-        const thumbnailData = thumbnailBuffer.toString('base64');
-        
-        // Generate a unique filename
+        // Generate unique filename and paths
         const timestamp = Date.now();
         const randomSuffix = Math.random().toString(36).substring(2, 8);
-        const filename = `${timestamp}_${randomSuffix}_${file.originalname}`;
+        const fileExtension = file.originalname.split('.').pop() || 'jpg';
+        const baseFilename = `${timestamp}_${randomSuffix}`;
+        const filename = `${baseFilename}.${fileExtension}`;
+        const thumbnailFilename = `${baseFilename}_thumb.jpg`;
+        
+        // Create paths in storage bucket (organized by user and date)
+        const userFolder = `user_${req.userId}`;
+        const dateFolder = new Date(dateStr).toISOString().split('T')[0];
+        const bucketPath = `${userFolder}/${dateFolder}`;
+        const fullImagePath = `${bucketPath}/${filename}`;
+        const thumbnailPath = `${bucketPath}/${thumbnailFilename}`;
 
+        // Upload full image to Supabase Storage
+        const { data: imageUpload, error: imageError } = await supabase.storage
+          .from(PHOTOS_BUCKET)
+          .upload(fullImagePath, imageBuffer, {
+            contentType: file.mimetype,
+            upsert: false
+          });
+
+        if (imageError) {
+          console.error('Error uploading image:', imageError);
+          throw new Error(`Failed to upload image: ${imageError.message}`);
+        }
+
+        // Upload thumbnail to Supabase Storage
+        const { data: thumbnailUpload, error: thumbnailError } = await supabase.storage
+          .from(PHOTOS_BUCKET)
+          .upload(thumbnailPath, thumbnailBuffer, {
+            contentType: 'image/jpeg',
+            upsert: false
+          });
+
+        if (thumbnailError) {
+          console.error('Error uploading thumbnail:', thumbnailError);
+          // Try to clean up the uploaded image
+          await supabase.storage.from(PHOTOS_BUCKET).remove([fullImagePath]);
+          throw new Error(`Failed to upload thumbnail: ${thumbnailError.message}`);
+        }
+
+        // Get public URLs for the uploaded files
+        const { data: imageUrlData } = supabase.storage
+          .from(PHOTOS_BUCKET)
+          .getPublicUrl(fullImagePath);
+          
+        const { data: thumbnailUrlData } = supabase.storage
+          .from(PHOTOS_BUCKET)
+          .getPublicUrl(thumbnailPath);
+
+        // Save photo metadata to database
         const photo = await storage.createPhoto({
           userId: req.userId!,
           filename: filename,
           originalName: file.originalname,
           mimeType: file.mimetype,
           size: file.size,
-          imageData: imageData,
-          thumbnailData: thumbnailData,
+          imageUrl: imageUrlData.publicUrl,
+          thumbnailUrl: thumbnailUrlData.publicUrl,
+          bucketPath: bucketPath,
           date: new Date(dateStr),
         });
         
@@ -505,7 +551,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       res.json(savedPhotos);
     } catch (error) {
       console.error("Error uploading photos:", error);
-      res.status(500).json({ message: "Failed to upload photos" });
+      res.status(500).json({ message: "Failed to upload photos", error: error.message });
     }
   });
 
@@ -541,7 +587,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve uploaded photos with token-based authentication
+  // Get photo URL with authentication
   app.get('/api/photos/:filename', async (req: any, res) => {
     try {
       const filename = req.params.filename;
@@ -566,17 +612,9 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Photo not found or access denied" });
       }
 
-      // Serve the appropriate image data
-      const imageData = thumbnail ? photo.thumbnailData : photo.imageData;
-      const buffer = Buffer.from(imageData, 'base64');
-      
-      res.set({
-        'Content-Type': photo.mimeType,
-        'Content-Length': buffer.length.toString(),
-        'Cache-Control': 'private, max-age=3600' // Cache for 1 hour
-      });
-      
-      res.send(buffer);
+      // Redirect to the appropriate Supabase Storage URL
+      const redirectUrl = thumbnail ? photo.thumbnailUrl : photo.imageUrl;
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error("Error serving photo:", error);
       res.status(500).json({ message: "Failed to serve photo" });
@@ -590,7 +628,28 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     try {
       const photoId = parseInt(req.params.id);
       
-      // Simply delete from database (no file cleanup needed anymore)
+      // Get photo details before deletion to clean up storage files
+      const photos = await storage.getUserPhotos(req.userId!);
+      const photo = photos.find(p => p.id === photoId);
+      
+      if (photo) {
+        // Delete files from Supabase Storage
+        const filesToDelete = [
+          `${photo.bucketPath}/${photo.filename}`,
+          `${photo.bucketPath}/${photo.filename.replace(/\.[^/.]+$/, '_thumb.jpg')}`
+        ];
+        
+        const { error: storageError } = await supabase.storage
+          .from(PHOTOS_BUCKET)
+          .remove(filesToDelete);
+          
+        if (storageError) {
+          console.error('Error deleting files from storage:', storageError);
+          // Continue with database deletion even if storage cleanup fails
+        }
+      }
+      
+      // Delete from database
       await storage.deletePhoto(photoId, req.userId!);
       res.json({ message: "Photo deleted successfully" });
     } catch (error) {

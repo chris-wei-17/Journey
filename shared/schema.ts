@@ -63,7 +63,7 @@ export const progressEntries = pgTable("progress_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Photos table - store images as base64 data in database
+// Photos table - store image URLs from Supabase Storage
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
@@ -71,8 +71,9 @@ export const photos = pgTable("photos", {
   originalName: varchar("original_name").notNull(),
   mimeType: varchar("mime_type").notNull(),
   size: integer("size").notNull(),
-  imageData: text("image_data").notNull(), // Base64 encoded full image
-  thumbnailData: text("thumbnail_data").notNull(), // Base64 encoded thumbnail
+  imageUrl: varchar("image_url").notNull(), // Full resolution image URL in Supabase Storage
+  thumbnailUrl: varchar("thumbnail_url").notNull(), // Thumbnail image URL in Supabase Storage
+  bucketPath: varchar("bucket_path").notNull(), // Path in storage bucket for easy management
   date: timestamp("date").notNull(), // The date this photo was taken/belongs to
   uploadDate: timestamp("upload_date").defaultNow(),
 });
