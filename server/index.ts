@@ -94,11 +94,28 @@ if (process.env.NODE_ENV === "development") {
 let prodApp: any = null;
 
 export default async function handler(req: any, res: any) {
-  if (!prodApp) {
-    const { app } = await initializeApp();
-    prodApp = app;
+  try {
+    if (!prodApp) {
+      const { app } = await initializeApp();
+      prodApp = app;
+    }
+    
+    // Ensure proper handling for Vercel serverless environment
+    return new Promise((resolve, reject) => {
+      prodApp(req, res, (err: any) => {
+        if (err) {
+          console.error('Express handler error:', err);
+          reject(err);
+        } else {
+          resolve(undefined);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Handler initialization error:', error);
+    res.status(500).json({ 
+      message: 'Internal server error',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
-  
-  // Call the Express app directly - it should handle the request/response
-  prodApp(req, res);
 }

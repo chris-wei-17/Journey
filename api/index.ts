@@ -15,6 +15,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader('Access-Control-Max-Age', '86400');
     
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
@@ -22,8 +23,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       return res.status(200).end();
     }
     
-    // The Vercel rewrite already prefixes with /api, so we need to handle it properly
-    // If URL doesn't start with /api, prepend it
+    // Ensure URL starts with /api for proper routing
     if (req.url && !req.url.startsWith('/api')) {
       req.url = `/api${req.url}`;
     }
@@ -31,7 +31,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
     console.log('Final URL:', req.url);
     console.log('Calling Express handler...');
     
-    // Call the Express app handler
+    // Call the Express app handler with proper promise handling
     await handler(req, res);
     
     console.log('Express handler completed');
