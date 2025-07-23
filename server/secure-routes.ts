@@ -66,6 +66,35 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Database connectivity test endpoint
+  app.get('/api/debug/db', async (req, res) => {
+    try {
+      console.log('=== DATABASE DEBUG ENDPOINT ===');
+      console.log('DATABASE_URL present:', !!process.env.DATABASE_URL);
+      console.log('DATABASE_URL preview:', process.env.DATABASE_URL ? 
+        process.env.DATABASE_URL.substring(0, 20) + '...' : 'Not set');
+      
+      // Test basic database query
+      const testUser = await storage.getUser(1);
+      console.log('Test query result:', testUser ? 'User found' : 'No user found');
+      
+      res.json({
+        status: 'Database connection successful',
+        hasDatabase: !!process.env.DATABASE_URL,
+        testQuery: testUser ? 'success' : 'no_data',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Database debug error:', error);
+      res.status(500).json({
+        status: 'Database connection failed',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        hasDatabase: !!process.env.DATABASE_URL,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Test POST endpoint for debugging
   app.post('/api/test', (req, res) => {
     console.log('=== TEST POST ROUTE CALLED ===');
@@ -88,6 +117,23 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       console.log('URL:', req.url);
       console.log('Body:', JSON.stringify(req.body, null, 2));
       console.log('Headers:', JSON.stringify(req.headers, null, 2));
+      console.log('Environment check:');
+      console.log('  NODE_ENV:', process.env.NODE_ENV);
+      console.log('  VERCEL:', process.env.VERCEL);
+      console.log('  DATABASE_URL present:', !!process.env.DATABASE_URL);
+      
+      // Test database connection first
+      try {
+        console.log('Testing database connection...');
+        await storage.getUser(1); // Simple test query
+        console.log('Database connection successful');
+      } catch (dbError) {
+        console.error('Database connection failed:', dbError);
+        return res.status(500).json({ 
+          message: "Database connection failed",
+          error: dbError instanceof Error ? dbError.message : 'Unknown database error'
+        });
+      }
       
       const result = registerSchema.safeParse(req.body);
       
@@ -103,18 +149,25 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       console.log('Registration attempt for username:', username, 'email:', email);
 
       // Check if user already exists
+      console.log('Checking for existing user...');
       const existingUser = await storage.getUserByUsernameOrEmail(username);
       if (existingUser) {
+        console.log('Username already exists');
         return res.status(409).json({ message: "Username or email already exists" });
       }
 
+      console.log('Checking for existing email...');
       const existingEmail = await storage.getUserByUsernameOrEmail(email);
       if (existingEmail) {
+        console.log('Email already exists');
         return res.status(409).json({ message: "Email already exists" });
       }
 
       // Hash password and create user
+      console.log('Hashing password...');
       const passwordHash = await hashPassword(password);
+      
+      console.log('Creating user...');
       const user = await storage.createUser({
         username,
         email,
@@ -123,10 +176,13 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         lastName,
         isEmailVerified: false,
       });
+      console.log('User created successfully with ID:', user.id);
 
       // Generate token
+      console.log('Generating token...');
       const token = generateToken(user.id);
 
+      console.log('Registration completed successfully');
       res.status(201).json({
         message: "User created successfully",
         token,
@@ -139,8 +195,17 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         },
       });
     } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({ message: "Registration failed" });
+      console.error("Registration error details:");
+      console.error("Error message:", error instanceof Error ? error.message : 'Unknown error');
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
+      console.error("Error type:", typeof error);
+      console.error("Full error object:", error);
+      
+      res.status(500).json({ 
+        message: "Registration failed",
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      });
     }
   });
 
