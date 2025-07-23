@@ -29,6 +29,10 @@ export default function Home() {
     enabled: !!user,
   });
 
+  // Debug logging for photos
+  console.log('Home page - photos:', photos);
+  console.log('Home page - photos length:', photos.length);
+
   const getMotivationalMessage = () => {
     const messages = [
       "Every step counts! Keep pushing forward.",

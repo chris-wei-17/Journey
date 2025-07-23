@@ -38,6 +38,11 @@ export default function Photos() {
     queryKey: ['/api/photos'],
   });
 
+  // Debug logging
+  console.log('Photos page - allPhotos:', allPhotos);
+  console.log('Photos page - isLoading:', isLoading);
+  console.log('Photos page - allPhotos length:', allPhotos.length);
+
   // Group photos by date
   const photosByDate: PhotosByDate = {};
   allPhotos.forEach(photo => {
@@ -48,6 +53,9 @@ export default function Photos() {
     photosByDate[dateKey].push(photo);
   });
 
+  console.log('Photos page - photosByDate:', photosByDate);
+  console.log('Photos page - Object.keys(photosByDate):', Object.keys(photosByDate));
+
   // Sort dates and get sorted date keys
   const sortedDates = Object.keys(photosByDate).sort((a, b) => {
     if (sortOrder === 'newest') {
@@ -56,6 +64,8 @@ export default function Photos() {
       return new Date(a).getTime() - new Date(b).getTime();
     }
   });
+
+  console.log('Photos page - sortedDates:', sortedDates);
 
   const handleBack = () => {
     if (window.history.length > 1) {
