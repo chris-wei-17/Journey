@@ -13,6 +13,11 @@ import AddActivity from "@/pages/add-activity";
 import SelectActivity from "@/pages/select-activity";
 import AddMacros from "@/pages/add-macros";
 import Photos from "@/pages/photos";
+import Progress from "@/pages/progress";
+import Goals from "@/pages/goals";
+import Workouts from "@/pages/workouts";
+import Nutrition from "@/pages/nutrition";
+import Sleep from "@/pages/sleep";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -38,6 +43,11 @@ function Router() {
               <Route path="/" component={Home} />
               <Route path="/profile" component={Profile} />
               <Route path="/photos" component={Photos} />
+              <Route path="/progress" component={Progress} />
+              <Route path="/goals" component={Goals} />
+              <Route path="/workouts" component={Workouts} />
+              <Route path="/nutrition" component={Nutrition} />
+              <Route path="/sleep" component={Sleep} />
               <Route path="/add-activity" component={AddActivity} />
               <Route path="/select-activity" component={SelectActivity} />
               <Route path="/add-macros" component={AddMacros} />
