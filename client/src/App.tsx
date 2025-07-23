@@ -13,6 +13,7 @@ import AddActivity from "@/pages/add-activity";
 import SelectActivity from "@/pages/select-activity";
 import AddMacros from "@/pages/add-macros";
 import Photos from "@/pages/photos";
+import DebugPhotos from "@/pages/debug-photos";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -38,6 +39,7 @@ function Router() {
               <Route path="/" component={Home} />
               <Route path="/profile" component={Profile} />
               <Route path="/photos" component={Photos} />
+              <Route path="/debug-photos" component={DebugPhotos} />
               <Route path="/add-activity" component={AddActivity} />
               <Route path="/select-activity" component={SelectActivity} />
               <Route path="/add-macros" component={AddMacros} />
