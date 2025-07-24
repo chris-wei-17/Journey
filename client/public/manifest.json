@@ -24,9 +24,9 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/pwa-icon-apple-touch.svg",
+      "src": "/pwa-icon-journey.png",
       "sizes": "180x180", 
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ],

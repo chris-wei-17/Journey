@@ -10,7 +10,7 @@ const STATIC_ASSETS = [
   '/manifest.json',
   '/pwa-icon-192.svg',
   '/pwa-icon-512.svg',
-  '/pwa-icon-apple-touch.svg'
+  '/pwa-icon-journey.png' 
 ];
 
 // Install event - cache static assets
