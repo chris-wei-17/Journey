@@ -22,7 +22,7 @@ export default function Sleep() {
         onBack={handleBack}
       />
       
-      <div className="pt-24 px-4 pb-6">
+      <div className="pt-28 px-4 pb-6">
         <div className="space-y-6">
           {/* Main Content Card */}
           <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">

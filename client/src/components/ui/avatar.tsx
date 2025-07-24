@@ -26,8 +26,8 @@ function getInitials(firstName?: string | null, lastName?: string | null): strin
 }
 
 function getGradientFromName(firstName?: string | null, lastName?: string | null): string {
-  // Use a vibrant gradient that stands out from the header: indigo → amber
-      return "from-primary-600 to-accent-400";
+  // Use a bold, vibrant gradient that clearly stands out: deep indigo → bright amber
+      return "from-primary-700 to-accent-300";
 }
 
 export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onImageUpload, editable = false }: AvatarProps) {
@@ -150,7 +150,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
           />
         ) : (
           <div 
-            className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient}`}
+            className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient} shadow-lg ring-2 ring-white/30`}
           >
             <span className="font-semibold text-white text-lg">{initials}</span>
           </div>
