@@ -150,12 +150,9 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
           />
         ) : (
           <div 
-            className="w-full h-full flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, hsl(326, 100%, 70%) 0%, hsl(280, 67%, 77%) 100%)'
-            }}
+            className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient}`}
           >
-            <span className="font-semibold text-black text-lg">{initials}</span>
+            <span className="font-semibold text-white text-lg">{initials}</span>
           </div>
         )}
       </div>
