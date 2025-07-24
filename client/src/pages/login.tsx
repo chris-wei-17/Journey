@@ -72,7 +72,7 @@ export default function Login({ onToggleMode }: LoginProps) {
             <p className="text-gray-600">Welcome back!</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="on" data-form-type="login" noValidate>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off" data-form-type="login" noValidate data-webkit-autofill="off" data-password-manager="off">
             {/* Hidden field to help iOS Safari recognize this as login form */}
             <input type="hidden" name="login-form" value="true" />
             
@@ -81,15 +81,17 @@ export default function Login({ onToggleMode }: LoginProps) {
               <Input
                 id="login-username"
                 name="username"
+                type="email"
                 {...register("usernameOrEmail")}
                 placeholder="Enter your username or email"
                 className="mt-2"
-                autoComplete="off"
+                autoComplete="username"
                 inputMode="email"
                 data-lpignore="true"
                 data-form-type="other"
                 spellCheck="false"
                 autoCapitalize="none"
+                data-webkit-autofill="off"
               />
               {errors.usernameOrEmail && (
                 <p className="text-sm text-red-500 mt-1">{errors.usernameOrEmail.message}</p>
@@ -105,9 +107,12 @@ export default function Login({ onToggleMode }: LoginProps) {
                 {...register("password")}
                 placeholder="Enter your password"
                 className="mt-2"
-                autoComplete="off"
+                autoComplete="current-password"
                 data-lpignore="true"
                 data-form-type="other"
+                data-webkit-autofill="off"
+                data-suggested-password="off"
+                data-password-manager="off"
                 spellCheck="false"
                 autoCapitalize="none"
               />
