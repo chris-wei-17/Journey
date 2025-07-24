@@ -121,23 +121,33 @@
       // Check PWA mode on load
       detectPWAMode();
       
-      // Dynamic status bar color based on scroll position
+      // Dynamic status bar color based on gradient position at top of viewport
       function updateStatusBarColor() {
-        const scrollPercentage = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-        const clampedPercentage = Math.max(0, Math.min(1, scrollPercentage));
+        // Calculate gradient position based on viewport top position
+        // The gradient flows from top (0%) to bottom (100%) of the document
+        const documentHeight = Math.max(
+          document.documentElement.scrollHeight,
+          document.documentElement.offsetHeight,
+          document.body.scrollHeight,
+          document.body.offsetHeight
+        );
         
-        // Interpolate between gradient colors based on scroll
+        // Position of the top of the viewport within the total document
+        const viewportTopPosition = window.scrollY / documentHeight;
+        const clampedPosition = Math.max(0, Math.min(1, viewportTopPosition));
+        
+        // Interpolate between gradient colors based on position
         let color;
-        if (clampedPercentage < 0.5) {
+        if (clampedPosition < 0.5) {
           // Interpolate between indigo (#6366f1) and sky blue (#0ea5e9)
-          const ratio = clampedPercentage * 2;
+          const ratio = clampedPosition * 2;
           const r = Math.round(99 + (14 - 99) * ratio);
           const g = Math.round(102 + (165 - 102) * ratio);
           const b = Math.round(241 + (233 - 241) * ratio);
           color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
         } else {
           // Interpolate between sky blue (#0ea5e9) and amber (#f59e0b)
-          const ratio = (clampedPercentage - 0.5) * 2;
+          const ratio = (clampedPosition - 0.5) * 2;
           const r = Math.round(14 + (245 - 14) * ratio);
           const g = Math.round(165 + (158 - 165) * ratio);
           const b = Math.round(233 + (11 - 233) * ratio);
