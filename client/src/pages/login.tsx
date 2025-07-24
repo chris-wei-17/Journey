@@ -73,9 +73,6 @@ export default function Login({ onToggleMode }: LoginProps) {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" autoComplete="off" data-form-type="login" noValidate data-webkit-autofill="off" data-password-manager="off">
-            {/* Hidden field to help iOS Safari recognize this as login form */}
-            <input type="hidden" name="login-form" value="true" />
-            
             <div>
               <Label htmlFor="login-username">Username or Email</Label>
               <Input
@@ -107,9 +104,9 @@ export default function Login({ onToggleMode }: LoginProps) {
                 {...register("password")}
                 placeholder="Enter your password"
                 className="mt-2"
-                autoComplete="current-password"
+                autoComplete="none"
                 data-lpignore="true"
-                data-form-type="other"
+                data-form-type="login"
                 data-webkit-autofill="off"
                 data-suggested-password="off"
                 data-password-manager="off"
