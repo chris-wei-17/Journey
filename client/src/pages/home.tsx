@@ -61,9 +61,9 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-gray-800">
             Welcome back, {user?.firstName || user?.username}!
           </h1>
-          <p className="text-gray-800 text-lg h-20 flex items-center">
+          <h2 className="text-gray-800 text-lg flex items-center">
             {getMotivationalMessage()}
-          </p>
+          </h2>
           
           {/* Date Navigation */}
           <DateNavigation 
