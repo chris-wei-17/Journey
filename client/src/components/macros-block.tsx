@@ -123,9 +123,6 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                 <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
                   Target: P:{macroTargets ? parseFloat(macroTargets.proteinTarget.toString()) : 0}g | F:{macroTargets ? parseFloat(macroTargets.fatsTarget.toString()) : 0}g | C:{macroTargets ? parseFloat(macroTargets.carbsTarget.toString()) : 0}g
                 </button>
-                    <div className="text-xs text-gray-400">
-                      Click to edit targets
-                    </div>
               </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
