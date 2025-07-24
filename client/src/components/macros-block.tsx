@@ -208,7 +208,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="space-y-3 mb-4">
+        <div className="space-y-3 mb-2">
           <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
             <span>NUTRITION</span>
             {macros.length > 0 && (
