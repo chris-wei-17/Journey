@@ -56,21 +56,16 @@ export default function Profile() {
 
   return (
     <div className="app-gradient-bg">
-      <Header showBackButton={true} />
+      <Header 
+        title="Profile & Settings"
+        showBackButton={true}
+        onBack={handleBack}
+      />
       
-      <main className="p-4 max-w-4xl mx-auto">
+      <main className="pt-28 p-4 max-w-4xl mx-auto"> {/* Add pt-28 */}
+        {/* Remove the duplicate back button */}
         <div className="mb-6">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleBack}
-            className="mb-4 bg-white/80 backdrop-blur-sm border-gray-200 text-gray-700 hover:text-gray-900 hover:bg-white/90 shadow-md hover:shadow-lg transition-all duration-200"
-          >
-            <i className="fas fa-arrow-left text-base mr-2"></i>
-            Back
-          </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Profile & Settings</h1>
             <p className="text-gray-600">Manage your account and preferences</p>
           </div>
         </div>
