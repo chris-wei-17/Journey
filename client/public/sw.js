@@ -11,7 +11,7 @@ const STATIC_ASSETS = [
   '/pwa-icon-192.svg',
   '/pwa-icon-512.svg',
   '/pwa-icon-apple-touch.svg',
-  '/1C3DC8D6-18E4-498F-A8BD-C5E4D2E29FD9.jpeg'
+  '/pwa-icon-journey.png'
 ];
 
 // Install event - cache static assets

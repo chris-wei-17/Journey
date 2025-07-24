@@ -28,6 +28,12 @@
       "sizes": "180x180", 
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/pwa-icon-journey.png",
+      "sizes": "180x180", 
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
