@@ -87,7 +87,8 @@ export default function Home() {
 
         {/* Stats Overview */}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-4 mt-4">
+
+        {/* <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-4 mt-4">
           <Card className="bg-white/75 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 border-0" style={{
             boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
           }}>
@@ -138,7 +139,7 @@ export default function Home() {
               <p className="text-xs text-gray-500 mt-1">Goals being tracked</p>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
         <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0" style={{
