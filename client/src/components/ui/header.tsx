@@ -24,9 +24,10 @@ export function Header({ title, showBackButton = false, onBack }: HeaderProps = 
               variant="ghost"
               size="sm"
               onClick={onBack || (() => window.history.back())}
-              className="text-gray-700 hover:text-gray-900 hover:bg-white/50 p-2"
+              className="text-primary-600 hover:text-primary-700 hover:bg-primary-50/50 p-2 flex items-center gap-2"
             >
               <i className="fas fa-arrow-left text-lg"></i>
+              <span>Back</span>
             </Button>
           ) : (
             <NavigationMenu />
@@ -35,7 +36,7 @@ export function Header({ title, showBackButton = false, onBack }: HeaderProps = 
             {title || "Journey"}
           </h1>
         </div>
-
+        
         {/* Right side - Avatar */}
         <Link href="/profile">
           <div className="cursor-pointer">
