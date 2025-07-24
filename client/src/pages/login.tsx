@@ -106,6 +106,7 @@ export default function Login({ onToggleMode }: LoginProps) {
                 className="mt-2"
                 spellCheck="false"
                 autoCapitalize="none"
+                autoComplete="current-password"
               />
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
