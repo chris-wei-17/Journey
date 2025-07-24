@@ -55,7 +55,7 @@ export default function Home() {
     <div className="app-gradient-bg">
       <Header />
       
-      <main className="pt-12 p-4 max-w-6xl mx-auto">
+      <main className="pt-20 p-4 max-w-6xl mx-auto">
         {/* Welcome Section */}
         <div className="mb-1">
           <h1 className="text-3xl font-bold text-gray-800">
