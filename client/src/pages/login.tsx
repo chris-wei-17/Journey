@@ -97,7 +97,7 @@ export default function Login({ onToggleMode }: LoginProps) {
 
             <div>
               <Label htmlFor="login-password">Password</Label>
-              <Input
+              <Input class="form-input"
                 id="login-password"
                 name="password"
                 type="password"
