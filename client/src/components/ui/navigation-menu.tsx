@@ -10,6 +10,7 @@ const navigationItems = [
   { label: "Photos", path: "/photos", icon: "fas fa-camera" },
   { label: "Workouts", path: "/workouts", icon: "fas fa-dumbbell" },
   { label: "Nutrition", path: "/nutrition", icon: "fas fa-apple-alt" },
+  { label: "Sleep", path: "/sleep", icon: "fas fa-calculator" },
 ];
 
 export function NavigationMenu() {
