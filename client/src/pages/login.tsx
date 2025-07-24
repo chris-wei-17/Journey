@@ -103,6 +103,7 @@ export default function Login({ onToggleMode }: LoginProps) {
                 placeholder="Enter your password"
                 className="mt-2"
                 autoComplete="current-password"
+                data-lpignore="true"
                 data-form-type="login"
               />
               {errors.password && (
