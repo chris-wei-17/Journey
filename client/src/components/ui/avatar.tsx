@@ -26,8 +26,8 @@ function getInitials(firstName?: string | null, lastName?: string | null): strin
 }
 
 function getGradientFromName(firstName?: string | null, lastName?: string | null): string {
-  // Use the app's main gradient theme: indigo → blue → amber
-      return "from-primary-500 to-secondary-400";
+  // Use a vibrant gradient that stands out from the header: indigo → amber
+      return "from-primary-600 to-accent-400";
 }
 
 export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onImageUpload, editable = false }: AvatarProps) {
@@ -254,7 +254,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
                     </Button>
                     <Button 
                       onClick={handleSave}
-                                              className="flex-1 text-center bg-gradient-to-r from-primary-500 to-secondary-400 hover:from-primary-600 hover:to-secondary-500"
+                                              className="flex-1 text-center bg-gradient-to-r from-primary-600 to-accent-400 hover:from-primary-700 hover:to-accent-500"
                     >
                       Save Photo
                     </Button>
