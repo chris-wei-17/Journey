@@ -57,11 +57,11 @@ export default function Home() {
       
       <main className="pt-28 p-4 max-w-6xl mx-auto">
         {/* Welcome Section */}
-        <div className="mb-2">
-          <h1 className="text-3xl font-bold text-gray-800 mb-1">
+        <div className="mb-1">
+          <h1 className="text-3xl font-bold text-gray-800">
             Welcome back, {user?.firstName || user?.username}!
           </h1>
-          <p className="text-gray-600 text-lg mb-1 h-16 flex items-center">
+          <p className="text-gray-600 text-lg h-16 flex items-center">
             {getMotivationalMessage()}
           </p>
           
