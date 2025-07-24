@@ -72,7 +72,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* My Day Block */}
         <MyDayBlock selectedDate={selectedDate} />
 

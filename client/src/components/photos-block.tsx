@@ -174,7 +174,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
 
   return (
     <>
-      <Card className="bg-white/75 backdrop-blur-sm shadow-xl mt-6 border-0" style={{
+      <Card className="bg-white/75 backdrop-blur-sm shadow-xl mt-4 border-0" style={{
         boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
         maxHeight: "70vh"
       }}>

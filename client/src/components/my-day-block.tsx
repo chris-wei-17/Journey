@@ -61,7 +61,7 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
   };
 
   return (
-    <Card className="mb-6 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="mb-4 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">My Day</CardTitle>
