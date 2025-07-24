@@ -55,7 +55,11 @@
                 newWorker.addEventListener('statechange', () => {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                     console.log('🎉 New service worker available');
-                    // Optionally show update notification to user
+                    
+                    // Show user-friendly update notification
+                    if (confirm('🚀 App update available! Refresh now to get the latest features?')) {
+                      window.location.reload();
+                    }
                   }
                 });
               }
