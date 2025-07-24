@@ -18,7 +18,7 @@ export default function Workouts() {
     <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
       <Header 
         title="Workouts"
-        showBackButton={true}
+        showBackButton={false}
         onBack={handleBack}
       />
       

@@ -56,7 +56,7 @@ export default function Profile() {
 
   return (
     <div className="app-gradient-bg">
-      <Header />
+      <Header showBackButton={true} />
       
       <main className="p-4 max-w-4xl mx-auto">
         <div className="mb-6">

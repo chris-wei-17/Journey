@@ -18,7 +18,7 @@ export default function Sleep() {
     <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
       <Header 
         title="Sleep"
-        showBackButton={true}
+        showBackButton={false}
         onBack={handleBack}
       />
       

@@ -143,7 +143,7 @@ export default function Photos() {
       <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
         <Header 
           title="Photos"
-          showBackButton={true}
+          showBackButton={false}
           onBack={handleBack}
         />
         <div className="flex items-center justify-center pt-28">
@@ -158,7 +158,7 @@ export default function Photos() {
       <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
         <Header 
           title="Photos"
-          showBackButton={true}
+          showBackButton={false}
           onBack={handleBack}
         />
         

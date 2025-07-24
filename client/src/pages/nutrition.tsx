@@ -18,7 +18,7 @@ export default function Nutrition() {
     <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
       <Header 
         title="Nutrition"
-        showBackButton={true}
+        showBackButton={false}
         onBack={handleBack}
       />
       

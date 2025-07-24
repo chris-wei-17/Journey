@@ -19,11 +19,11 @@ export function Header({ title, showBackButton = false, onBack }: HeaderProps = 
       <div className="flex items-center justify-between">
         {/* Left side - Back button or Navigation Menu */}
         <div className="flex items-center space-x-4">
-          {showBackButton && onBack ? (
+          {showBackButton ? (
             <Button
               variant="ghost"
               size="sm"
-              onClick={onBack}
+              onClick={onBack || (() => window.history.back())}
               className="text-gray-700 hover:text-gray-900 hover:bg-white/50 p-2"
             >
               <i className="fas fa-arrow-left text-lg"></i>
