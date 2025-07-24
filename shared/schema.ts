@@ -276,7 +276,7 @@ export const insertPhotoSchema = createInsertSchema(photos).omit({
 // Authentication schemas
 export const loginSchema = z.object({
   usernameOrEmail: z.string().min(1, "Username or email is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  userPassword: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export const registerSchema = z.object({

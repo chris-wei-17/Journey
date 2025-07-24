@@ -99,17 +99,19 @@ export default function Login({ onToggleMode }: LoginProps) {
               <Label htmlFor="login-password">Password</Label>
               <Input
                 id="login-password"
-                name="user-password"
+                name="userPassword"
                 type="password"
                 placeholder="Enter your password"
                 className="mt-2"
                 spellCheck="false"
                 autoCapitalize="none"
-                autoComplete="off"
+                autoComplete="current-password"
+                data-lpignore="true"
+                data-form-type="other"
                 {...register("user-password")}
               />
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+              {errors.userPassword && (
+                <p className="text-sm text-red-500 mt-1">{errors.userPassword.message}</p>
               )}
             </div>
 
