@@ -1,6 +1,6 @@
 {
-  "name": "FitJourney - Fitness Tracker",
-  "short_name": "FitJourney",
+  "name": "Journey - Fitness Tracker",
+  "short_name": "Journey",
   "description": "Your personal fitness tracking companion - track progress, photos, and achieve your goals",
   "start_url": "/",
   "display": "standalone",

@@ -17,13 +17,13 @@ export default function Landing() {
             <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
               <i className="fas fa-dumbbell text-3xl text-white"></i>
             </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">FitJourney</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Journey</h1>
             <p className="text-gray-600">Your personal fitness companion</p>
           </div>
 
           {/* Welcome Message */}
           <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Welcome to FitJourney</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Welcome to Journey</h2>
             <p className="text-gray-600 text-sm">
               Track your fitness progress, set goals, and document your journey with photos and insights.
             </p>

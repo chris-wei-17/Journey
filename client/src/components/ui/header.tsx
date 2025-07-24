@@ -31,7 +31,7 @@ export function Header({ title, showBackButton = false, onBack }: HeaderProps = 
             <NavigationMenu />
           )}
           <h1 className="text-xl font-bold text-gray-800">
-            {title || "FitJourney"}
+            {title || "Journey"}
           </h1>
         </div>
 

@@ -68,7 +68,7 @@ export default function Login({ onToggleMode }: LoginProps) {
             <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-500 to-lavender-500 rounded-full flex items-center justify-center">
               <i className="fas fa-dumbbell text-3xl text-white"></i>
             </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">FitJourney</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Journey</h1>
             <p className="text-gray-600">Welcome back!</p>
           </div>
 

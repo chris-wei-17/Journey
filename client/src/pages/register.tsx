@@ -31,7 +31,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
       
       toast({
         title: "Account Created!",
-        description: "Welcome to FitJourney! Let's set up your profile.",
+        description: "Welcome to Journey! Let's set up your profile.",
       });
       
       // Instead of reloading, fetch user data and update cache
@@ -67,7 +67,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
             <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-500 to-lavender-500 rounded-full flex items-center justify-center">
               <i className="fas fa-dumbbell text-3xl text-white"></i>
             </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">FitJourney</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Journey</h1>
             <p className="text-gray-600">Create your account</p>
           </div>
 

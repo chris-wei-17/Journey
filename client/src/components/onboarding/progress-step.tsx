@@ -68,7 +68,7 @@ export default function ProgressStep({ data, updateData }: ProgressStepProps) {
     },
     onSuccess: () => {
       toast({
-        title: "Welcome to FitJourney!",
+        title: "Welcome to Journey!",
         description: "Your account has been created successfully.",
       });
       // Reload to trigger auth check and redirect to home
