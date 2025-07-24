@@ -104,12 +104,6 @@ export default function Login({ onToggleMode }: LoginProps) {
                 {...register("password")}
                 placeholder="Enter your password"
                 className="mt-2"
-                autoComplete="none"
-                data-lpignore="true"
-                data-form-type="login"
-                data-webkit-autofill="off"
-                data-suggested-password="off"
-                data-password-manager="off"
                 spellCheck="false"
                 autoCapitalize="none"
               />
