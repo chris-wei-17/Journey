@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CalendarPicker } from "./calendar-picker";
 import { format, isToday, addDays, subDays } from "date-fns";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface DateNavigationProps {
   selectedDate: Date;
@@ -36,9 +37,8 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
           size="sm"
           onClick={handlePrevDay}
           className="bg-gray-800 text-white border-gray-800 hover:bg-gray-700 shadow-lg p-3 h-10 w-10 flex items-center justify-center"
-        >
-          <i className="fas fa-chevron-left text-lg"></i>
-        </Button>
+          <FontAwesomeIcon icon={['fas', 'fa-chevron-left']} />
+         </Button>
         
         <Button
           variant="outline"
@@ -60,7 +60,7 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
           onClick={handleNextDay}
           className="bg-gray-800 text-white border-gray-800 hover:bg-gray-700 shadow-lg p-3 h-10 w-10 flex items-center justify-center"
         >
-          <i className="fas fa-chevron-right text-lg"></i>
+          <FontAwesomeIcon icon={['fas', 'fa-chevron-right']} />
         </Button>
       </div>
 
