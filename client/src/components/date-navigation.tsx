@@ -37,9 +37,7 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
       size="icon" // ✅ "icon" size gives you h-10 w-10 from buttonVariants
       onClick={handlePrevDay}
       className="bg-gray-800 border-gray-800 hover:bg-gray-700 shadow-lg p-3 flex items-center justify-center"
-    >
-      <FontAwesomeIcon icon="coffee" className="text-white text-4xl" />
-         </Button>        
+    > prev </Button>        
 
 
         <Button
@@ -61,7 +59,7 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
           size="sm"
           onClick={handleNextDay}
           className="bg-gray-800 border-gray-800 hover:bg-gray-700 shadow-lg p-3 h-10 w-10 flex items-center justify-center">
-          <i className="fa-solid fa-chevron-right"></i>
+          next
         </Button>
       </div>
 
