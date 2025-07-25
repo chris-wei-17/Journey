@@ -141,7 +141,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
 
   return (
     <div className="relative inline-block">
-      <div className={`${sizeClass} rounded-full flex items-center justify-center overflow-hidden`}>
+      <div className={`${sizeClass} rounded-full flex items-center justify-center `}>
         {profileImageUrl ? (
           <img 
             src={profileImageUrl} 
