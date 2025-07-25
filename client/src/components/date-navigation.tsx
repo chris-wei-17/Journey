@@ -32,13 +32,13 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
   return (
     <div className="relative mb-6">
       <div className="flex items-center justify-center space-x-4">
-        {/* <Button 
+        <Button 
           variant="outline" 
           size="sm"
           onClick={handlePrevDay}
           className="bg-gray-800 border-gray-800 hover:bg-gray-700 shadow-lg p-3 h-10 w-10 flex items-center justify-center">
-         </Button>         */}
           <FontAwesomeIcon className="text-white" icon={['fas', 'chevron-left']} />
+         </Button>        
 
 
         <Button
