@@ -174,7 +174,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
 
   return (
     <>
-      <Card className="bg-white/75 backdrop-blur-sm shadow-xl mt-2 border-0" style={{
+      <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg" style={{
         boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
         maxHeight: "70vh"
       }}>
@@ -222,7 +222,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
             <Button
               onClick={handleAddPhotos}
               disabled={uploadPhotosMutation.isPending}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm"
+              className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200"
             >
               <i className="fas fa-plus mr-2 text-xs"></i>
               {uploadPhotosMutation.isPending ? 'Uploading...' : 'Add Photos'}
