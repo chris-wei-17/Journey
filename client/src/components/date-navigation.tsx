@@ -32,7 +32,7 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
     <div className="relative mb-6">
       <div className="flex items-center justify-center space-x-4">
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="sm"
           onClick={handlePrevDay}
           className="text-gray-600 hover:text-gray-800 hover:bg-white/50 p-3 h-10 w-10 flex items-center justify-center"
@@ -55,7 +55,7 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
         </Button>
         
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="sm"
           onClick={handleNextDay}
           className="text-gray-600 hover:text-gray-800 hover:bg-white/50 p-3 h-10 w-10 flex items-center justify-center"
