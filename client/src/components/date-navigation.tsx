@@ -36,7 +36,8 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
       variant="outline"
       size="sm" 
       onClick={handlePrevDay}
-      className="bg-gray-800 text-white border-gray-800 hover:bg-gray-700 shadow-lg p-3 flex items-center justify-center"
+      className="bg-gray-800 text-white border-gray-800 
+      hover:bg-gray-700 shadow-lg p-3 h-10 w-10 flex items-center justify-center"
     > prev </Button>        
 
 
