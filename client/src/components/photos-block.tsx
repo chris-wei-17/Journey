@@ -218,11 +218,11 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
           )}
 
           {/* Action Buttons */}
-          <div className="flex space-x-2 mt-8 mb-2">
+          <div className="flex space-x-2 mt-4">
             <Button
               onClick={handleAddPhotos}
               disabled={uploadPhotosMutation.isPending}
-              className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200"
+              className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200 mb-2"
             >
               <i className="fas fa-plus mr-2 text-xs"></i>
               {uploadPhotosMutation.isPending ? 'Uploading...' : 'ADD PHOTOS'}
