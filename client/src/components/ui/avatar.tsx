@@ -150,9 +150,9 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
           />
         ) : (
           <div 
-            className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradient} shadow-lg ring-2 ring-white/30`}
+            className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-700 to-accent-300 shadow-lg ring-2 ring-black/30`}
           >
-            <span className="font-semibold text-white text-lg">{initials}</span>
+            <span className="font-semibold text-black text-lg">{initials}</span>
           </div>
         )}
       </div>
