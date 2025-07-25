@@ -38,7 +38,7 @@ export function DateNavigation({ selectedDate, onDateChange }: DateNavigationPro
           onClick={handlePrevDay}
           className="bg-gray-800 border-gray-800 hover:bg-gray-700 shadow-lg p-3 h-10 w-10 flex items-center justify-center">
          </Button>         */}
-          <FontAwesomeIcon icon={['fas', 'chevron-left']} style={{color: 'white'}}/>
+          <FontAwesomeIcon icon={['fas', 'chevron-left']} className="text-white"/>
 
 
         <Button
