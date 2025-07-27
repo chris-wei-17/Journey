@@ -15,15 +15,6 @@ const ALL_ACTIVITIES = [
   { id: 'walking', label: 'WALKING', icon: 'fa-walking', category: 'STRAIN' },
   { id: 'running', label: 'RUNNING', icon: 'fa-running', category: 'STRAIN' },
   { id: 'cycling', label: 'CYCLING', icon: 'fa-biking', category: 'STRAIN' },
-  { id: 'acupuncture', label: 'ACUPUNCTURE', icon: 'fa-spa', category: 'RECOVERY' },
-  { id: 'air-compression', label: 'AIR COMPRESSION', icon: 'fa-wind', category: 'RECOVERY' },
-  { id: 'air-compression-normatec', label: 'AIR COMPRESSION (NORMATEC)', icon: 'fa-wind', category: 'RECOVERY' },
-  { id: 'assault-bike', label: 'ASSAULT BIKE', icon: 'fa-biking', category: 'STRAIN' },
-  { id: 'australian-rules-football', label: 'AUSTRALIAN RULES FOOTBALL', icon: 'fa-football-ball', category: 'STRAIN' },
-  { id: 'babywearing', label: 'BABYWEARING', icon: 'fa-baby', category: 'STRAIN' },
-  { id: 'badminton', label: 'BADMINTON', icon: 'fa-shuttlecock', category: 'STRAIN' },
-  { id: 'barre', label: 'BARRE', icon: 'fa-dumbbell', category: 'STRAIN' },
-  { id: 'barres', label: 'BARRES', icon: 'fa-dumbbell', category: 'STRAIN' },
 ];
 
 export default function SelectActivity() {
