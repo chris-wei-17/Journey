@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { loginSchema, type LoginData } from "@shared/schema";
+import { useLocation } from "wouter";
 
 interface LoginProps {
   onToggleMode: () => void;
@@ -58,6 +59,8 @@ export default function Login({ onToggleMode }: LoginProps) {
   const onSubmit = (data: LoginData) => {
     loginMutation.mutate(data);
   };
+
+  const [, setLocation] = useLocation();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-600 to-lavender-600">
@@ -135,14 +138,14 @@ export default function Login({ onToggleMode }: LoginProps) {
     </button>
   </p>
   
-  <p className="text-sm">
-    <a 
-      href="/forgot-password"
-      className="text-primary-300 hover:text-primary-400 font-semibold"
-    >
-      Forgot Password?
-    </a>
-  </p>
+<p className="text-sm">
+  <button
+    onClick={() => setLocation("/forgot-password")}
+    className="text-primary-300 hover:text-primary-400 font-semibold"
+  >
+    Forgot Password?
+  </button>
+</p>
 </div>
         </CardContent>
       </Card>
