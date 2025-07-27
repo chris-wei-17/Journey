@@ -1069,8 +1069,11 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
 
-// Utility: Replace with actual email sending function
-const sendEmailFn = async (to: string, subject: string, html: string) => {
+const sendEmailFn = async (
+  to: string,
+  subject: string,
+  html: string
+): Promise<void> => {
   console.log(`🚀 [MOCK EMAIL] To: ${to}\nSubject: ${subject}\n${html}`);
 };
 
