@@ -34,6 +34,7 @@ function Router() {
 
   return (
     <Switch>
+      <Route path="/forgot-password" component={ForgotPassword} />
       {!isAuthenticated ? (
         <Route path="/" component={Auth} />
       ) : (
@@ -53,10 +54,7 @@ function Router() {
               <Route path="/add-activity" component={AddActivity} />
               <Route path="/select-activity" component={SelectActivity} />
               <Route path="/add-macros" component={AddMacros} />
-              <Route path="/forgot-password" component={ForgotPassword} >
-                console.log("ForgotPassword component:", ForgotPassword); </Route>
               <Route path="/reset-password" component={ResetPassword} />
-              <Route path="/debug" component={() => <ForgotPassword />} />
             </>
           )}
         </>
