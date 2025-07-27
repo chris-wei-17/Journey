@@ -56,6 +56,7 @@ function Router() {
               <Route path="/forgot-password" component={ForgotPassword} >
                 console.log("ForgotPassword component:", ForgotPassword); </Route>
               <Route path="/reset-password" component={ResetPassword} />
+              <Route path="/debug" component={() => <ForgotPassword />} />
             </>
           )}
         </>
