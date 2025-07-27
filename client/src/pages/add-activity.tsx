@@ -13,13 +13,6 @@ const ACTIVITY_OPTIONS = [
   { value: 'walking', label: 'Walking', icon: 'fa-walking' },
   { value: 'running', label: 'Running', icon: 'fa-running' },
   { value: 'cycling', label: 'Cycling', icon: 'fa-biking' },
-  { value: 'acupuncture', label: 'Acupuncture', icon: 'fa-spa' },
-  { value: 'air-compression', label: 'Air Compression', icon: 'fa-wind' },
-  { value: 'assault-bike', label: 'Assault Bike', icon: 'fa-biking' },
-  { value: 'australian-rules-football', label: 'Australian Rules Football', icon: 'fa-football-ball' },
-  { value: 'babywearing', label: 'Babywearing', icon: 'fa-baby' },
-  { value: 'badminton', label: 'Badminton', icon: 'fa-shuttlecock' },
-  { value: 'barre', label: 'Barre', icon: 'fa-dumbbell' },
 ];
 
 export default function AddActivity() {
