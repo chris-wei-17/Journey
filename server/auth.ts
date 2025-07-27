@@ -89,3 +89,114 @@ export const checkRateLimit = (identifier: string, maxRequests = 5): boolean => 
 export const clearRateLimit = (identifier: string): void => {
   rateLimitStore.delete(identifier);
 };
+
+// Add at bottom of your current module
+
+// Password Reset Token (1 hour expiry)
+export const generatePasswordResetToken = (userId: number): string => {
+  return jwt.sign({ userId, type: "reset" }, JWT_SECRET, { expiresIn: "1h" });
+};
+
+export const verifyPasswordResetToken = (token: string): number | null => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    if (decoded.type === "reset" && decoded.userId) {
+      return decoded.userId;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
+ * Handles in-app password reset (authenticated route)
+ */
+export const resetPasswordWhileLoggedIn = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.userId;
+
+  if (!userId || !currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Missing fields" });
+  }
+
+  try {
+    // Fetch user from Supabase
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, password")
+      .eq("id", userId)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await comparePassword(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Current password incorrect" });
+    }
+
+    const newHash = await hashPassword(newPassword);
+    await supabase.from("users").update({ password: newHash }).eq("id", userId);
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating password" });
+  }
+};
+
+/**
+ * Sends email with reset token (forgot password)
+ */
+export const sendForgotPasswordEmail = async (
+  email: string,
+  sendEmailFn: (to: string, subject: string, html: string) => Promise<void>
+) => {
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("id")
+    .eq("email", email)
+    .single();
+
+  if (error || !user) return;
+
+  const resetToken = generatePasswordResetToken(user.id);
+  const resetLink = `https://yourdomain.com/reset-password?token=${resetToken}`;
+
+  const subject = "Reset Your Password";
+  const html = `<p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`;
+
+  await sendEmailFn(email, subject, html);
+};
+
+/**
+ * Handles reset using token (unauthenticated route)
+ */
+export const resetPasswordWithToken = async (
+  req: Request,
+  res: Response
+) => {
+  const { token, newPassword } = req.body;
+  const userId = verifyPasswordResetToken(token);
+
+  if (!userId) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+
+  const newHash = await hashPassword(newPassword);
+
+  const { error } = await supabase
+    .from("users")
+    .update({ password: newHash })
+    .eq("id", userId);
+
+  if (error) {
+    return res.status(500).json({ message: "Error resetting password" });
+  }
+
+  res.json({ message: "Password has been reset successfully" });
+};
