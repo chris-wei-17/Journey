@@ -19,9 +19,9 @@ import {
   resetPasswordWhileLoggedIn, 
   sendForgotPasswordEmail, 
   resetPasswordWithToken 
-} from "./auth";
+} from "./auth.js";
 
-import { sendEmail } from "./mail"
+import { sendEmail } from "./mail.js"
 
 import { 
   loginSchema,
