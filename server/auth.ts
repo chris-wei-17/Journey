@@ -154,7 +154,7 @@ export const resetPasswordWhileLoggedIn = async (
  */
 export const sendForgotPasswordEmail = async (
   email: string,
-  sendEmailFn: (to: string, subject: string, html: string) => Promise<void>
+  sendEmailFn: EmailSender
 ) => {
   const { data: user, error } = await supabase
     .from("users")
