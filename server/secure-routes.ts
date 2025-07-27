@@ -14,6 +14,13 @@ import {
   JWT_SECRET,
   type AuthenticatedRequest 
 } from "./auth.js";
+
+import { 
+  resetPasswordWhileLoggedIn, 
+  sendForgotPasswordEmail, 
+  resetPasswordWithToken 
+} from "./auth";
+
 import { 
   loginSchema,
   registerSchema,
@@ -1060,6 +1067,36 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       originalUrl: req.originalUrl
     });
   });
+
+
+// Utility: Replace with actual email sending function
+const sendEmailFn = async (to: string, subject: string, html: string) => {
+  console.log(`🚀 [MOCK EMAIL] To: ${to}\nSubject: ${subject}\n${html}`);
+};
+
+// Authenticated: Reset password while logged in
+app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
+  await resetPasswordWhileLoggedIn(req as AuthenticatedRequest, res);
+});
+
+// Public: Request password reset email
+app.post('/api/auth/request-password-reset', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: "Email is required" });
+
+  try {
+    await sendForgotPasswordEmail(email, sendEmailFn);
+    res.json({ message: "If the email is registered, a reset link has been sent" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Failed to send reset link" });
+  }
+});
+
+// Public: Reset password with token
+app.post('/api/auth/reset-password', async (req, res) => {
+  await resetPasswordWithToken(req, res);
+});
 
   const httpServer = createServer(app);
   return httpServer;
