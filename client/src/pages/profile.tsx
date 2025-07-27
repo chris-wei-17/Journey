@@ -126,7 +126,14 @@ export default function Profile() {
                 <i className="fas fa-chart-bar mr-3"></i>
                 Data Export
               </Button>
-              
+              <Button 
+                onClick={() => setLocation("/reset-password")}
+                variant="outline" 
+                className="w-full justify-start shadow-sm hover:shadow-md transition-shadow"
+              >
+                <i className="fas fa-key mr-3"></i>
+                Change Password
+              </Button>
               <hr className="my-6" />
               
               <Button 
