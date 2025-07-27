@@ -124,17 +124,26 @@ export default function Login({ onToggleMode }: LoginProps) {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <button
-                onClick={onToggleMode}
-                className="text-primary-300 hover:text-primary-400 font-semibold"
-              >
-                Create Account
-              </button>
-            </p>
-          </div>
+<div className="mt-6 text-center space-y-3">
+  <p className="text-sm text-gray-600">
+    Don't have an account?{" "}
+    <button
+      onClick={onToggleMode}
+      className="text-primary-300 hover:text-primary-400 font-semibold"
+    >
+      Create Account
+    </button>
+  </p>
+  
+  <p className="text-sm">
+    <a 
+      href="/forgot-password"
+      className="text-primary-300 hover:text-primary-400 font-semibold"
+    >
+      Forgot Password?
+    </a>
+  </p>
+</div>
         </CardContent>
       </Card>
     </div>
