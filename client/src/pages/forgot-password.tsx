@@ -46,7 +46,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary-600 to-lavender-600">
-      <Card className="w-full max-w-md card-shadow">
+      {/*<Card className="w-full max-w-md card-shadow">
         <CardContent className="p-8">
           <div className="text-center mb-8">
             <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary-500 to-lavender-500 rounded-full flex items-center justify-center">
@@ -89,7 +89,7 @@ export default function ForgotPassword() {
             </p>
           </div>
         </CardContent>
-      </Card>
+      </Card>*/}
     </div>
   );
 }
