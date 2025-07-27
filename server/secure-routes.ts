@@ -21,6 +21,8 @@ import {
   resetPasswordWithToken 
 } from "./auth";
 
+import { sendEmail } from "./mail"
+
 import { 
   loginSchema,
   registerSchema,
