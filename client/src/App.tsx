@@ -18,6 +18,8 @@ import Goals from "@/pages/goals";
 import Workouts from "@/pages/workouts";
 import Nutrition from "@/pages/nutrition";
 import Sleep from "@/pages/sleep";
+import ForgotPassword from "@/pages/forgot-password"; 
+import ResetPassword from "@/pages/reset-password";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -51,6 +53,8 @@ function Router() {
               <Route path="/add-activity" component={AddActivity} />
               <Route path="/select-activity" component={SelectActivity} />
               <Route path="/add-macros" component={AddMacros} />
+              <Route path="/forgot-password" component={ForgotPassword} />
+              <Route path="/reset-password" component={ResetPassword} />
             </>
           )}
         </>
