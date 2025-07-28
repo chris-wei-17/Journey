@@ -28,7 +28,7 @@ export default function Login({ onToggleMode }: LoginProps) {
     // Change input type to password after component mounts to avoid iOS detection
     const timer = setTimeout(() => {
       setPasswordInputType("password");
-    }, 1000);
+    }, 100);
     return () => clearTimeout(timer);
   }, []);
 
