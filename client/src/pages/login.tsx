@@ -24,13 +24,12 @@ export default function Login({ onToggleMode }: LoginProps) {
     resolver: zodResolver(loginSchema),
   });
 
-  useEffect(() => {
-    // Change input type to password after component mounts to avoid iOS detection
-    const timer = setTimeout(() => {
+  const handlePasswordFocus = () => {
+    // Change to password type only when user focuses the field
+    setTimeout(() => {
       setPasswordInputType("password");
     }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+  };
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
@@ -144,6 +143,7 @@ export default function Login({ onToggleMode }: LoginProps) {
                 data-1p-ignore="true"
                 data-password-generator="off"
                 data-password-manager="off"
+                onFocus={handlePasswordFocus}
                 {...register("password")}
               />
               {errors.password && (
