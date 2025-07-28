@@ -1297,6 +1297,70 @@ app.post('/api/auth/reset-password', async (req, res) => {
   await resetPasswordWithToken(req, res);
 });
 
+// Authenticated: Submit feedback
+app.post('/api/feedback', authenticateToken, async (req: any, res) => {
+  const { feedback } = req.body;
+  const userId = req.userId;
+
+  if (!feedback || typeof feedback !== 'string') {
+    return res.status(400).json({ message: "Feedback is required" });
+  }
+
+  if (feedback.trim().length < 10) {
+    return res.status(400).json({ message: "Feedback must be at least 10 characters long" });
+  }
+
+  if (feedback.trim().length > 2000) {
+    return res.status(400).json({ message: "Feedback must be less than 2000 characters" });
+  }
+
+  // Rate limiting - max 3 feedback submissions per 15 minutes per user
+  const rateLimitKey = `feedback_${userId}`;
+  if (!checkRateLimit(rateLimitKey, 3)) {
+    return res.status(429).json({ 
+      message: "Too many feedback submissions. Please wait 15 minutes before submitting again." 
+    });
+  }
+
+  try {
+    // Get user info for context
+    const user = await storage.getUser(userId);
+    const userProfile = await storage.getUserProfile(userId);
+    
+    const userContext = user ? `
+User: ${user.firstName || 'Unknown'} ${user.lastName || ''} (${user.username})
+Email: ${user.email}
+User ID: ${userId}
+Profile: ${userProfile ? `${userProfile.gender || 'N/A'}, ${userProfile.bodyType || 'N/A'}` : 'No profile'}
+    `.trim() : `User ID: ${userId}`;
+
+    const subject = "Journey App - User Feedback";
+    const emailContent = `
+New feedback received from Journey app:
+
+${userContext}
+
+Feedback:
+${feedback.trim()}
+
+---
+Submitted at: ${new Date().toISOString()}
+    `.trim();
+
+    await sendEmailFn(
+      process.env.SUPPORT_EMAIL || 'support@journey.app', 
+      subject, 
+      emailContent
+    );
+
+    console.log(`✅ Feedback submitted by user ${userId}`);
+    res.json({ message: "Feedback submitted successfully" });
+  } catch (error) {
+    console.error("Feedback submission error:", error);
+    res.status(500).json({ message: "Failed to submit feedback" });
+  }
+});
+
   const httpServer = createServer(app);
   return httpServer;
 }

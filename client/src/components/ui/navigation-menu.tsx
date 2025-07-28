@@ -11,6 +11,7 @@ const navigationItems = [
   { label: "Workouts", path: "/workouts", icon: "fas fa-dumbbell" },
   { label: "Nutrition", path: "/nutrition", icon: "fas fa-apple-alt" },
   { label: "Sleep", path: "/sleep", icon: "fas fa-calculator" },
+  { label: "Feedback", path: "/feedback", icon: "fas fa-comment" },
 ];
 
 export function NavigationMenu() {
