@@ -30,12 +30,14 @@ import {
   insertProgressEntrySchema,
   insertPhotoSchema,
   insertActivitySchema,
+  insertCustomActivitySchema,
   insertMacroSchema,
   insertMacroTargetSchema,
   insertMetricsSchema,
   insertCustomMetricFieldSchema,
   type MetricEntry,
-  type CustomMetricField
+  type CustomMetricField,
+  type CustomActivity
 } from "../shared/schema.js";
 import multer from "multer";
 import sharp from "sharp";
@@ -816,6 +818,72 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting activity:", error);
       res.status(500).json({ message: "Failed to delete activity" });
+    }
+  });
+
+  // Custom activity routes
+  app.get('/api/custom-activities', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const customActivities = await storage.getUserCustomActivities(userId);
+      res.json(customActivities);
+    } catch (error) {
+      console.error("Error fetching custom activities:", error);
+      res.status(500).json({ message: "Failed to fetch custom activities" });
+    }
+  });
+
+  app.post('/api/custom-activities', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const customActivityData = {
+        userId,
+        name: req.body.name,
+        category: req.body.category || 'STRAIN',
+        icon: req.body.icon || 'fa-dumbbell',
+      };
+      
+      const result = insertCustomActivitySchema.safeParse(customActivityData);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Invalid custom activity data",
+          errors: result.error.errors 
+        });
+      }
+
+      // Check if activity with same name already exists for this user
+      const existingActivities = await storage.getUserCustomActivities(userId);
+      const normalizedName = result.data.name.toLowerCase().trim();
+      const existingActivity = existingActivities.find(
+        activity => activity.name.toLowerCase().trim() === normalizedName
+      );
+      
+      if (existingActivity) {
+        return res.status(409).json({ 
+          message: "Activity with this name already exists",
+          activity: existingActivity 
+        });
+      }
+
+      const customActivity = await storage.createCustomActivity(result.data);
+      res.status(201).json(customActivity);
+    } catch (error) {
+      console.error("Error creating custom activity:", error);
+      res.status(500).json({ message: "Failed to create custom activity" });
+    }
+  });
+
+  app.delete('/api/custom-activities/:id', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const activityId = parseInt(req.params.id);
+      
+      await storage.deleteCustomActivity(activityId, userId);
+      res.json({ message: "Custom activity deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting custom activity:", error);
+      res.status(500).json({ message: "Failed to delete custom activity" });
     }
   });
 

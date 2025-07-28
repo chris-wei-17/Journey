@@ -267,11 +267,33 @@ INSERT INTO user_goals (user_id, goal_type, is_active) VALUES
 ON CONFLICT DO NOTHING;
 */
 
+-- Custom Activities Table for user-defined workout activities
+CREATE TABLE IF NOT EXISTS custom_activities (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR NOT NULL,
+  category VARCHAR NOT NULL DEFAULT 'STRAIN',
+  icon VARCHAR DEFAULT 'fa-dumbbell',
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, name) -- Prevent duplicate activity names per user
+);
+
+-- Add index for better query performance
+CREATE INDEX IF NOT EXISTS idx_custom_activities_user_id ON custom_activities(user_id);
+CREATE INDEX IF NOT EXISTS idx_custom_activities_name ON custom_activities(name);
+
+-- Enable RLS on custom_activities table
+ALTER TABLE custom_activities ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policy for custom_activities - users can only see their own
+CREATE POLICY custom_activities_user_policy ON custom_activities
+  FOR ALL USING (auth.uid()::text = user_id::text);
+
 -- Success message
 DO $$
 BEGIN
     RAISE NOTICE 'FitJourney database setup completed successfully!';
-    RAISE NOTICE 'Tables created: users, user_profiles, user_goals, progress_entries, photos, user_sessions, metrics, custom_metric_fields, activities, macros, macro_targets';
+    RAISE NOTICE 'Tables created: users, user_profiles, user_goals, progress_entries, photos, user_sessions, metrics, custom_metric_fields, activities, macros, macro_targets, custom_activities';
     RAISE NOTICE 'Row Level Security enabled on all tables';
     RAISE NOTICE 'Indexes created for optimal performance';
     RAISE NOTICE 'Triggers set up for automatic timestamp updates';

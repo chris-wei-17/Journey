@@ -179,6 +179,24 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type Activity = typeof activities.$inferSelect;
 
+// Custom activities table for user-defined workout types
+export const customActivities = pgTable("custom_activities", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  name: varchar("name").notNull(), // Activity name (formatted with proper capitalization)
+  category: varchar("category").notNull().default("STRAIN"), // STRAIN, RECOVERY, SLEEP
+  icon: varchar("icon").default("fa-dumbbell"), // FontAwesome icon class
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCustomActivitySchema = createInsertSchema(customActivities).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCustomActivity = z.infer<typeof insertCustomActivitySchema>;
+export type CustomActivity = typeof customActivities.$inferSelect;
+
 // Macros table for nutrition tracking
 export const macros = pgTable("macros", {
   id: serial("id").primaryKey(),

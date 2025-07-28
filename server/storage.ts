@@ -17,6 +17,9 @@ import {
   activities,
   type Activity,
   type InsertActivity,
+  customActivities,
+  type CustomActivity,
+  type InsertCustomActivity,
   macros,
   type Macro,
   type InsertMacro,
@@ -68,6 +71,11 @@ export interface IStorage {
   getActivitiesForDate(userId: number, date: string): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
   deleteActivity(id: number, userId: number): Promise<void>;
+
+  // Custom activity operations
+  getUserCustomActivities(userId: number): Promise<CustomActivity[]>;
+  createCustomActivity(activity: InsertCustomActivity): Promise<CustomActivity>;
+  deleteCustomActivity(id: number, userId: number): Promise<void>;
 
   // Macro operations
   getUserMacros(userId: number): Promise<Macro[]>;
@@ -302,6 +310,38 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(activities)
       .where(and(eq(activities.id, id), eq(activities.userId, userId)));
+  }
+
+  // Custom activity operations
+  async getUserCustomActivities(userId: number): Promise<CustomActivity[]> {
+    return await db
+      .select()
+      .from(customActivities)
+      .where(eq(customActivities.userId, userId))
+      .orderBy(customActivities.name);
+  }
+
+  async createCustomActivity(activity: InsertCustomActivity): Promise<CustomActivity> {
+    // Format the name with proper capitalization
+    const formattedName = activity.name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
+    const [newActivity] = await db
+      .insert(customActivities)
+      .values({
+        ...activity,
+        name: formattedName,
+      })
+      .returning();
+    return newActivity;
+  }
+
+  async deleteCustomActivity(id: number, userId: number): Promise<void> {
+    await db
+      .delete(customActivities)
+      .where(and(eq(customActivities.id, id), eq(customActivities.userId, userId)));
   }
 
   // Macro operations

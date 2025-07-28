@@ -3,17 +3,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-const ACTIVITY_OPTIONS = [
+const DEFAULT_ACTIVITY_OPTIONS = [
   { value: 'walking', label: 'Walking', icon: 'fa-walking' },
   { value: 'running', label: 'Running', icon: 'fa-running' },
   { value: 'cycling', label: 'Cycling', icon: 'fa-biking' },
 ];
+
+// Cache key for localStorage - same as select-activity page
+const CUSTOM_ACTIVITIES_CACHE_KEY = 'journey_custom_activities';
+
+interface CachedCustomActivities {
+  data: any[];
+  timestamp: number;
+}
+
+interface CustomActivity {
+  id: number;
+  name: string;
+  category: string;
+  icon: string;
+  userId: number;
+  createdAt: string;
+}
 
 export default function AddActivity() {
   const [, setLocation] = useLocation();
@@ -23,6 +40,68 @@ export default function AddActivity() {
   const [selectedActivity, setSelectedActivity] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+
+  // Fetch custom activities
+  const { data: customActivities = [] } = useQuery({
+    queryKey: ['/api/custom-activities'],
+    queryFn: async () => {
+      // Check cache first
+      const cached = getCachedCustomActivities();
+      if (cached) {
+        return cached;
+      }
+
+      // Fetch from API
+      const activities = await apiRequest('/api/custom-activities', 'GET');
+      setCachedCustomActivities(activities);
+      return activities;
+    },
+  });
+
+  // Cache management functions
+  const getCachedCustomActivities = (): CustomActivity[] | null => {
+    try {
+      const cached = localStorage.getItem(CUSTOM_ACTIVITIES_CACHE_KEY);
+      if (!cached) return null;
+
+      const parsedCache: CachedCustomActivities = JSON.parse(cached);
+      const now = Date.now();
+      const cacheAge = now - parsedCache.timestamp;
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+      if (cacheAge > maxAge) {
+        localStorage.removeItem(CUSTOM_ACTIVITIES_CACHE_KEY);
+        return null;
+      }
+
+      return parsedCache.data;
+    } catch (error) {
+      localStorage.removeItem(CUSTOM_ACTIVITIES_CACHE_KEY);
+      return null;
+    }
+  };
+
+  const setCachedCustomActivities = (activities: CustomActivity[]) => {
+    try {
+      const cacheData: CachedCustomActivities = {
+        data: activities,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(CUSTOM_ACTIVITIES_CACHE_KEY, JSON.stringify(cacheData));
+    } catch (error) {
+      console.error('Error caching custom activities:', error);
+    }
+  };
+
+  // Convert custom activities to the same format as default activities
+  const formattedCustomActivities = customActivities.map((activity: CustomActivity) => ({
+    value: `custom-${activity.id}`,
+    label: activity.name,
+    icon: activity.icon,
+  }));
+
+  // Combine default and custom activities
+  const ACTIVITY_OPTIONS = [...DEFAULT_ACTIVITY_OPTIONS, ...formattedCustomActivities];
 
   // Get activity from URL params if coming from select page
   useEffect(() => {
@@ -84,8 +163,18 @@ export default function AddActivity() {
     const startDateTime = new Date(`${today}T${startTime}`);
     const endDateTime = new Date(`${today}T${endTime}`);
 
+    // Determine the activity type for the database
+    let activityType = selectedActivity;
+    
+    // If it's a custom activity, we need to extract the activity name
+    if (selectedActivity.startsWith('custom-')) {
+      const customActivityId = parseInt(selectedActivity.replace('custom-', ''));
+      const customActivity = customActivities.find((activity: CustomActivity) => activity.id === customActivityId);
+      activityType = customActivity ? customActivity.name : selectedActivity;
+    }
+
     createActivityMutation.mutate({
-      activityType: selectedActivity,
+      activityType: activityType,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       date: new Date(today).toISOString(),
