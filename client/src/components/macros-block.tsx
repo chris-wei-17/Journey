@@ -79,7 +79,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
   const updateTargetsMutation = useMutation({
     mutationFn: async (data: z.infer<typeof macroTargetSchema>) => {
-      return await apiRequest('/api/macro-targets', 'POST', data);
+              return await apiRequest('POST', '/api/macro-targets', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/macro-targets'] });

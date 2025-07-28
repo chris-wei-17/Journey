@@ -52,7 +52,7 @@ export default function AddActivity() {
       }
 
       // Fetch from API
-      const activities = await apiRequest('/api/custom-activities', 'GET');
+              const activities = await apiRequest('GET', '/api/custom-activities');
       setCachedCustomActivities(activities);
       return activities;
     },
@@ -118,7 +118,7 @@ export default function AddActivity() {
     mutationFn: async (activityData: any) => {
       console.log('Frontend sending activity data:', activityData);
       try {
-        const result = await apiRequest('/api/activities', 'POST', activityData);
+        const result = await apiRequest('POST', '/api/activities', activityData);
         console.log('Frontend received result:', result);
         return result;
       } catch (error) {

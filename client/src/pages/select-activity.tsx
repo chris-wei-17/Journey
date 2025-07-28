@@ -65,7 +65,7 @@ export default function SelectActivity() {
       }
 
       // Fetch from API
-      const activities = await apiRequest('/api/custom-activities', 'GET');
+      const activities = await apiRequest('GET', '/api/custom-activities');
       setCachedData(CUSTOM_ACTIVITIES_CACHE_KEY, activities);
       return activities;
     },
@@ -74,7 +74,7 @@ export default function SelectActivity() {
   // Create custom activity mutation
   const createCustomActivityMutation = useMutation({
     mutationFn: async (activityData: { name: string; category: string; icon: string }) => {
-      return await apiRequest('/api/custom-activities', 'POST', activityData);
+      return await apiRequest('POST', '/api/custom-activities', activityData);
     },
     onSuccess: (newActivity) => {
       // Update custom activities cache

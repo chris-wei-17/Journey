@@ -23,7 +23,7 @@ export default function AddMacros() {
     mutationFn: async (macroData: any) => {
       console.log('Frontend sending macro data:', macroData);
       try {
-        const result = await apiRequest('/api/macros', 'POST', macroData);
+        const result = await apiRequest('POST', '/api/macros', macroData);
         console.log('Frontend received result:', result);
         return result;
       } catch (error) {
