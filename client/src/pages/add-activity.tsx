@@ -96,7 +96,7 @@ export default function AddActivity() {
   // Convert custom activities to the same format as default activities
   const formattedCustomActivities = customActivities.map((activity: CustomActivity) => ({
     value: `custom-${activity.id}`,
-    label: activity.name, // Already in all caps from database
+    label: activity.name.toUpperCase(), // Show uppercase in dropdown to match default activities
     icon: activity.icon,
   }));
 

@@ -243,8 +243,8 @@ export default function SelectActivity() {
     // Determine category based on activeCategory (default to STRAIN if ALL is selected)
     const category = activeCategory === 'ALL' ? 'STRAIN' : activeCategory;
 
-    // Format the name to all caps
-    const formattedName = searchTerm.trim().toUpperCase();
+    // Format the name to proper case for storage (will be uppercased for search display)
+    const formattedName = searchTerm.trim().toLowerCase();
 
     createCustomActivityMutation.mutate({
       name: formattedName,
