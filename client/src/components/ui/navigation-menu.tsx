@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -16,9 +16,67 @@ const navigationItems = [
 
 export function NavigationMenu() {
   const [location] = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenChange = (open: boolean) => {
+      setIsOpen(open);
+      
+      // Prevent layout shifts when dropdown opens/closes
+      if (open) {
+        // Lock the current scroll position
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+        document.body.classList.add('dropdown-open');
+      } else {
+        // Restore scroll position
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.classList.remove('dropdown-open');
+        if (scrollY) {
+          window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+      }
+    };
+
+    // We'll pass this to the DropdownMenu's onOpenChange
+    return () => {
+      // Cleanup: ensure body styles are reset
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.classList.remove('dropdown-open');
+    };
+  }, []);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={(open) => {
+      setIsOpen(open);
+      
+      // Prevent layout shifts when dropdown opens/closes
+      if (open) {
+        // Lock the current scroll position
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+        document.body.classList.add('dropdown-open');
+      } else {
+        // Restore scroll position
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.classList.remove('dropdown-open');
+        if (scrollY) {
+          window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+      }
+    }}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
           <div className="flex flex-col space-y-1">

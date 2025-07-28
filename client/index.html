@@ -54,12 +54,37 @@
         transform-origin: var(--radix-popper-transform-origin) !important;
       }
       
+      /* Prevent layout shift when dropdown opens */
+      [data-radix-dropdown-menu-content] {
+        position: fixed !important;
+        z-index: 9999 !important;
+        will-change: auto !important;
+        transform: translateZ(0);
+      }
+      
+      /* Lock the main content transform when dropdown is open */
+      .dropdown-open {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+      }
+      
       /* Prevent iOS Safari from adjusting viewport on dropdown */
       @supports (-webkit-touch-callout: none) {
         body {
           position: relative;
           min-height: 100vh;
           min-height: -webkit-fill-available;
+        }
+        
+        /* More aggressive iOS fix */
+        .ios-dropdown-fix {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch !important;
         }
       }
     </style>
