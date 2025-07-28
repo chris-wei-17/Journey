@@ -14,8 +14,18 @@ const navigationItems = [
   { label: "Feedback", path: "/feedback", icon: "fas fa-comment" },
 ];
 
+const quickAccessItems = [
+  { label: "Log Progress", path: "/progress", icon: "fas fa-plus", gradient: "from-pink-500 to-pink-600" },
+  { label: "Add Photos", path: "/photos", icon: "fas fa-camera", gradient: "from-teal-400 to-teal-500" },
+  { label: "View Goals", path: "/goals", icon: "fas fa-target", gradient: "from-yellow-400 to-orange-500" },
+  { label: "Workouts", path: "/workouts", icon: "fas fa-dumbbell", gradient: "from-purple-500 to-purple-600" },
+];
+
 export function NavigationMenu() {
   const [location] = useLocation();
+
+  // Don't show quick access on home page or feedback page
+  const showQuickAccess = location !== "/" && location !== "/feedback";
 
   const triggerButton = (
     <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
@@ -28,8 +38,9 @@ export function NavigationMenu() {
   );
 
   return (
-    <SimpleDropdown trigger={triggerButton} className="w-56">
+    <SimpleDropdown trigger={triggerButton} className="w-72">
       <div className="py-1">
+        {/* Navigation Items */}
         {navigationItems.map((item) => (
           <Link 
             key={item.path} 
@@ -42,6 +53,30 @@ export function NavigationMenu() {
             <span>{item.label}</span>
           </Link>
         ))}
+
+        {/* Quick Access Section */}
+        {showQuickAccess && (
+          <>
+            <div className="border-t border-gray-200 my-2"></div>
+            <div className="px-3 py-2">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                Quick Actions
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {quickAccessItems.map((item) => (
+                  <Link key={item.path} href={item.path}>
+                    <div className={`p-3 rounded-lg bg-gradient-to-r ${item.gradient} text-white cursor-pointer hover:opacity-90 transition-opacity`}>
+                      <div className="flex flex-col items-center space-y-1 text-center">
+                        <i className={`${item.icon} text-sm`}></i>
+                        <span className="text-xs font-medium leading-tight">{item.label}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </SimpleDropdown>
   );
