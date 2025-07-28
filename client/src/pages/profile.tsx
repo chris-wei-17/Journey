@@ -128,7 +128,7 @@ export default function Profile() {
                 Data Export
               </Button>
               <Button 
-                onClick={() => setLocation("/reset-password")}
+                onClick={() => setLocation("/change-password")}
                 variant="outline" 
                 className="w-full justify-start shadow-sm hover:shadow-md transition-shadow"
               >

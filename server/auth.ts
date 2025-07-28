@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
+import { storage } from "./storage.js";
 
 // JWT secret - use environment variable in production
 export const JWT_SECRET = process.env.JWT_SECRET || "fitjourney-development-secret-key";
@@ -90,6 +91,9 @@ export const clearRateLimit = (identifier: string): void => {
   rateLimitStore.delete(identifier);
 };
 
+// Email sender type
+export type EmailSender = (to: string, subject: string, html: string) => Promise<void>;
+
 // Add at bottom of your current module
 
 // Password Reset Token (1 hour expiry)
@@ -124,27 +128,24 @@ export const resetPasswordWhileLoggedIn = async (
   }
 
   try {
-    // Fetch user from Supabase
-    const { data: user, error } = await supabase
-      .from("users")
-      .select("id, password")
-      .eq("id", userId)
-      .single();
+    // Fetch user from database
+    const user = await storage.getUser(userId);
 
-    if (error || !user) {
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const isMatch = await comparePassword(currentPassword, user.password);
+    const isMatch = await comparePassword(currentPassword, user.passwordHash);
     if (!isMatch) {
       return res.status(401).json({ message: "Current password incorrect" });
     }
 
     const newHash = await hashPassword(newPassword);
-    await supabase.from("users").update({ password: newHash }).eq("id", userId);
+    await storage.updateUser(userId, { passwordHash: newHash });
 
     res.json({ message: "Password updated successfully" });
   } catch (err) {
+    console.error("Password change error:", err);
     res.status(500).json({ message: "Error updating password" });
   }
 };
@@ -156,21 +157,58 @@ export const sendForgotPasswordEmail = async (
   email: string,
   sendEmailFn: EmailSender
 ) => {
-  const { data: user, error } = await supabase
-    .from("users")
-    .select("id")
-    .eq("email", email)
-    .single();
+  try {
+    // Find user by email
+    const user = await storage.getUserByUsernameOrEmail(email);
 
-  if (error || !user) return;
+    if (!user) {
+      // Don't reveal if email exists for security
+      console.log(`Password reset requested for non-existent email: ${email}`);
+      return;
+    }
 
-  const resetToken = generatePasswordResetToken(user.id);
-  const resetLink = `https://yourdomain.com/reset-password?token=${resetToken}`;
+    const resetToken = generatePasswordResetToken(user.id);
+    
+    // Use proper domain from environment or default
+    const baseUrl = process.env.FRONTEND_URL || process.env.VERCEL_URL || 'http://localhost:5173';
+    const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
-  const subject = "Reset Your Password";
-  const html = `<p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`;
+    const subject = "Reset Your Journey Password";
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #6366f1;">Reset Your Password</h2>
+        <p>Hi ${user.firstName || 'there'},</p>
+        <p>You requested to reset your password for your Journey fitness account.</p>
+        <p>Click the button below to reset your password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetLink}" 
+             style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); 
+                    color: white; 
+                    padding: 12px 24px; 
+                    text-decoration: none; 
+                    border-radius: 8px; 
+                    display: inline-block;">
+            Reset Password
+          </a>
+        </div>
+        <p>Or copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #6366f1;">${resetLink}</p>
+        <p><strong>This link will expire in 1 hour.</strong></p>
+        <p>If you didn't request this password reset, please ignore this email.</p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #666; font-size: 12px;">
+          Journey Fitness App<br>
+          This is an automated message, please do not reply.
+        </p>
+      </div>
+    `;
 
-  await sendEmailFn(email, subject, html);
+    await sendEmailFn(email, subject, html);
+    console.log(`✅ Password reset email sent to: ${email}`);
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error;
+  }
 };
 
 /**
@@ -181,22 +219,29 @@ export const resetPasswordWithToken = async (
   res: Response
 ) => {
   const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ message: "Token and new password are required" });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: "Password must be at least 6 characters" });
+  }
+
   const userId = verifyPasswordResetToken(token);
 
   if (!userId) {
     return res.status(400).json({ message: "Invalid or expired token" });
   }
 
-  const newHash = await hashPassword(newPassword);
+  try {
+    const newHash = await hashPassword(newPassword);
+    await storage.updateUser(userId, { passwordHash: newHash });
 
-  const { error } = await supabase
-    .from("users")
-    .update({ password: newHash })
-    .eq("id", userId);
-
-  if (error) {
-    return res.status(500).json({ message: "Error resetting password" });
+    console.log(`✅ Password reset successfully for user ID: ${userId}`);
+    res.json({ message: "Password has been reset successfully" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Error resetting password" });
   }
-
-  res.json({ message: "Password has been reset successfully" });
 };

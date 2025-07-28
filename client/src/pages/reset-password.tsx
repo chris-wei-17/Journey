@@ -36,7 +36,7 @@ export default function ResetPassword() {
         description: "Your password was successfully changed.",
       });
 
-      setLocation("/settings");
+      setLocation("/profile");
     } catch (error) {
       toast({
         title: "Update Failed",
@@ -53,7 +53,7 @@ export default function ResetPassword() {
       <Header 
         title="Change Password"
         showBackButton={true}
-        onBack={() => setLocation("/settings")}
+        onBack={() => setLocation("/profile")}
       />
 
       <main className="pt-28 p-4 max-w-2xl mx-auto">

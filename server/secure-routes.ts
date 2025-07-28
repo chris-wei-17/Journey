@@ -39,6 +39,7 @@ import {
   type CustomMetricField,
   type CustomActivity
 } from "../shared/schema.js";
+import { sendEmail } from "./mail.js";
 import multer from "multer";
 import sharp from "sharp";
 import { supabase, PHOTOS_BUCKET, generateSignedUrl } from "./supabase-client.js";
@@ -1256,7 +1257,12 @@ const sendEmailFn = async (
   subject: string,
   html: string
 ): Promise<void> => {
-  console.log(`🚀 [MOCK EMAIL] To: ${to}\nSubject: ${subject}\n${html}`);
+  try {
+    await sendEmail({ to, subject, html });
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    throw error;
+  }
 };
 
 // Authenticated: Reset password while logged in
@@ -1268,6 +1274,14 @@ app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
 app.post('/api/auth/request-password-reset', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
+
+  // Rate limiting - max 3 requests per 15 minutes per email
+  const rateLimitKey = `pwd_reset_${email}`;
+  if (!checkRateLimit(rateLimitKey, 3)) {
+    return res.status(429).json({ 
+      message: "Too many password reset requests. Please wait 15 minutes before trying again." 
+    });
+  }
 
   try {
     await sendForgotPasswordEmail(email, sendEmailFn);

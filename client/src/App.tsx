@@ -21,6 +21,7 @@ import Nutrition from "@/pages/nutrition";
 import Sleep from "@/pages/sleep";
 import ForgotPassword from "@/pages/forgot-password"; 
 import ResetPassword from "@/pages/reset-password";
+import ResetPasswordToken from "@/pages/reset-password-token";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -36,6 +37,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPasswordToken} />
       {!isAuthenticated ? (
         <Route path="/" component={Auth} />
       ) : (
@@ -56,7 +58,7 @@ function Router() {
               <Route path="/add-activity" component={AddActivity} />
               <Route path="/select-activity" component={SelectActivity} />
               <Route path="/add-macros" component={AddMacros} />
-              <Route path="/reset-password" component={ResetPassword} />
+              <Route path="/change-password" component={ResetPassword} />
             </>
           )}
         </>
