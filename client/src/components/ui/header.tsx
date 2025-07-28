@@ -42,13 +42,13 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
         <div className="flex items-center space-x-3">
           {showHomeButton && (
             <Link href="/">
-                             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors">
-                 <i className="fas fa-home text-sm" style={{ color: '#000000' }}></i>
-               </div>
+              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors">
+                <i className="fas fa-home text-sm" style={{ color: '#000000' }}></i>
+              </div>
             </Link>
           )}
           <Link href="/profile">
-            <div className="cursor-pointer">
+            <div className="w-8 h-8 flex items-center justify-center cursor-pointer">
               <Avatar
                 firstName={user?.firstName || undefined}
                 lastName={user?.lastName || undefined}
