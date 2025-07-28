@@ -72,7 +72,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 mb-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 mb-4 gap-x-4">
         {/* My Day Block */}
         <MyDayBlock selectedDate={selectedDate} />
 
@@ -142,7 +142,7 @@ export default function Home() {
         </div> */}
 
         {/* Quick Actions */}
-        <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0" style={{
+        <Card className="bg-white/75 backdrop-blur-sm shadow-xl mb-2 border-0" style={{
           boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
         }}>
           <CardHeader>
