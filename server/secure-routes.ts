@@ -21,7 +21,7 @@ import {
   resetPasswordWithToken 
 } from "./auth.js";
 
-import { sendEmail } from "./mail.js"
+import { sendEmail } from "./mail.js";
 
 import { 
   loginSchema,
@@ -39,7 +39,6 @@ import {
   type CustomMetricField,
   type CustomActivity
 } from "../shared/schema.js";
-import { sendEmail } from "./mail.js";
 import multer from "multer";
 import sharp from "sharp";
 import { supabase, PHOTOS_BUCKET, generateSignedUrl } from "./supabase-client.js";
