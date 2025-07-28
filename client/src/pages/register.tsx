@@ -151,7 +151,12 @@ export default function Register({ onToggleMode }: RegisterProps) {
                 placeholder="Create a secure password"
                 className="mt-2"
                 autoComplete="new-password"
+                autoCorrect="off"
+                spellCheck="false"
+                autoCapitalize="none"
                 data-form-type="register"
+                data-webkit-autofill="off"
+                data-1p-ignore="true"
               />
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
