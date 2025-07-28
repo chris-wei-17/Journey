@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,9 +18,19 @@ interface LoginProps {
 export default function Login({ onToggleMode }: LoginProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const [passwordInputType, setPasswordInputType] = useState("text");
   const { register, handleSubmit, formState: { errors } } = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
   });
+
+  useEffect(() => {
+    // Change input type to password after component mounts to avoid iOS detection
+    const timer = setTimeout(() => {
+      setPasswordInputType("password");
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
@@ -118,14 +128,15 @@ export default function Login({ onToggleMode }: LoginProps) {
                 aria-hidden="true"
               />
               <Input
+                ref={passwordRef}
                 id="login-password"
                 name="password"
-                type="password"
+                type={passwordInputType}
                 placeholder="Enter your password"
                 className="mt-2"
                 spellCheck="false"
                 autoCapitalize="none"
-                autoComplete="new-password"
+                autoComplete="off"
                 autoCorrect="off"
                 data-lpignore="true"
                 data-form-type="other"
