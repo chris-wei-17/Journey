@@ -7,12 +7,15 @@ import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { PinProtection } from "@/components/ui/pin-protection";
+import { useState } from "react";
 
 export default function Profile() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [isPinDialogOpen, setIsPinDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -138,6 +141,15 @@ export default function Profile() {
               <hr className="my-6" />
               
               <Button 
+                onClick={() => setIsPinDialogOpen(true)}
+                variant="outline" 
+                className="w-full shadow-md hover:shadow-lg transition-shadow mb-4"
+              >
+                <i className="fas fa-lock mr-3"></i>
+                {user?.photosPinEnabled ? 'Update' : 'Set'} Photos PIN
+              </Button>
+
+              <Button 
                 onClick={handleLogout}
                 variant="destructive" 
                 className="w-full shadow-md hover:shadow-lg transition-shadow"
@@ -149,6 +161,12 @@ export default function Profile() {
           </CardContent>
         </Card>
       </main>
+
+      <PinProtection 
+        isOpen={isPinDialogOpen}
+        onClose={() => setIsPinDialogOpen(false)}
+        mode="update"
+      />
     </div>
   );
 }

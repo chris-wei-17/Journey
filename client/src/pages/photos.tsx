@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { format, parseISO } from "date-fns";
 import { useLocation } from "wouter";
 import { QuickAccess } from "@/components/ui/quick-access";
+import { PinProtection } from "@/components/ui/pin-protection";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Photo {
   id: number;
@@ -31,14 +33,35 @@ export default function Photos() {
   const [currentPhoto, setCurrentPhoto] = useState<Photo | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [currentDatePhotos, setCurrentDatePhotos] = useState<Photo[]>([]);
+  const [isPinDialogOpen, setIsPinDialogOpen] = useState(false);
+  const [pinMode, setPinMode] = useState<'setup' | 'verify'>('setup');
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const { user } = useAuth();
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Fetch all photos
+    // Fetch all photos
   const { data: allPhotos = [], isLoading } = useQuery<Photo[]>({
     queryKey: ['/api/photos'],
   });
 
+  // Check PIN protection on component mount
+  useEffect(() => {
+    if (user && user.photosPinEnabled !== null) {
+      if (user.photosPinEnabled === true) {
+        setPinMode('verify');
+        setIsPinDialogOpen(true);
+      } else {
+        setIsUnlocked(true);
+      }
+    } else if (user && user.photosPinEnabled === null) {
+      setPinMode('setup');
+      setIsPinDialogOpen(true);
+    }
+  }, [user]);
 
+  const handlePinSuccess = () => {
+    setIsUnlocked(true);
+  };
 
   // Group photos by date
   const photosByDate: PhotosByDate = {};
@@ -139,18 +162,26 @@ export default function Photos() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !isUnlocked) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
-        <Header 
-          title="Photos"
-          showBackButton={false}
+      <>
+        <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
+          <Header 
+            title="Photos"
+            showBackButton={false}
           onBack={handleBack}
         />
-        <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+6rem)]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+6rem)]">
+            {isLoading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>}
+          </div>
         </div>
-      </div>
+        <PinProtection 
+          isOpen={isPinDialogOpen}
+          onClose={() => setIsPinDialogOpen(false)}
+          mode={pinMode}
+          onSuccess={handlePinSuccess}
+        />
+      </>
     );
   }
 

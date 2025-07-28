@@ -96,6 +96,10 @@ export interface IStorage {
   getCustomMetricFields(userId: number): Promise<CustomMetricField[]>;
   createCustomMetricField(data: InsertCustomMetricField): Promise<CustomMetricField>;
   deleteCustomMetricField(fieldId: number, userId: number): Promise<void>;
+  
+  // PIN protection operations
+  updateUserPinSettings(userId: number, hashedPin: string | null, enabled: boolean): Promise<void>;
+  getUserById(userId: number): Promise<User | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -510,6 +514,21 @@ export class DatabaseStorage implements IStorage {
           eq(customMetricFields.userId, userId)
         )
       );
+  }
+
+  async updateUserPinSettings(userId: number, hashedPin: string | null, enabled: boolean): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        photosPin: hashedPin,
+        photosPinEnabled: enabled,
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserById(userId: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    return user;
   }
 }
 

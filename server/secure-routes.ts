@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import { storage } from "./storage.js";
 import { 
   authenticateToken, 
@@ -1352,6 +1353,44 @@ Submitted at: ${new Date().toISOString()}
     } catch (error) {
       console.error("Feedback submission error:", error);
       res.status(500).json({ message: "Failed to submit feedback" });
+    }
+  });
+
+  // Photos PIN protection routes
+  app.put('/api/user/photos-pin', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const { pin, enabled } = req.body;
+
+      const hashedPin = pin ? await bcrypt.hash(pin, 10) : null;
+      
+      await storage.updateUserPinSettings(userId, hashedPin, enabled);
+      res.json({ message: "PIN settings updated successfully" });
+    } catch (error) {
+      console.error("Error updating PIN settings:", error);
+      res.status(500).json({ message: "Failed to update PIN settings" });
+    }
+  });
+
+  app.post('/api/user/verify-photos-pin', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const { pin } = req.body;
+
+      const user = await storage.getUserById(userId);
+      if (!user || !user.photosPin) {
+        return res.status(400).json({ message: "No PIN set" });
+      }
+
+      const isValid = await bcrypt.compare(pin, user.photosPin);
+      if (!isValid) {
+        return res.status(400).json({ message: "Invalid PIN" });
+      }
+
+      res.json({ message: "PIN verified successfully" });
+    } catch (error) {
+      console.error("Error verifying PIN:", error);
+      res.status(500).json({ message: "Failed to verify PIN" });
     }
   });
 
