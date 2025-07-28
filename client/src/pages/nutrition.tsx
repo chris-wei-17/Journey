@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { QuickAccess } from "@/components/ui/quick-access";
 
 export default function Nutrition() {
   const [, setLocation] = useLocation();
@@ -88,6 +89,9 @@ export default function Nutrition() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Quick Access */}
+          <QuickAccess />
         </div>
       </div>
     </div>

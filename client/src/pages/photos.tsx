@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, parseISO } from "date-fns";
 import { useLocation } from "wouter";
+import { QuickAccess } from "@/components/ui/quick-access";
 
 interface Photo {
   id: number;
@@ -278,6 +279,9 @@ export default function Photos() {
               </div>
             </div>
           )}
+
+          {/* Quick Access */}
+          <QuickAccess />
         </div>
       </div>
 
