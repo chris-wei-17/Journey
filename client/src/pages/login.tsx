@@ -102,6 +102,21 @@ export default function Login({ onToggleMode }: LoginProps) {
 
             <div>
               <Label htmlFor="login-password">Password</Label>
+              {/* Hidden fake password field to prevent iOS suggestions */}
+              <input
+                type="password"
+                autoComplete="new-password"
+                style={{
+                  position: 'absolute',
+                  left: '-9999px',
+                  width: '1px',
+                  height: '1px',
+                  opacity: 0,
+                  pointerEvents: 'none'
+                }}
+                tabIndex={-1}
+                aria-hidden="true"
+              />
               <Input
                 id="login-password"
                 name="password"
@@ -110,12 +125,23 @@ export default function Login({ onToggleMode }: LoginProps) {
                 className="mt-2"
                 spellCheck="false"
                 autoCapitalize="none"
-                autoComplete="off"
+                autoComplete="new-password"
                 autoCorrect="off"
                 data-lpignore="true"
                 data-form-type="other"
                 data-webkit-autofill="off"
                 data-1p-ignore="true"
+                data-password-generator="off"
+                data-password-manager="off"
+                onFocus={(e) => {
+                  e.target.removeAttribute('readonly');
+                }}
+                onBlur={(e) => {
+                  if (!e.target.value) {
+                    e.target.setAttribute('readonly', 'true');
+                  }
+                }}
+                readOnly
                 {...register("password")}
               />
               {errors.password && (
