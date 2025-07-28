@@ -182,11 +182,14 @@ export default function AddActivity() {
       }
     },
     onSuccess: () => {
-      // Invalidate activities cache for all dates
+      // Invalidate activities cache for all dates and specific date queries
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      // Also invalidate the specific date query
-      const today = new Date().toISOString().split('T')[0];
-      queryClient.invalidateQueries({ queryKey: [`/api/activities/date/${today}`] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] && 
+          typeof query.queryKey[0] === 'string' && 
+          query.queryKey[0].startsWith('/api/activities/date/')
+      });
       toast({
         title: "Success",
         description: "Activity added successfully!",
@@ -208,8 +211,14 @@ export default function AddActivity() {
       return await apiRequest('PUT', `/api/activities/${editActivityId}`, activityData);
     },
     onSuccess: () => {
-      // Invalidate activities cache for all dates
+      // Invalidate activities cache for all dates and specific date queries
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] && 
+          typeof query.queryKey[0] === 'string' && 
+          query.queryKey[0].startsWith('/api/activities/date/')
+      });
       toast({
         title: "Success",
         description: "Activity updated successfully!",
@@ -230,8 +239,14 @@ export default function AddActivity() {
       return await apiRequest('DELETE', `/api/activities/${editActivityId}`);
     },
     onSuccess: () => {
-      // Invalidate activities cache for all dates
+      // Invalidate activities cache for all dates and specific date queries
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0] && 
+          typeof query.queryKey[0] === 'string' && 
+          query.queryKey[0].startsWith('/api/activities/date/')
+      });
       toast({
         title: "Success",
         description: "Activity deleted successfully!",

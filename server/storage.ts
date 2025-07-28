@@ -70,6 +70,7 @@ export interface IStorage {
   getUserActivities(userId: number): Promise<Activity[]>;
   getActivitiesForDate(userId: number, date: string): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
+  updateActivity(id: number, activity: InsertActivity): Promise<Activity>;
   deleteActivity(id: number, userId: number): Promise<void>;
 
   // Custom activity operations
@@ -304,6 +305,24 @@ export class DatabaseStorage implements IStorage {
       .returning();
     console.log('Storage created activity:', newActivity);
     return newActivity;
+  }
+
+  async updateActivity(id: number, activity: InsertActivity): Promise<Activity> {
+    console.log('Storage updateActivity called with id:', id, 'activity:', activity);
+    const [updatedActivity] = await db
+      .update(activities)
+      .set({
+        activityType: activity.activityType,
+        startTime: activity.startTime,
+        endTime: activity.endTime,
+        date: activity.date,
+        location: null, // Set optional fields to null
+        notes: null,
+      })
+      .where(and(eq(activities.id, id), eq(activities.userId, activity.userId)))
+      .returning();
+    console.log('Storage updated activity:', updatedActivity);
+    return updatedActivity;
   }
 
   async deleteActivity(id: number, userId: number): Promise<void> {
