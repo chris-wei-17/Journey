@@ -36,6 +36,8 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
         return 'fa-running';
       case 'cycling':
         return 'fa-biking';
+      case 'sleep':
+        return 'fa-bed';
       default:
         return 'fa-dumbbell';
     }
@@ -49,6 +51,8 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
         return 'bg-green-500';
       case 'cycling':
         return 'bg-yellow-500';
+      case 'sleep':
+        return 'bg-purple-500';
       default:
         return 'bg-gray-500';
     }

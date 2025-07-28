@@ -18,12 +18,19 @@ const DEFAULT_RECENT_ACTIVITIES = [
   { id: 'walking', label: 'WALKING', icon: 'fa-walking', category: 'STRAIN' },
   { id: 'running', label: 'RUNNING', icon: 'fa-running', category: 'STRAIN' },
   { id: 'cycling', label: 'CYCLING', icon: 'fa-biking', category: 'STRAIN' },
+  { id: 'sleep', label: 'SLEEP', icon: 'fa-bed', category: 'RECOVERY' },
+];
+
+const DEFAULT_PINNED_ACTIVITIES = [
+  'sleep' // Sleep is pinned by default
 ];
 
 // Cache keys for localStorage
 const CUSTOM_ACTIVITIES_CACHE_KEY = 'journey_custom_activities';
 const RECENT_ACTIVITIES_CACHE_KEY = 'journey_recent_activities';
+const PINNED_ACTIVITIES_CACHE_KEY = 'journey_pinned_activities';
 const CACHE_EXPIRY_HOURS = 24;
+const MAX_PINNED_ACTIVITIES = 5;
 
 interface CachedData {
   data: any[];
@@ -53,6 +60,14 @@ export default function SelectActivity() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('ALL');
+  const [pinnedActivities, setPinnedActivities] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Initialize pinned activities from cache
+  useEffect(() => {
+    const initialPinned = getPinnedActivities();
+    setPinnedActivities(initialPinned);
+  }, []);
 
   // Fetch custom activities with caching
   const { data: customActivities = [], isLoading } = useQuery({
@@ -166,6 +181,37 @@ export default function SelectActivity() {
     return cached || DEFAULT_RECENT_ACTIVITIES;
   };
 
+  // Get pinned activities (cached or default)
+  const getPinnedActivities = (): string[] => {
+    const cached = getCachedData(PINNED_ACTIVITIES_CACHE_KEY);
+    return cached || DEFAULT_PINNED_ACTIVITIES;
+  };
+
+  // Toggle pin status of an activity
+  const togglePin = (activityId: string) => {
+    const currentPinned = getPinnedActivities();
+    const isPinned = currentPinned.includes(activityId);
+
+    if (isPinned) {
+      // Unpin the activity
+      const updatedPinned = currentPinned.filter(id => id !== activityId);
+      setPinnedActivities(updatedPinned);
+      setCachedData(PINNED_ACTIVITIES_CACHE_KEY, updatedPinned);
+    } else {
+      // Check if we're at the limit
+      if (currentPinned.length >= MAX_PINNED_ACTIVITIES) {
+        setErrorMessage(`Pin limit reached! Unpin an activity to add another.`);
+        setTimeout(() => setErrorMessage(''), 3000);
+        return;
+      }
+      
+      // Pin the activity
+      const updatedPinned = [...currentPinned, activityId];
+      setPinnedActivities(updatedPinned);
+      setCachedData(PINNED_ACTIVITIES_CACHE_KEY, updatedPinned);
+    }
+  };
+
   // Update recent activities when an activity is selected
   const updateRecentActivities = (selectedActivity: Activity) => {
     const recentActivities = getRecentActivities();
@@ -214,8 +260,66 @@ export default function SelectActivity() {
 
   const displayActivities = getDisplayActivities();
 
+  // Get pinned activities for display
+  const getPinnedActivitiesForDisplay = (): Activity[] => {
+    if (searchTerm.trim()) return []; // Don't show pinned section when searching
+    
+    const allActivities = getAllActivities();
+    return allActivities.filter(activity => pinnedActivities.includes(activity.id));
+  };
+
+  // Get recent activities for display (excluding pinned ones)
+  const getRecentActivitiesForDisplay = (): Activity[] => {
+    if (searchTerm.trim()) return displayActivities; // Show all search results
+    
+    return displayActivities.filter(activity => !pinnedActivities.includes(activity.id));
+  };
+
+  const pinnedActivitiesDisplay = getPinnedActivitiesForDisplay();
+  const recentActivitiesDisplay = getRecentActivitiesForDisplay();
+
   // Show "Add to activities" when there's a search term but no search results
   const shouldShowAddOption = searchTerm.trim() && displayActivities.length === 0;
+
+  // Activity item component with pin functionality
+  const ActivityItem = ({ activity, showPinButton = true }: { activity: Activity; showPinButton?: boolean }) => {
+    const isPinned = pinnedActivities.includes(activity.id);
+    
+    return (
+      <Card key={activity.id} className="mb-3 bg-gray-800 border-0">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div 
+              className="flex items-center space-x-3 flex-1 cursor-pointer"
+              onClick={() => handleActivitySelect(activity.id)}
+            >
+              <div className="w-8 h-8 flex items-center justify-center">
+                <i className={`fas ${activity.icon} text-blue-400 text-lg`}></i>
+              </div>
+              <span className="text-white font-medium">{activity.label}</span>
+            </div>
+            {showPinButton && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePin(activity.id);
+                }}
+                variant="ghost"
+                size="sm"
+                className="p-2 hover:bg-gray-700"
+              >
+                <i 
+                  className={`fas ${isPinned ? 'fa-thumbtack' : 'fa-thumbtack'} ${
+                    isPinned ? 'text-yellow-400' : 'text-gray-400'
+                  } transform ${isPinned ? 'rotate-45' : ''} transition-all duration-200`}
+                ></i>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const handleActivitySelect = (activityId: string) => {
     // Find the selected activity to update recent list
@@ -301,12 +405,15 @@ export default function SelectActivity() {
           ))}
         </div>
 
-        {/* Section Header */}
-        <div className="mb-4">
-          <h2 className="text-gray-400 text-sm font-medium tracking-wide">
-            {searchTerm.trim() ? 'SEARCH RESULTS' : 'RECENT ACTIVITIES'}
-          </h2>
-        </div>
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-purple-600/90 text-white rounded-lg animate-in slide-in-from-top duration-300">
+            <div className="flex items-center space-x-2">
+              <i className="fas fa-exclamation-triangle text-yellow-300"></i>
+              <span className="text-sm font-medium">{errorMessage}</span>
+            </div>
+          </div>
+        )}
 
         {/* Add Activity Option - when searching */}
         {shouldShowAddOption && (
@@ -333,28 +440,47 @@ export default function SelectActivity() {
           </Card>
         )}
 
-        {/* Activity List */}
-        <div className="space-y-3 mb-8">
-          {displayActivities.map((activity) => (
-            <Card 
-              key={activity.id} 
-              className="cursor-pointer transition-all duration-200 border-0 bg-gray-800 hover:bg-gray-700"
-              onClick={() => handleActivitySelect(activity.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 flex items-center justify-center">
-                    <i className={`fas ${activity.icon} text-gray-400 text-lg`}></i>
-                  </div>
-                  <span className="text-white font-medium">{activity.label}</span>
-                  {activity.isCustom && (
-                    <span className="ml-auto text-xs text-gray-400">Custom</span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Search Results */}
+        {searchTerm.trim() && (
+          <>
+            <div className="mb-4">
+              <h2 className="text-gray-400 text-sm font-medium tracking-wide">SEARCH RESULTS</h2>
+            </div>
+            <div className="space-y-3 mb-8">
+              {displayActivities.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} showPinButton={true} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Pinned Activities Section */}
+        {!searchTerm.trim() && pinnedActivitiesDisplay.length > 0 && (
+          <>
+            <div className="mb-4">
+              <h2 className="text-gray-400 text-sm font-medium tracking-wide">PINNED</h2>
+            </div>
+            <div className="space-y-3 mb-6">
+              {pinnedActivitiesDisplay.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} showPinButton={true} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Recent Activities Section */}
+        {!searchTerm.trim() && (
+          <>
+            <div className="mb-4">
+              <h2 className="text-gray-400 text-sm font-medium tracking-wide">RECENT ACTIVITIES</h2>
+            </div>
+            <div className="space-y-3 mb-8">
+              {recentActivitiesDisplay.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} showPinButton={true} />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* No Results */}
         {displayActivities.length === 0 && !shouldShowAddOption && searchTerm.trim() && (

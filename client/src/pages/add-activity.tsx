@@ -13,6 +13,7 @@ const DEFAULT_ACTIVITY_OPTIONS = [
   { value: 'walking', label: 'Walking', icon: 'fa-walking' },
   { value: 'running', label: 'Running', icon: 'fa-running' },
   { value: 'cycling', label: 'Cycling', icon: 'fa-biking' },
+  { value: 'sleep', label: 'Sleep', icon: 'fa-bed' },
 ];
 
 // Cache key for localStorage - same as select-activity page
