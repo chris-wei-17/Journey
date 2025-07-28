@@ -8,9 +8,10 @@ interface HeaderProps {
   title?: string;
   showBackButton?: boolean;
   onBack?: () => void;
+  showHomeButton?: boolean;
 }
 
-export function Header({ title, showBackButton = false, onBack }: HeaderProps = {}) {
+export function Header({ title, showBackButton = false, onBack, showHomeButton = false }: HeaderProps = {}) {
   const { user } = useAuth();
 
   return (
@@ -37,17 +38,26 @@ export function Header({ title, showBackButton = false, onBack }: HeaderProps = 
           </h1>
         </div>
         
-        {/* Right side - Avatar */}
-        <Link href="/profile">
-          <div className="cursor-pointer">
-            <Avatar
-              firstName={user?.firstName || undefined}
-              lastName={user?.lastName || undefined}
-              profileImageUrl={user?.profileImageUrl || undefined}
-              size="sm"
-            />
-          </div>
-        </Link>
+        {/* Right side - Home button and Avatar */}
+        <div className="flex items-center space-x-3">
+          {showHomeButton && (
+            <Link href="/">
+                             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors">
+                 <i className="fas fa-home text-sm" style={{ color: '#000000' }}></i>
+               </div>
+            </Link>
+          )}
+          <Link href="/profile">
+            <div className="cursor-pointer">
+              <Avatar
+                firstName={user?.firstName || undefined}
+                lastName={user?.lastName || undefined}
+                profileImageUrl={user?.profileImageUrl || undefined}
+                size="sm"
+              />
+            </div>
+          </Link>
+        </div>
       </div>
     </header>
   );

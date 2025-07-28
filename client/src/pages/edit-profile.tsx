@@ -44,7 +44,7 @@ export default function EditProfile() {
     },
   });
 
-  const { register, handleSubmit, setValue, watch, formState: { errors }, reset } = useForm<EditProfileFormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isDirty }, reset } = useForm<EditProfileFormData>({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
       firstName: user?.firstName || "",
@@ -85,7 +85,7 @@ export default function EditProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       toast({
         title: "Success",
         description: "Profile updated successfully!",
@@ -110,7 +110,7 @@ export default function EditProfile() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       toast({
         title: "Success",
         description: "Profile picture updated successfully!",
@@ -164,6 +164,7 @@ export default function EditProfile() {
           title="Edit Profile"
           showBackButton={true}
           onBack={handleBack}
+          showHomeButton={true}
         />
         <main className="pt-28 p-4 max-w-2xl mx-auto">
           <div className="text-center py-8">
@@ -176,11 +177,12 @@ export default function EditProfile() {
 
   return (
     <div className="app-gradient-bg min-h-screen">
-      <Header 
-        title="Edit Profile"
-        showBackButton={true}
-        onBack={handleBack}
-      />
+              <Header 
+          title="Edit Profile"
+          showBackButton={true}
+          onBack={handleBack}
+          showHomeButton={true}
+        />
       
       <main className="pt-28 p-4 max-w-2xl mx-auto">
         <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0 mb-8" style={{
@@ -344,10 +346,10 @@ export default function EditProfile() {
                 </Button>
                 <Button 
                   type="submit"
-                  disabled={updateUserMutation.isPending || uploadingImage}
-                  className="flex-1 bg-gradient-to-r from-primary-600 to-accent-400 hover:from-primary-700 hover:to-accent-500 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                  disabled={updateUserMutation.isPending || uploadingImage || !isDirty}
+                  className="flex-1 bg-gradient-to-r from-primary-600 to-accent-400 hover:from-primary-700 hover:to-accent-500 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
                 >
-                  {updateUserMutation.isPending ? "Updating..." : "Save Changes"}
+                  {updateUserMutation.isPending ? "Updating..." : !isDirty ? "No Changes" : "Save Changes"}
                 </Button>
               </div>
             </form>

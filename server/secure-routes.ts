@@ -1157,7 +1157,22 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         updatedAt: new Date(),
       };
 
-      const updatedProfile = await storage.updateUserProfile(userId, profileData);
+      // Check if profile exists
+      const existingProfile = await storage.getUserProfile(userId);
+      
+      let updatedProfile;
+      if (existingProfile) {
+        // Update existing profile
+        updatedProfile = await storage.updateUserProfile(userId, profileData);
+      } else {
+        // Create new profile
+        updatedProfile = await storage.createUserProfile({
+          userId,
+          ...profileData,
+          onboardingCompleted: true,
+        });
+      }
+      
       res.json(updatedProfile);
     } catch (error) {
       console.error("Error updating user profile:", error);

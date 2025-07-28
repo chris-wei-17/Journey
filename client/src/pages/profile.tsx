@@ -47,11 +47,7 @@ export default function Profile() {
   };
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      setLocation("/");
-    }
+    setLocation("/");
   };
 
   return (
@@ -60,6 +56,7 @@ export default function Profile() {
         title="Profile & Settings"
         showBackButton={true}
         onBack={handleBack}
+        showHomeButton={true}
       />
       
       <main className="pt-28 p-4 max-w-4xl mx-auto"> {/* Add pt-28 */}
