@@ -322,11 +322,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCustomActivity(activity: InsertCustomActivity): Promise<CustomActivity> {
-    // Format the name with proper capitalization
-    const formattedName = activity.name
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+    // Format the name to all caps
+    const formattedName = activity.name.trim().toUpperCase();
 
     const [newActivity] = await db
       .insert(customActivities)

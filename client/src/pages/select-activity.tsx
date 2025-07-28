@@ -14,17 +14,18 @@ const ACTIVITY_CATEGORIES = [
   { id: 'SLEEP', label: 'SLEEP', active: false },
 ];
 
-const DEFAULT_ACTIVITIES = [
+const DEFAULT_RECENT_ACTIVITIES = [
   { id: 'walking', label: 'WALKING', icon: 'fa-walking', category: 'STRAIN' },
   { id: 'running', label: 'RUNNING', icon: 'fa-running', category: 'STRAIN' },
   { id: 'cycling', label: 'CYCLING', icon: 'fa-biking', category: 'STRAIN' },
 ];
 
-// Cache key for localStorage
+// Cache keys for localStorage
 const CUSTOM_ACTIVITIES_CACHE_KEY = 'journey_custom_activities';
+const RECENT_ACTIVITIES_CACHE_KEY = 'journey_recent_activities';
 const CACHE_EXPIRY_HOURS = 24;
 
-interface CachedCustomActivities {
+interface CachedData {
   data: any[];
   timestamp: number;
 }
@@ -38,28 +39,34 @@ interface CustomActivity {
   createdAt: string;
 }
 
+interface Activity {
+  id: string;
+  label: string;
+  icon: string;
+  category: string;
+  isCustom?: boolean;
+}
+
 export default function SelectActivity() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('ALL');
-  const [showAddInput, setShowAddInput] = useState(false);
-  const [newActivityName, setNewActivityName] = useState('');
 
   // Fetch custom activities with caching
   const { data: customActivities = [], isLoading } = useQuery({
     queryKey: ['/api/custom-activities'],
     queryFn: async () => {
       // Check cache first
-      const cached = getCachedCustomActivities();
+      const cached = getCachedData(CUSTOM_ACTIVITIES_CACHE_KEY);
       if (cached) {
         return cached;
       }
 
       // Fetch from API
       const activities = await apiRequest('/api/custom-activities', 'GET');
-      setCachedCustomActivities(activities);
+      setCachedData(CUSTOM_ACTIVITIES_CACHE_KEY, activities);
       return activities;
     },
   });
@@ -70,24 +77,35 @@ export default function SelectActivity() {
       return await apiRequest('/api/custom-activities', 'POST', activityData);
     },
     onSuccess: (newActivity) => {
-      // Update cache
-      const updatedActivities = [...customActivities, newActivity];
-      setCachedCustomActivities(updatedActivities);
+      // Update custom activities cache
+      const updatedCustomActivities = [...customActivities, newActivity];
+      setCachedData(CUSTOM_ACTIVITIES_CACHE_KEY, updatedCustomActivities);
+      
+      // Add to recent activities (at the beginning)
+      const recentActivities = getCachedData(RECENT_ACTIVITIES_CACHE_KEY) || DEFAULT_RECENT_ACTIVITIES;
+      const newRecentActivity = {
+        id: `custom-${newActivity.id}`,
+        label: newActivity.name.toUpperCase(),
+        icon: newActivity.icon,
+        category: newActivity.category,
+        isCustom: true,
+      };
+      
+      // Remove if already exists, then add to front, keep only 3
+      const filteredRecent = recentActivities.filter((activity: Activity) => activity.id !== newRecentActivity.id);
+      const updatedRecent = [newRecentActivity, ...filteredRecent].slice(0, 3);
+      setCachedData(RECENT_ACTIVITIES_CACHE_KEY, updatedRecent);
       
       // Invalidate query to trigger refetch
       queryClient.invalidateQueries({ queryKey: ['/api/custom-activities'] });
       
       toast({
         title: "Success",
-        description: `"${newActivity.name}" added to your activities!`,
+        description: `"${newActivity.name.toUpperCase()}" added to your activities!`,
       });
       
-      // Clear input and hide form
-      setNewActivityName('');
-      setShowAddInput(false);
-      
       // Navigate to add activity with the new activity
-      setLocation(`/add-activity?activity=${newActivity.name.toLowerCase().replace(/\s+/g, '-')}`);
+      handleActivitySelect(newRecentActivity.id);
     },
     onError: (error: any) => {
       if (error.status === 409) {
@@ -107,78 +125,118 @@ export default function SelectActivity() {
   });
 
   // Cache management functions
-  const getCachedCustomActivities = (): CustomActivity[] | null => {
+  const getCachedData = (key: string): any[] | null => {
     try {
-      const cached = localStorage.getItem(CUSTOM_ACTIVITIES_CACHE_KEY);
+      const cached = localStorage.getItem(key);
       if (!cached) return null;
 
-      const parsedCache: CachedCustomActivities = JSON.parse(cached);
+      const parsedCache: CachedData = JSON.parse(cached);
       const now = Date.now();
       const cacheAge = now - parsedCache.timestamp;
       const maxAge = CACHE_EXPIRY_HOURS * 60 * 60 * 1000;
 
       if (cacheAge > maxAge) {
-        localStorage.removeItem(CUSTOM_ACTIVITIES_CACHE_KEY);
+        localStorage.removeItem(key);
         return null;
       }
 
       return parsedCache.data;
     } catch (error) {
-      console.error('Error reading cached custom activities:', error);
-      localStorage.removeItem(CUSTOM_ACTIVITIES_CACHE_KEY);
+      console.error(`Error reading cached data for ${key}:`, error);
+      localStorage.removeItem(key);
       return null;
     }
   };
 
-  const setCachedCustomActivities = (activities: CustomActivity[]) => {
+  const setCachedData = (key: string, data: any[]) => {
     try {
-      const cacheData: CachedCustomActivities = {
-        data: activities,
+      const cacheData: CachedData = {
+        data: data,
         timestamp: Date.now(),
       };
-      localStorage.setItem(CUSTOM_ACTIVITIES_CACHE_KEY, JSON.stringify(cacheData));
+      localStorage.setItem(key, JSON.stringify(cacheData));
     } catch (error) {
-      console.error('Error caching custom activities:', error);
+      console.error(`Error caching data for ${key}:`, error);
     }
   };
 
+  // Get recent activities (cached or default)
+  const getRecentActivities = (): Activity[] => {
+    const cached = getCachedData(RECENT_ACTIVITIES_CACHE_KEY);
+    return cached || DEFAULT_RECENT_ACTIVITIES;
+  };
+
+  // Update recent activities when an activity is selected
+  const updateRecentActivities = (selectedActivity: Activity) => {
+    const recentActivities = getRecentActivities();
+    
+    // Remove if already exists, then add to front, keep only 3
+    const filteredRecent = recentActivities.filter((activity: Activity) => activity.id !== selectedActivity.id);
+    const updatedRecent = [selectedActivity, ...filteredRecent].slice(0, 3);
+    
+    setCachedData(RECENT_ACTIVITIES_CACHE_KEY, updatedRecent);
+  };
+
   // Convert custom activities to the same format as default activities
-  const formattedCustomActivities = customActivities.map((activity: CustomActivity) => ({
-    id: `custom-${activity.id}`,
-    label: activity.name.toUpperCase(),
-    icon: activity.icon,
-    category: activity.category,
-    isCustom: true,
-  }));
+  const getAllActivities = (): Activity[] => {
+    const formattedCustomActivities = customActivities.map((activity: CustomActivity) => ({
+      id: `custom-${activity.id}`,
+      label: activity.name.toUpperCase(),
+      icon: activity.icon,
+      category: activity.category,
+      isCustom: true,
+    }));
 
-  // Combine default and custom activities
-  const allActivities = [...DEFAULT_ACTIVITIES, ...formattedCustomActivities];
+    return [...DEFAULT_RECENT_ACTIVITIES, ...formattedCustomActivities];
+  };
 
-  // Filter activities based on search and category
-  const filteredActivities = allActivities.filter(activity => {
-    const matchesSearch = activity.label.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === 'ALL' || activity.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Get activities to display based on search term
+  const getDisplayActivities = (): Activity[] => {
+    if (!searchTerm.trim()) {
+      // No search term: show recent activities filtered by category
+      const recentActivities = getRecentActivities();
+      if (activeCategory === 'ALL') {
+        return recentActivities;
+      }
+      return recentActivities.filter(activity => activity.category === activeCategory);
+    }
+
+    // Search term exists: search through all activities
+    const allActivities = getAllActivities();
+    const filteredActivities = allActivities.filter(activity => {
+      const matchesSearch = activity.label.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = activeCategory === 'ALL' || activity.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+
+    return filteredActivities;
+  };
+
+  const displayActivities = getDisplayActivities();
 
   // Check if search term matches any existing activity
-  const searchMatchesExisting = allActivities.some(activity => 
+  const searchMatchesExisting = getAllActivities().some(activity => 
     activity.label.toLowerCase() === searchTerm.toLowerCase().trim()
   );
 
-  // Show "Add Custom Activity" option when:
-  // 1. There's a search term
-  // 2. No existing activities match the search term
-  // 3. Search term is not empty after trimming
-  const shouldShowAddOption = searchTerm.trim() && !searchMatchesExisting && !showAddInput;
+  // Show "Add to activities" when there's a search term and no exact match
+  const shouldShowAddOption = searchTerm.trim() && !searchMatchesExisting;
 
   const handleActivitySelect = (activityId: string) => {
+    // Find the selected activity to update recent list
+    const allActivities = getAllActivities();
+    const selectedActivity = allActivities.find(activity => activity.id === activityId);
+    
+    if (selectedActivity) {
+      updateRecentActivities(selectedActivity);
+    }
+
     // Navigate back to add activity page with selected activity
     setLocation(`/add-activity?activity=${activityId}`);
   };
 
-  const handleAddCustomActivity = () => {
-    if (!newActivityName.trim()) {
+  const handleAddActivity = () => {
+    if (!searchTerm.trim()) {
       toast({
         title: "Error",
         description: "Please enter an activity name.",
@@ -190,20 +248,13 @@ export default function SelectActivity() {
     // Determine category based on activeCategory (default to STRAIN if ALL is selected)
     const category = activeCategory === 'ALL' ? 'STRAIN' : activeCategory;
 
+    // Format the name to all caps
+    const formattedName = searchTerm.trim().toUpperCase();
+
     createCustomActivityMutation.mutate({
-      name: newActivityName.trim(),
+      name: formattedName,
       category,
       icon: 'fa-dumbbell', // Default icon for custom activities
-    });
-  };
-
-  const handleQuickAdd = () => {
-    const category = activeCategory === 'ALL' ? 'STRAIN' : activeCategory;
-    
-    createCustomActivityMutation.mutate({
-      name: searchTerm.trim(),
-      category,
-      icon: 'fa-dumbbell',
     });
   };
 
@@ -229,7 +280,7 @@ export default function SelectActivity() {
             <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             <Input
               type="text"
-              placeholder="Search or add new activity"
+              placeholder="Search activities"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
@@ -258,69 +309,30 @@ export default function SelectActivity() {
         {/* Section Header */}
         <div className="mb-4">
           <h2 className="text-gray-400 text-sm font-medium tracking-wide">
-            {activeCategory} A-Z
+            {searchTerm.trim() ? 'SEARCH RESULTS' : 'RECENT ACTIVITIES'}
           </h2>
         </div>
 
-        {/* Add Custom Activity Option - Quick Add */}
+        {/* Add Activity Option - when searching */}
         {shouldShowAddOption && (
-          <Card 
-            className="mb-3 cursor-pointer transition-all duration-200 border-0 bg-green-800 hover:bg-green-700"
-            onClick={handleQuickAdd}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <i className="fas fa-plus text-green-200 text-lg"></i>
-                </div>
-                <span className="text-white font-medium">
-                  Add "{searchTerm.split(' ').map(word => 
-                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                  ).join(' ')}"
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Add Custom Activity Form */}
-        {showAddInput && (
           <Card className="mb-6 bg-gray-800 border-0">
             <CardContent className="p-4">
-              <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <i className="fas fa-plus text-gray-400 text-lg"></i>
+                    <i className="fas fa-plus text-blue-400 text-lg"></i>
                   </div>
-                  <span className="text-white font-medium">Add New Activity</span>
+                  <span className="text-white font-medium">
+                    Add "{searchTerm.toUpperCase()}" to activities
+                  </span>
                 </div>
-                <Input
-                  type="text"
-                  placeholder="Enter activity name"
-                  value={newActivityName}
-                  onChange={(e) => setNewActivityName(e.target.value)}
-                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddCustomActivity()}
-                />
-                <div className="flex space-x-2">
-                  <Button
-                    onClick={handleAddCustomActivity}
-                    disabled={createCustomActivityMutation.isPending}
-                    className="flex-1 bg-blue-600 hover:bg-blue-500 text-white"
-                  >
-                    {createCustomActivityMutation.isPending ? 'Adding...' : 'Add Activity'}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setShowAddInput(false);
-                      setNewActivityName('');
-                    }}
-                    variant="outline"
-                    className="border-gray-600 text-gray-400 hover:bg-gray-700"
-                  >
-                    Cancel
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleAddActivity}
+                  disabled={createCustomActivityMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-6"
+                >
+                  {createCustomActivityMutation.isPending ? 'ADDING...' : 'ADD'}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -328,7 +340,7 @@ export default function SelectActivity() {
 
         {/* Activity List */}
         <div className="space-y-3 mb-8">
-          {filteredActivities.map((activity) => (
+          {displayActivities.map((activity) => (
             <Card 
               key={activity.id} 
               className="cursor-pointer transition-all duration-200 border-0 bg-gray-800 hover:bg-gray-700"
@@ -350,37 +362,16 @@ export default function SelectActivity() {
         </div>
 
         {/* No Results */}
-        {filteredActivities.length === 0 && !shouldShowAddOption && !showAddInput && (
+        {displayActivities.length === 0 && !shouldShowAddOption && searchTerm.trim() && (
           <div className="text-center py-8">
-            <p className="text-gray-400 mb-4">No activities found matching your search</p>
-            <Button
-              onClick={() => setShowAddInput(true)}
-              className="bg-blue-600 hover:bg-blue-500 text-white"
-            >
-              <i className="fas fa-plus mr-2"></i>
-              Add Custom Activity
-            </Button>
-          </div>
-        )}
-
-        {/* Add Activity Button */}
-        {!showAddInput && searchTerm === '' && (
-          <div className="text-center py-4">
-            <Button
-              onClick={() => setShowAddInput(true)}
-              variant="outline"
-              className="border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-white"
-            >
-              <i className="fas fa-plus mr-2"></i>
-              Add Custom Activity
-            </Button>
+            <p className="text-gray-400">No activities found matching your search</p>
           </div>
         )}
 
         {/* Loading state */}
-        {isLoading && (
+        {isLoading && !searchTerm.trim() && (
           <div className="text-center py-8">
-            <p className="text-gray-400">Loading activities...</p>
+            <p className="text-gray-400">Loading recent activities...</p>
           </div>
         )}
       </main>

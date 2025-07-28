@@ -21,15 +21,19 @@ This implementation adds support for user-defined custom activities in the Journ
 - `DELETE /api/custom-activities/:id` - Delete custom activity
 
 ### 3. Frontend Features
-- **Enhanced Select Activity Page**:
-  - Displays both default and custom activities
-  - Real-time search functionality that works with custom activities
-  - Quick-add feature: Type activity name and it shows "Add [Activity Name]" option
-  - Manual add form with proper input validation
+- **Recent Activities Display**:
+  - Shows 3 most recent activities by default (starts with walking, running, cycling)
+  - Updates recent list when activities are selected
+  - Cached for quick loading
+  
+- **Smart Search with Add Option**:
+  - Real-time search through all available activities
+  - When searching, shows "Add [SEARCH TERM] to activities" with ADD button
+  - Search term updates dynamically with every keystroke
   - Custom activities are marked with "Custom" label
   
 - **Smart Activity Input**:
-  - Automatic capitalization (first letter of each word)
+  - Automatic formatting to ALL CAPS
   - Duplicate prevention
   - Category assignment based on selected filter
 
@@ -105,24 +109,29 @@ npx drizzle-kit push
 
 ### User Flow
 1. User navigates to "Select Activity" page
-2. User can search for activities (searches both default and custom)
-3. If search doesn't match existing activities, "Add [Activity Name]" option appears
-4. User clicks to add custom activity or uses the manual add form
-5. Activity is saved to database with proper formatting
-6. Activity appears immediately in the list and is cached locally
-7. Custom activity is available in future sessions
+2. User sees 3 most recent activities (initially: Walking, Running, Cycling)
+3. User can search for activities (searches through all available activities)
+4. When typing, if search doesn't match existing activities, "Add [SEARCH TERM] to activities" appears with ADD button
+5. User clicks ADD button to create custom activity
+6. Activity is saved to database in ALL CAPS format
+7. Activity is added to recent activities list and appears immediately
+8. Custom activity is available in future sessions and search results
 
 ### Technical Flow
-1. **Page Load**: Checks localStorage cache first, then fetches from API
-2. **Search**: Filters combined list of default + custom activities
-3. **Add Activity**: 
-   - Validates input
+1. **Page Load**: 
+   - Loads recent activities from cache (or defaults)
+   - Fetches custom activities from cache/API
+2. **No Search**: Shows recent activities filtered by category
+3. **With Search**: Searches through all available activities
+4. **Add Activity**: 
+   - Validates search input
    - Checks for duplicates
-   - Formats name (capitalizes first letter of each word)
+   - Formats name to ALL CAPS
    - Saves to database
-   - Updates cache
+   - Updates recent activities cache (adds to front)
+   - Updates custom activities cache
    - Provides immediate feedback
-4. **Activity Selection**: Works seamlessly with both default and custom activities
+5. **Activity Selection**: Updates recent activities and navigates to add-activity page
 
 ## Error Handling
 - Duplicate activity names are prevented with user-friendly error messages
@@ -161,8 +170,9 @@ To test the implementation:
 8. Verify the activity works in the Add Activity flow
 
 ## Notes
-- Custom activities are stored with their original names in the database
-- The UI displays activity names in uppercase for consistency
+- Custom activities are stored in ALL CAPS in the database
+- Recent activities list maintains the 3 most recently used activities
 - The search is case-insensitive
-- The cache automatically expires after 24 hours
+- Both recent activities and custom activities caches expire after 24 hours
 - All custom activities default to the 'STRAIN' category unless specified otherwise
+- When a user selects an activity, it moves to the front of the recent activities list
