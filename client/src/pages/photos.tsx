@@ -146,7 +146,7 @@ export default function Photos() {
           showBackButton={false}
           onBack={handleBack}
         />
-        <div className="flex items-center justify-center pt-28">
+        <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+6rem)]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function Photos() {
           onBack={handleBack}
         />
         
-        <div className="pt-28 px-4 pb-6">
+        <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
           {/* Sort Controls */}
           <div className="flex justify-end mb-6">
             <div className="bg-white/75 backdrop-blur-sm rounded-lg p-1 shadow-lg">
