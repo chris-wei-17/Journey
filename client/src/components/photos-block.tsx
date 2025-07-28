@@ -206,7 +206,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
                   <img
                     src={getThumbnailUrl(photo)}
                     alt={`Progress photo ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover blur-sm"
                   />
                 </div>
               ))}
