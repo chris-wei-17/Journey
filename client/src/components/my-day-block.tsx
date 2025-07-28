@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, isToday } from "date-fns";
 import { Link } from "wouter";
 import { Activity } from "@shared/schema";
+import { formatActivityName } from "@/lib/utils";
 
 interface MyDayBlockProps {
   selectedDate: Date;
@@ -83,8 +84,8 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
                     <i className={`fas ${getActivityIcon(activity.activityType || '')} text-white text-sm`}></i>
                   </div>
                   <div>
-                    <div className="text-white font-medium capitalize">
-                      {activity.activityType || 'Activity'}
+                    <div className="text-white font-medium">
+                      {formatActivityName(activity.activityType || '')}
                     </div>
                   </div>
                 </div>
