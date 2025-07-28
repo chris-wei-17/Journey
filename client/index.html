@@ -33,6 +33,36 @@
     
     <!-- Preload important resources -->
     <link rel="preload" href="/src/main.tsx" as="script" crossorigin />
+    
+    <!-- Prevent layout shifts from dropdown menus -->
+    <style>
+      /* Prevent viewport shifts when dropdown opens */
+      html {
+        overflow-anchor: none;
+        scroll-behavior: auto;
+      }
+      
+      body {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Ensure dropdown portals don't affect layout */
+      [data-radix-popper-content-wrapper] {
+        z-index: 9999 !important;
+        position: fixed !important;
+        transform-origin: var(--radix-popper-transform-origin) !important;
+      }
+      
+      /* Prevent iOS Safari from adjusting viewport on dropdown */
+      @supports (-webkit-touch-callout: none) {
+        body {
+          position: relative;
+          min-height: 100vh;
+          min-height: -webkit-fill-available;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

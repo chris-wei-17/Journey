@@ -28,7 +28,13 @@ export function NavigationMenu() {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent 
+        align="start" 
+        className="w-56"
+        sideOffset={8}
+        avoidCollisions={true}
+        sticky="always"
+      >
         {navigationItems.map((item) => (
           <DropdownMenuItem key={item.path} asChild>
             <Link href={item.path} className={`flex items-center space-x-3 px-3 py-2 text-sm cursor-pointer ${
