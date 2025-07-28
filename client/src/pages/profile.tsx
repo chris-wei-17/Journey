@@ -96,7 +96,11 @@ export default function Profile() {
             </div>
             
             <div className="space-y-4">
-              <Button variant="outline" className="w-full shadow-md">
+              <Button 
+                variant="outline" 
+                className="w-full shadow-md"
+                onClick={() => setLocation('/edit-profile')}
+              >
                 Edit Profile
               </Button>
             </div>

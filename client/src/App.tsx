@@ -9,6 +9,7 @@ import Auth from "@/pages/auth";
 import Home from "@/pages/home";
 import Onboarding from "@/pages/onboarding";
 import Profile from "@/pages/profile";
+import EditProfile from "@/pages/edit-profile";
 import AddActivity from "@/pages/add-activity";
 import SelectActivity from "@/pages/select-activity";
 import AddMacros from "@/pages/add-macros";
@@ -45,6 +46,7 @@ function Router() {
             <>
               <Route path="/" component={Home} />
               <Route path="/profile" component={Profile} />
+              <Route path="/edit-profile" component={EditProfile} />
               <Route path="/photos" component={Photos} />
               <Route path="/progress" component={Progress} />
               <Route path="/goals" component={Goals} />
