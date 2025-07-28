@@ -57,24 +57,13 @@ export function NavigationMenu() {
     <DropdownMenu onOpenChange={(open) => {
       setIsOpen(open);
       
-      // Prevent layout shifts when dropdown opens/closes
+      // Simple approach: just prevent body overflow changes
       if (open) {
-        // Lock the current scroll position
-        const scrollY = window.scrollY;
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.width = '100%';
-        document.body.classList.add('dropdown-open');
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'relative';
       } else {
-        // Restore scroll position
-        const scrollY = document.body.style.top;
+        document.body.style.overflow = '';
         document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.classList.remove('dropdown-open');
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY || '0') * -1);
-        }
       }
     }}>
       <DropdownMenuTrigger asChild>
@@ -90,8 +79,11 @@ export function NavigationMenu() {
         align="start" 
         className="w-56"
         sideOffset={8}
-        avoidCollisions={true}
-        sticky="always"
+        avoidCollisions={false}
+        collisionPadding={0}
+        sticky="partial"
+        side="bottom"
+        alignOffset={0}
       >
         {navigationItems.map((item) => (
           <DropdownMenuItem key={item.path} asChild>

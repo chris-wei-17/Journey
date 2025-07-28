@@ -59,7 +59,7 @@ export default function Profile() {
         showHomeButton={true}
       />
       
-      <main className="pt-28 p-4 max-w-4xl mx-auto"> {/* Add pt-28 */}
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-4xl mx-auto">
         {/* Remove the duplicate back button */}
         <div className="mb-6">
           <div>

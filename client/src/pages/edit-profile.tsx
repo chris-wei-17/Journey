@@ -166,7 +166,7 @@ export default function EditProfile() {
           onBack={handleBack}
           showHomeButton={true}
         />
-        <main className="pt-28 p-4 max-w-2xl mx-auto">
+        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
           <div className="text-center py-8">
             <p className="text-white">Loading profile...</p>
           </div>
@@ -184,7 +184,7 @@ export default function EditProfile() {
           showHomeButton={true}
         />
       
-      <main className="pt-28 p-4 max-w-2xl mx-auto">
+              <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
         <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0 mb-8" style={{
           boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
         }}>
