@@ -133,15 +133,6 @@ export default function Login({ onToggleMode }: LoginProps) {
                 data-1p-ignore="true"
                 data-password-generator="off"
                 data-password-manager="off"
-                onFocus={(e) => {
-                  e.target.removeAttribute('readonly');
-                }}
-                onBlur={(e) => {
-                  if (!e.target.value) {
-                    e.target.setAttribute('readonly', 'true');
-                  }
-                }}
-                readOnly
                 {...register("password")}
               />
               {errors.password && (
