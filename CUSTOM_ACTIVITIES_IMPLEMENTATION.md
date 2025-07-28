@@ -28,7 +28,7 @@ This implementation adds support for user-defined custom activities in the Journ
   
 - **Smart Search with Add Option**:
   - Real-time search through all available activities
-  - When searching, shows "Add [SEARCH TERM] to activities" with ADD button
+  - When searching returns no results, shows "Add [SEARCH TERM] to activities" with ADD button
   - Search term updates dynamically with every keystroke
   - Custom activities are marked with "Custom" label
   
@@ -111,7 +111,7 @@ npx drizzle-kit push
 1. User navigates to "Select Activity" page
 2. User sees 3 most recent activities (initially: Walking, Running, Cycling)
 3. User can search for activities (searches through all available activities)
-4. When typing, if search doesn't match existing activities, "Add [SEARCH TERM] to activities" appears with ADD button
+4. When typing, if search returns no results, "Add [SEARCH TERM] to activities" appears with ADD button
 5. User clicks ADD button to create custom activity
 6. Activity is saved to database in ALL CAPS format
 7. Activity is added to recent activities list and appears immediately

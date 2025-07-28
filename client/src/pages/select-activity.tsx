@@ -214,13 +214,8 @@ export default function SelectActivity() {
 
   const displayActivities = getDisplayActivities();
 
-  // Check if search term matches any existing activity
-  const searchMatchesExisting = getAllActivities().some(activity => 
-    activity.label.toLowerCase() === searchTerm.toLowerCase().trim()
-  );
-
-  // Show "Add to activities" when there's a search term and no exact match
-  const shouldShowAddOption = searchTerm.trim() && !searchMatchesExisting;
+  // Show "Add to activities" when there's a search term but no search results
+  const shouldShowAddOption = searchTerm.trim() && displayActivities.length === 0;
 
   const handleActivitySelect = (activityId: string) => {
     // Find the selected activity to update recent list
