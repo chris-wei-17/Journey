@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { format, isToday } from "date-fns";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Activity } from "@shared/schema";
 import { formatActivityName } from "@/lib/utils";
 
@@ -11,9 +11,22 @@ interface MyDayBlockProps {
 }
 
 export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
+  const [, setLocation] = useLocation();
+  
   const { data: activities = [] } = useQuery<Activity[]>({
     queryKey: [`/api/activities/date/${format(selectedDate, 'yyyy-MM-dd')}`],
   });
+
+  // Sort activities by start time (earliest first)
+  const sortedActivities = [...activities].sort((a, b) => {
+    if (!a.startTime || !b.startTime) return 0;
+    return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+  });
+
+  const handleEditActivity = (activity: Activity) => {
+    // Navigate to add-activity page with edit parameters
+    setLocation(`/add-activity?edit=${activity.id}&activityType=${encodeURIComponent(activity.activityType || '')}&startTime=${encodeURIComponent(activity.startTime || '')}&endTime=${encodeURIComponent(activity.endTime || '')}&date=${encodeURIComponent(activity.date || '')}`);
+  };
 
   const getActivityIcon = (activityType: string) => {
     switch (activityType) {
@@ -66,7 +79,7 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">My Day</CardTitle>
-          <i className="fas fa-edit text-gray-400"></i>
+          <span className="text-xs text-gray-500">Tap activity to edit</span>
         </div>
       </CardHeader>
       
@@ -76,9 +89,13 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
             <span>ACTIVITIES</span>
           </div>
           
-          {activities.length > 0 ? (
-            activities.map((activity: Activity) => (
-              <div key={activity.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
+          {sortedActivities.length > 0 ? (
+            sortedActivities.map((activity: Activity) => (
+              <div 
+                key={activity.id} 
+                className="flex items-center justify-between bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-gray-700 transition-colors duration-200"
+                onClick={() => handleEditActivity(activity)}
+              >
                 <div className="flex items-center space-x-3">
                   <div className={`${getActivityColor(activity.activityType || '')} rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12`}>
                     <i className={`fas ${getActivityIcon(activity.activityType || '')} text-white text-sm`}></i>

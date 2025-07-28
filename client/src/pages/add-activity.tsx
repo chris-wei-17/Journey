@@ -33,13 +33,23 @@ interface CustomActivity {
 }
 
 export default function AddActivity() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const [selectedActivity, setSelectedActivity] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editActivityId, setEditActivityId] = useState<number | null>(null);
+  const [originalValues, setOriginalValues] = useState({
+    activityType: '',
+    startTime: '',
+    endTime: ''
+  });
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Fetch custom activities
   const { data: customActivities = [] } = useQuery({
@@ -103,16 +113,61 @@ export default function AddActivity() {
   // Combine default and custom activities
   const ACTIVITY_OPTIONS = [...DEFAULT_ACTIVITY_OPTIONS, ...formattedCustomActivities];
 
-  // Get activity from URL params if coming from select page
+  // Get activity from URL params if coming from select page or edit mode
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const activityParam = urlParams.get('activity');
-    if (activityParam) {
+    const editParam = urlParams.get('edit');
+    const activityTypeParam = urlParams.get('activityType');
+    const startTimeParam = urlParams.get('startTime');
+    const endTimeParam = urlParams.get('endTime');
+    
+    if (editParam && activityTypeParam && startTimeParam && endTimeParam) {
+      // Edit mode
+      setIsEditMode(true);
+      setEditActivityId(parseInt(editParam));
+      
+      // Find the correct activity option value for the activityType
+      let activityValue = activityTypeParam.toLowerCase();
+      const customActivity = customActivities.find(ca => ca.name.toLowerCase() === activityTypeParam.toLowerCase());
+      if (customActivity) {
+        activityValue = `custom-${customActivity.id}`;
+      }
+      
+      setSelectedActivity(activityValue);
+      
+      // Format times for input fields (convert from ISO to HH:MM)
+      const startDate = new Date(startTimeParam);
+      const endDate = new Date(endTimeParam);
+      setStartTime(format(startDate, 'HH:mm'));
+      setEndTime(format(endDate, 'HH:mm'));
+      
+      // Store original values
+      setOriginalValues({
+        activityType: activityValue,
+        startTime: format(startDate, 'HH:mm'),
+        endTime: format(endDate, 'HH:mm')
+      });
+      
+      // Clean URL
+      window.history.replaceState({}, '', '/add-activity');
+    } else if (activityParam) {
+      // Normal mode from select page
       setSelectedActivity(activityParam);
       // Clean URL
       window.history.replaceState({}, '', '/add-activity');
     }
-  }, []);
+  }, [customActivities]);
+
+  // Check for changes
+  useEffect(() => {
+    if (isEditMode) {
+      const hasChanged = selectedActivity !== originalValues.activityType || 
+                        startTime !== originalValues.startTime || 
+                        endTime !== originalValues.endTime;
+      setHasChanges(hasChanged);
+    }
+  }, [selectedActivity, startTime, endTime, originalValues, isEditMode]);
 
   const createActivityMutation = useMutation({
     mutationFn: async (activityData: any) => {
@@ -148,6 +203,50 @@ export default function AddActivity() {
     },
   });
 
+  const updateActivityMutation = useMutation({
+    mutationFn: async (activityData: any) => {
+      return await apiRequest('PUT', `/api/activities/${editActivityId}`, activityData);
+    },
+    onSuccess: () => {
+      // Invalidate activities cache for all dates
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      toast({
+        title: "Success",
+        description: "Activity updated successfully!",
+      });
+      setLocation('/');
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update activity. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteActivityMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('DELETE', `/api/activities/${editActivityId}`);
+    },
+    onSuccess: () => {
+      // Invalidate activities cache for all dates
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      toast({
+        title: "Success",
+        description: "Activity deleted successfully!",
+      });
+      setLocation('/');
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete activity. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = () => {
     if (!selectedActivity || !startTime || !endTime) {
       toast({
@@ -173,12 +272,24 @@ export default function AddActivity() {
       activityType = customActivity ? customActivity.name : selectedActivity;
     }
 
-    createActivityMutation.mutate({
+    const activityData = {
       activityType: activityType,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       date: new Date(today).toISOString(),
-    });
+    };
+
+    if (isEditMode) {
+      updateActivityMutation.mutate(activityData);
+    } else {
+      createActivityMutation.mutate(activityData);
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this activity?')) {
+      deleteActivityMutation.mutate();
+    }
   };
 
   const getSelectedActivityIcon = () => {
@@ -203,7 +314,7 @@ export default function AddActivity() {
         >
           <i className="fas fa-chevron-left text-xl"></i>
         </Button>
-        <h1 className="text-xl font-bold text-white">ADD ACTIVITY</h1>
+        <h1 className="text-xl font-bold text-white">{isEditMode ? 'EDIT ACTIVITY' : 'ADD ACTIVITY'}</h1>
         <div 
           onClick={() => setLocation('/')}
           className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
@@ -262,11 +373,30 @@ export default function AddActivity() {
         {/* Save Button */}
         <Button 
           onClick={handleSubmit}
-          disabled={createActivityMutation.isPending}
-          className="w-full bg-gray-600 hover:bg-gray-500 text-white py-3 rounded-lg transition-all duration-200 mb-8"
+          disabled={
+            isEditMode 
+              ? !hasChanges || updateActivityMutation.isPending 
+              : createActivityMutation.isPending
+          }
+          className="w-full bg-gray-600 hover:bg-gray-500 text-white py-3 rounded-lg transition-all duration-200 mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {createActivityMutation.isPending ? 'SAVING...' : 'SAVE'}
+          {isEditMode 
+            ? (updateActivityMutation.isPending ? 'UPDATING...' : 'UPDATE') 
+            : (createActivityMutation.isPending ? 'SAVING...' : 'SAVE')
+          }
         </Button>
+
+        {/* Delete Button - Only show in edit mode */}
+        {isEditMode && (
+          <Button 
+            onClick={handleDelete}
+            disabled={deleteActivityMutation.isPending}
+            variant="destructive"
+            className="w-full py-3 rounded-lg transition-all duration-200 mb-8"
+          >
+            {deleteActivityMutation.isPending ? 'DELETING...' : 'DELETE ACTIVITY'}
+          </Button>
+        )}
       </main>
     </div>
   );
