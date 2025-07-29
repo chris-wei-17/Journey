@@ -303,6 +303,7 @@ export class DatabaseStorage implements IStorage {
       .insert(activities)
       .values({
         ...activity,
+        durationMinutes: activity.durationMinutes || null, // Handle optional duration
         location: null, // Set optional fields to null
         notes: null,
       })
@@ -319,7 +320,7 @@ export class DatabaseStorage implements IStorage {
         activityType: activity.activityType,
         startTime: activity.startTime,
         endTime: activity.endTime,
-        durationMinutes: activity.durationMinutes,
+        durationMinutes: activity.durationMinutes || null, // Handle optional duration
         date: activity.date,
         location: null, // Set optional fields to null
         notes: null,
