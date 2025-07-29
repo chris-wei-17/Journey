@@ -43,6 +43,8 @@ export function PhotoComparison({
   const [isDragging2, setIsDragging2] = useState(false);
   const [dragStart1, setDragStart1] = useState({ x: 0, y: 0 });
   const [dragStart2, setDragStart2] = useState({ x: 0, y: 0 });
+  const [lastPinchDistance1, setLastPinchDistance1] = useState<number | null>(null);
+  const [lastPinchDistance2, setLastPinchDistance2] = useState<number | null>(null);
 
   const photo1Ref = useRef<HTMLDivElement>(null);
   const photo2Ref = useRef<HTMLDivElement>(null);
@@ -109,6 +111,111 @@ export function PhotoComparison({
     setIsDragging2(false);
   };
 
+  // Touch event handlers
+  const getTouchDistance = (touches: TouchList) => {
+    if (touches.length < 2) return 0;
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) + 
+      Math.pow(touch2.clientY - touch1.clientY, 2)
+    );
+  };
+
+  const getTouchCenter = (touches: TouchList) => {
+    if (touches.length === 1) {
+      return { x: touches[0].clientX, y: touches[0].clientY };
+    }
+    const touch1 = touches[0];
+    const touch2 = touches[1];
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    };
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, photoIndex: number) => {
+    e.preventDefault();
+    
+    if (e.touches.length === 1) {
+      // Single touch - start dragging
+      const touch = e.touches[0];
+      if (photoIndex === 1) {
+        setIsDragging1(true);
+        setDragStart1({ x: touch.clientX - zoom1.x, y: touch.clientY - zoom1.y });
+      } else {
+        setIsDragging2(true);
+        setDragStart2({ x: touch.clientX - zoom2.x, y: touch.clientY - zoom2.y });
+      }
+    } else if (e.touches.length === 2) {
+      // Multi-touch - start pinch zoom
+      const distance = getTouchDistance(e.touches);
+      if (photoIndex === 1) {
+        setLastPinchDistance1(distance);
+        setIsDragging1(false);
+      } else {
+        setLastPinchDistance2(distance);
+        setIsDragging2(false);
+      }
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent, photoIndex: number) => {
+    e.preventDefault();
+    
+    if (e.touches.length === 1) {
+      // Single touch - drag
+      const touch = e.touches[0];
+      if (photoIndex === 1 && isDragging1) {
+        setZoom1(prev => ({
+          ...prev,
+          x: touch.clientX - dragStart1.x,
+          y: touch.clientY - dragStart1.y
+        }));
+      } else if (photoIndex === 2 && isDragging2) {
+        setZoom2(prev => ({
+          ...prev,
+          x: touch.clientX - dragStart2.x,
+          y: touch.clientY - dragStart2.y
+        }));
+      }
+    } else if (e.touches.length === 2) {
+      // Multi-touch - pinch zoom
+      const distance = getTouchDistance(e.touches);
+      const lastDistance = photoIndex === 1 ? lastPinchDistance1 : lastPinchDistance2;
+      
+      if (lastDistance) {
+        const scale = distance / lastDistance;
+        const currentZoom = photoIndex === 1 ? zoom1 : zoom2;
+        const newScale = Math.min(Math.max(0.5, currentZoom.scale * scale), 3);
+        
+        if (photoIndex === 1) {
+          setZoom1(prev => ({ ...prev, scale: newScale }));
+          setLastPinchDistance1(distance);
+        } else {
+          setZoom2(prev => ({ ...prev, scale: newScale }));
+          setLastPinchDistance2(distance);
+        }
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, photoIndex: number) => {
+    if (e.touches.length === 0) {
+      setIsDragging1(false);
+      setIsDragging2(false);
+      setLastPinchDistance1(null);
+      setLastPinchDistance2(null);
+    } else if (e.touches.length === 1) {
+      // Went from multi-touch to single touch
+      if (photoIndex === 1) {
+        setLastPinchDistance1(null);
+      } else {
+        setLastPinchDistance2(null);
+      }
+    }
+  };
+
   useEffect(() => {
     if (isDragging1 || isDragging2) {
       document.addEventListener('mousemove', handleMouseMove as any);
@@ -122,7 +229,7 @@ export function PhotoComparison({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-4">
+      <DialogContent className="max-w-[95vw] max-h-[76vh] w-full h-full p-4">
         <div className="flex flex-col h-full">
           {/* Header with close button */}
           <div className="flex justify-between items-center mb-4">
@@ -155,13 +262,16 @@ export function PhotoComparison({
                     </Button>
                   )}
                 </div>
-                <div 
-                  ref={photo1Ref}
-                  className="flex-1 bg-gray-100 rounded-lg overflow-hidden relative cursor-move"
-                  onWheel={(e) => handleWheel(e, 1)}
-                  onMouseDown={(e) => handleMouseDown(e, 1)}
-                  style={{ userSelect: 'none' }}
-                >
+                                 <div 
+                   ref={photo1Ref}
+                   className="flex-1 bg-gray-100 rounded-lg overflow-hidden relative cursor-move"
+                   onWheel={(e) => handleWheel(e, 1)}
+                   onMouseDown={(e) => handleMouseDown(e, 1)}
+                   onTouchStart={(e) => handleTouchStart(e, 1)}
+                   onTouchMove={(e) => handleTouchMove(e, 1)}
+                   onTouchEnd={(e) => handleTouchEnd(e, 1)}
+                   style={{ userSelect: 'none', touchAction: 'none' }}
+                 >
                   {selectedPhotos.date1Photo ? (
                     <img
                       src={selectedPhotos.date1Photo.imageUrl}
@@ -196,13 +306,16 @@ export function PhotoComparison({
                     </Button>
                   )}
                 </div>
-                <div 
-                  ref={photo2Ref}
-                  className="flex-1 bg-gray-100 rounded-lg overflow-hidden relative cursor-move"
-                  onWheel={(e) => handleWheel(e, 2)}
-                  onMouseDown={(e) => handleMouseDown(e, 2)}
-                  style={{ userSelect: 'none' }}
-                >
+                                 <div 
+                   ref={photo2Ref}
+                   className="flex-1 bg-gray-100 rounded-lg overflow-hidden relative cursor-move"
+                   onWheel={(e) => handleWheel(e, 2)}
+                   onMouseDown={(e) => handleMouseDown(e, 2)}
+                   onTouchStart={(e) => handleTouchStart(e, 2)}
+                   onTouchMove={(e) => handleTouchMove(e, 2)}
+                   onTouchEnd={(e) => handleTouchEnd(e, 2)}
+                   style={{ userSelect: 'none', touchAction: 'none' }}
+                 >
                   {selectedPhotos.date2Photo ? (
                     <img
                       src={selectedPhotos.date2Photo.imageUrl}
@@ -230,14 +343,14 @@ export function PhotoComparison({
             <div>
               <h3 className="text-sm font-medium mb-2">{formatDisplayDate(date1)}</h3>
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {date1Photos.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                      selectedPhotos.date1Photo?.id === photo.id
-                        ? 'border-blue-500 shadow-lg'
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
+                                 {date1Photos.map((photo) => (
+                   <div
+                     key={photo.id}
+                     className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                       selectedPhotos.date1Photo?.id === photo.id
+                         ? 'border-blue-500 shadow-lg'
+                         : 'border-gray-200 hover:border-blue-300'
+                     }`}
                     onClick={() => onPhotoSelect(photo, 0)}
                   >
                     <img
@@ -254,14 +367,14 @@ export function PhotoComparison({
             <div>
               <h3 className="text-sm font-medium mb-2">{formatDisplayDate(date2)}</h3>
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {date2Photos.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                      selectedPhotos.date2Photo?.id === photo.id
-                        ? 'border-blue-500 shadow-lg'
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
+                                 {date2Photos.map((photo) => (
+                   <div
+                     key={photo.id}
+                     className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                       selectedPhotos.date2Photo?.id === photo.id
+                         ? 'border-blue-500 shadow-lg'
+                         : 'border-gray-200 hover:border-blue-300'
+                     }`}
                     onClick={() => onPhotoSelect(photo, 1)}
                   >
                     <img
