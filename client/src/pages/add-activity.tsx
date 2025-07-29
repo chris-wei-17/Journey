@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { calculateDuration, formatDuration } from "@/lib/utils";
+import { createDateTimeFromComponents, createDateFromString, formatDateString, handleOvernightActivity } from "@/lib/date-utils";
 
 const DEFAULT_ACTIVITY_OPTIONS = [
   { value: 'walking', label: 'Walking', icon: 'fa-walking' },
@@ -216,7 +217,7 @@ export default function AddActivity() {
         description: "Activity added successfully!",
       });
       // Return to home with the selected date
-      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      const dateParam = formatDateString(selectedDate);
       console.log('🏠 Navigation Debug - Returning to home with date:', dateParam, 'selectedDate object:', selectedDate);
       setLocation(`/?date=${dateParam}`);
     },
@@ -248,7 +249,7 @@ export default function AddActivity() {
         description: "Activity updated successfully!",
       });
       // Return to home with the selected date
-      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      const dateParam = formatDateString(selectedDate);
       setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
@@ -278,7 +279,7 @@ export default function AddActivity() {
         description: "Activity deleted successfully!",
       });
       // Return to home with the selected date
-      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      const dateParam = formatDateString(selectedDate);
       setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
@@ -323,22 +324,20 @@ export default function AddActivity() {
       return;
     }
 
-    // Use selected date
-    const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    let startDateTime = new Date(`${dateStr}T${startTime}`);
-    let endDateTime = new Date(`${dateStr}T${endTime}`);
+    // Use selected date with custom date utilities to avoid timezone issues
+    const dateStr = formatDateString(selectedDate);
+    let startDateTime = createDateTimeFromComponents(dateStr, startTime);
+    let endDateTime = createDateTimeFromComponents(dateStr, endTime);
 
-    // For sleep activities, handle overnight by setting end date to next day if needed
-    if (activityType === 'sleep' && endDateTime <= startDateTime) {
-      endDateTime.setDate(endDateTime.getDate() + 1);
-    }
+    // Handle overnight activities (like sleep)
+    endDateTime = handleOvernightActivity(startDateTime, endDateTime, activityType);
 
     const activityData = {
       activityType: activityType,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       durationMinutes: duration.hours * 60 + duration.minutes,
-      date: selectedDate.toISOString(), // Use selected date like macros do
+      date: createDateFromString(dateStr).toISOString(), // Use clean date for the selected day
     };
 
     console.log('🚀 Activity Creation Debug:');
@@ -379,7 +378,7 @@ export default function AddActivity() {
           variant="ghost" 
           size="sm"
           onClick={() => {
-            const dateParam = format(selectedDate, 'yyyy-MM-dd');
+            const dateParam = formatDateString(selectedDate);
             setLocation(`/?date=${dateParam}`);
           }}
           className="p-2 text-white hover:bg-white/20"
@@ -389,7 +388,7 @@ export default function AddActivity() {
         <h1 className="text-xl font-bold text-white">{isEditMode ? 'EDIT ACTIVITY' : 'ADD ACTIVITY'}</h1>
         <div 
           onClick={() => {
-            const dateParam = format(selectedDate, 'yyyy-MM-dd');
+            const dateParam = formatDateString(selectedDate);
             setLocation(`/?date=${dateParam}`);
           }}
           className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
