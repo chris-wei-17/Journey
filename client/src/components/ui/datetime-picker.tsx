@@ -120,12 +120,23 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
 
   // Generate options
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
   
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 10 }, (_, i) => String(currentYear - 5 + i));
+  const currentMonth = new Date().getMonth();
+  
+  // Smart year logic: if current month is December, January dates are next year
+  // If current month is not December, December dates are previous year
+  const getYearForMonth = (monthIndex: number) => {
+    if (currentMonth === 11 && monthIndex === 0) { // December current, January selected
+      return currentYear + 1;
+    } else if (currentMonth !== 11 && monthIndex === 11) { // Not December current, December selected
+      return currentYear - 1;
+    }
+    return currentYear;
+  };
   
   const hours = Array.from({ length: 12 }, (_, i) => String(i === 0 ? 12 : i).padStart(2, '0'));
   const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
@@ -137,14 +148,16 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
   const hour24 = parseInt(timeObj[0]);
   const minute = timeObj[1];
   
-  const currentMonth = months[dateObj.getMonth()];
-  const currentDay = String(dateObj.getDate()).padStart(2, '0');
-  const currentYear_str = String(dateObj.getFullYear());
+  const selectedMonthIndex = dateObj.getMonth();
+  const selectedMonth = months[selectedMonthIndex];
+  const selectedDay = String(dateObj.getDate()).padStart(2, '0');
+  const selectedYear = getYearForMonth(selectedMonthIndex);
+  
   const currentHour = hour24 === 0 ? '12' : hour24 > 12 ? String(hour24 - 12).padStart(2, '0') : String(hour24).padStart(2, '0');
   const currentPeriod = hour24 >= 12 ? 'PM' : 'AM';
 
-  // Get days for the selected month/year
-  const daysInMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate();
+  // Get days for the selected month/year using the smart year
+  const daysInMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => String(i + 1).padStart(2, '0'));
 
   const formatDisplayValue = () => {
@@ -157,25 +170,22 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
     
     return `${date.toLocaleDateString('en-US', { 
       month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+      day: 'numeric'
     })} at ${hour12}:${minute} ${period}`;
   };
 
   const handleMonthChange = (month: string) => {
     const monthIndex = months.indexOf(month);
-    const newDate = new Date(parseInt(currentYear_str), monthIndex, parseInt(currentDay));
-    setTempDate(newDate.toISOString().split('T')[0]);
+    const yearForMonth = getYearForMonth(monthIndex);
+    const day = Math.min(parseInt(selectedDay), new Date(yearForMonth, monthIndex + 1, 0).getDate());
+    const newDate = `${yearForMonth}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setTempDate(newDate);
   };
 
   const handleDayChange = (day: string) => {
-    const newDate = new Date(parseInt(currentYear_str), months.indexOf(currentMonth), parseInt(day));
-    setTempDate(newDate.toISOString().split('T')[0]);
-  };
-
-  const handleYearChange = (year: string) => {
-    const newDate = new Date(parseInt(year), months.indexOf(currentMonth), parseInt(currentDay));
-    setTempDate(newDate.toISOString().split('T')[0]);
+    const yearForMonth = getYearForMonth(selectedMonthIndex);
+    const newDate = `${yearForMonth}-${String(selectedMonthIndex + 1).padStart(2, '0')}-${String(parseInt(day)).padStart(2, '0')}`;
+    setTempDate(newDate);
   };
 
   const handleHourChange = (hour: string) => {
@@ -239,15 +249,14 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4 text-center">{label}</h3>
           
-          {/* Date Pickers */}
+          {/* Date & Time Pickers */}
           <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-600 mb-3">Date</h4>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               <div>
                 <p className="text-xs text-gray-500 mb-1 text-center">Month</p>
                 <WheelPicker
                   options={months}
-                  value={currentMonth}
+                  value={selectedMonth}
                   onChange={handleMonthChange}
                 />
               </div>
@@ -255,25 +264,10 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
                 <p className="text-xs text-gray-500 mb-1 text-center">Day</p>
                 <WheelPicker
                   options={days}
-                  value={currentDay}
+                  value={selectedDay}
                   onChange={handleDayChange}
                 />
               </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-1 text-center">Year</p>
-                <WheelPicker
-                  options={years}
-                  value={currentYear_str}
-                  onChange={handleYearChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Time Pickers */}
-          <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-600 mb-3">Time</h4>
-            <div className="grid grid-cols-3 gap-2">
               <div>
                 <p className="text-xs text-gray-500 mb-1 text-center">Hour</p>
                 <WheelPicker
