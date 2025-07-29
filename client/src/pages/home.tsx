@@ -20,8 +20,11 @@ export default function Home() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const dateParam = params.get('date');
+    console.log('🏠 Home Page URL Debug - dateParam from URL:', dateParam);
     if (dateParam) {
-      setSelectedDate(new Date(dateParam));
+      const newDate = new Date(dateParam);
+      console.log('🏠 Home Page URL Debug - Setting selectedDate to:', newDate, 'from dateParam:', dateParam);
+      setSelectedDate(newDate);
       // Clean URL to remove the parameter
       window.history.replaceState({}, '', '/');
     }

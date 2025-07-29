@@ -210,6 +210,7 @@ export default function AddActivity() {
       });
       // Return to home with the selected date
       const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      console.log('🏠 Navigation Debug - Returning to home with date:', dateParam, 'selectedDate object:', selectedDate);
       setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
@@ -330,7 +331,7 @@ export default function AddActivity() {
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       durationMinutes: duration.hours * 60 + duration.minutes,
-      date: selectedDate.toISOString(),
+      date: dateStr, // Use the date string (YYYY-MM-DD) instead of full timestamp
     };
 
     console.log('🚀 Activity Creation Debug:');
