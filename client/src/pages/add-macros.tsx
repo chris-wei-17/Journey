@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +18,16 @@ export default function AddMacros() {
   const [protein, setProtein] = useState('');
   const [fats, setFats] = useState('');
   const [carbs, setCarbs] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Get date from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dateParam = params.get('date');
+    if (dateParam) {
+      setSelectedDate(new Date(dateParam));
+    }
+  }, []);
 
   const createMacroMutation = useMutation({
     mutationFn: async (macroData: any) => {
@@ -35,8 +45,8 @@ export default function AddMacros() {
       // Invalidate macros cache for all dates
       queryClient.invalidateQueries({ queryKey: ['/api/macros'] });
       // Also invalidate the specific date query
-      const today = new Date().toISOString().split('T')[0];
-      queryClient.invalidateQueries({ queryKey: [`/api/macros/date/${today}`] });
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      queryClient.invalidateQueries({ queryKey: [`/api/macros/date/${dateStr}`] });
       toast({
         title: "Success",
         description: "Macros added successfully!",
@@ -68,7 +78,7 @@ export default function AddMacros() {
       protein: parseFloat(protein),
       fats: parseFloat(fats),
       carbs: parseFloat(carbs),
-      date: new Date().toISOString(), // Current date
+      date: selectedDate.toISOString(), // Use selected date
     };
 
     createMacroMutation.mutate(macroData);

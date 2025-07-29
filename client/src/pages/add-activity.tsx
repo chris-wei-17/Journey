@@ -42,6 +42,7 @@ export default function AddActivity() {
   const [selectedActivity, setSelectedActivity] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
   
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
@@ -123,6 +124,12 @@ export default function AddActivity() {
     const activityTypeParam = urlParams.get('activityType');
     const startTimeParam = urlParams.get('startTime');
     const endTimeParam = urlParams.get('endTime');
+    const dateParam = urlParams.get('date');
+    
+    // Set selected date from URL param if provided
+    if (dateParam) {
+      setSelectedDate(new Date(dateParam));
+    }
     
     if (editParam && activityTypeParam && startTimeParam && endTimeParam) {
       // Edit mode
@@ -297,10 +304,10 @@ export default function AddActivity() {
       return;
     }
 
-    // Use today's date automatically
-    const today = format(new Date(), 'yyyy-MM-dd');
-    let startDateTime = new Date(`${today}T${startTime}`);
-    let endDateTime = new Date(`${today}T${endTime}`);
+    // Use selected date
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    let startDateTime = new Date(`${dateStr}T${startTime}`);
+    let endDateTime = new Date(`${dateStr}T${endTime}`);
 
     // For sleep activities, handle overnight by setting end date to next day if needed
     if (activityType === 'sleep' && endDateTime <= startDateTime) {
@@ -312,7 +319,7 @@ export default function AddActivity() {
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       durationMinutes: duration.hours * 60 + duration.minutes,
-      date: new Date(today).toISOString(),
+      date: selectedDate.toISOString(),
     };
 
     if (isEditMode) {
