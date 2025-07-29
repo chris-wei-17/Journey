@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
@@ -10,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { calculateDuration, formatDuration } from "@/lib/utils";
 import { createDateTimeFromComponents, createDateFromString, formatDateString, handleOvernightActivity } from "@/lib/date-utils";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 const DEFAULT_ACTIVITY_OPTIONS = [
   { value: 'walking', label: 'Walking', icon: 'fa-walking' },
@@ -41,8 +41,14 @@ export default function AddActivity() {
   const queryClient = useQueryClient();
   
   const [selectedActivity, setSelectedActivity] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [startDateTime, setStartDateTime] = useState({ 
+    date: formatDateString(new Date()), 
+    time: '09:00' 
+  });
+  const [endDateTime, setEndDateTime] = useState({ 
+    date: formatDateString(new Date()), 
+    time: '10:00' 
+  });
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hasInitialized, setHasInitialized] = useState(false);
   
@@ -51,8 +57,8 @@ export default function AddActivity() {
   const [editActivityId, setEditActivityId] = useState<number | null>(null);
   const [originalValues, setOriginalValues] = useState({
     activityType: '',
-    startTime: '',
-    endTime: ''
+    startDateTime: { date: '', time: '' },
+    endDateTime: { date: '', time: '' }
   });
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -135,8 +141,16 @@ export default function AddActivity() {
     console.log('🔍 Add-Activity URL Debug - current selectedDate before update:', selectedDate);
     if (dateParam) {
       const newDate = new Date(dateParam);
+      const dateStr = formatDateString(newDate);
       console.log('🔍 Add-Activity URL Debug - creating new Date from dateParam:', newDate);
       setSelectedDate(newDate);
+      
+      // Also update the datetime pickers to use this date if not in edit mode
+      if (!editParam) {
+        setStartDateTime(prev => ({ ...prev, date: dateStr }));
+        setEndDateTime(prev => ({ ...prev, date: dateStr }));
+      }
+      
       console.log('🔍 Add-Activity URL Debug - set selectedDate to:', newDate);
     } else {
       console.log('🔍 Add-Activity URL Debug - NO dateParam found, keeping default selectedDate:', selectedDate);
@@ -156,17 +170,27 @@ export default function AddActivity() {
       
       setSelectedActivity(activityValue);
       
-      // Format times for input fields (convert from ISO to HH:MM)
+      // Format datetime for picker (convert from ISO to date/time objects)
       const startDate = new Date(startTimeParam);
       const endDate = new Date(endTimeParam);
-      setStartTime(format(startDate, 'HH:mm'));
-      setEndTime(format(endDate, 'HH:mm'));
+      
+      const startDateTimeObj = {
+        date: format(startDate, 'yyyy-MM-dd'),
+        time: format(startDate, 'HH:mm')
+      };
+      const endDateTimeObj = {
+        date: format(endDate, 'yyyy-MM-dd'),
+        time: format(endDate, 'HH:mm')
+      };
+      
+      setStartDateTime(startDateTimeObj);
+      setEndDateTime(endDateTimeObj);
       
       // Store original values
       setOriginalValues({
         activityType: activityValue,
-        startTime: format(startDate, 'HH:mm'),
-        endTime: format(endDate, 'HH:mm')
+        startDateTime: startDateTimeObj,
+        endDateTime: endDateTimeObj
       });
       
       // Clean URL
@@ -185,11 +209,13 @@ export default function AddActivity() {
   useEffect(() => {
     if (isEditMode) {
       const hasChanged = selectedActivity !== originalValues.activityType || 
-                        startTime !== originalValues.startTime || 
-                        endTime !== originalValues.endTime;
+                        startDateTime.date !== originalValues.startDateTime.date ||
+                        startDateTime.time !== originalValues.startDateTime.time ||
+                        endDateTime.date !== originalValues.endDateTime.date ||
+                        endDateTime.time !== originalValues.endDateTime.time;
       setHasChanges(hasChanged);
     }
-  }, [selectedActivity, startTime, endTime, originalValues, isEditMode]);
+  }, [selectedActivity, startDateTime, endDateTime, originalValues, isEditMode]);
 
   const createActivityMutation = useMutation({
     mutationFn: async (activityData: any) => {
@@ -292,7 +318,7 @@ export default function AddActivity() {
   });
 
   const handleSubmit = () => {
-    if (!selectedActivity || !startTime || !endTime) {
+    if (!selectedActivity || !startDateTime.time || !endDateTime.time) {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -311,8 +337,8 @@ export default function AddActivity() {
       activityType = customActivity ? customActivity.name : selectedActivity;
     }
 
-    // Validate duration
-    const duration = calculateDuration(startTime, endTime, activityType);
+    // Validate duration using the times from datetime objects
+    const duration = calculateDuration(startDateTime.time, endDateTime.time, activityType);
     if (!duration) {
       toast({
         title: "Invalid Time",
@@ -324,44 +350,39 @@ export default function AddActivity() {
       return;
     }
 
-    // Use selected date with custom date utilities to avoid timezone issues
-    const dateStr = formatDateString(selectedDate);
-    let startDateTime = createDateTimeFromComponents(dateStr, startTime);
-    let endDateTime = createDateTimeFromComponents(dateStr, endTime);
+    // Use the dates from the datetime pickers
+    let startDateTimeObj = createDateTimeFromComponents(startDateTime.date, startDateTime.time);
+    let endDateTimeObj = createDateTimeFromComponents(endDateTime.date, endDateTime.time);
 
     // Handle overnight activities (like sleep)
-    endDateTime = handleOvernightActivity(startDateTime, endDateTime, activityType);
+    endDateTimeObj = handleOvernightActivity(startDateTimeObj, endDateTimeObj, activityType);
 
-    const cleanDate = createDateFromString(dateStr);
+    // Use the start date as the primary date for the activity
+    const cleanDate = createDateFromString(startDateTime.date);
 
     const activityData = {
       activityType: activityType,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
+      startTime: startDateTimeObj.toISOString(),
+      endTime: endDateTimeObj.toISOString(),
       durationMinutes: duration.hours * 60 + duration.minutes,
-      date: cleanDate.toISOString(), // Use clean date for the selected day
+      date: cleanDate.toISOString(), // Use the start date as the activity date
     };
 
     console.log('🚀🚀🚀 DETAILED Activity Creation Debug:');
-    console.log('1. Selected Date Object:', selectedDate);
-    console.log('2. Selected Date toString():', selectedDate.toString());
-    console.log('3. Selected Date toDateString():', selectedDate.toDateString());
-    console.log('4. Selected Date getDate():', selectedDate.getDate());
-    console.log('5. Selected Date getMonth():', selectedDate.getMonth());
-    console.log('6. Selected Date getFullYear():', selectedDate.getFullYear());
-    console.log('7. Formatted dateStr:', dateStr);
-    console.log('8. Start Time Input:', startTime);
-    console.log('9. End Time Input:', endTime);
-    console.log('10. Created startDateTime:', startDateTime);
-    console.log('11. Created startDateTime toString():', startDateTime.toString());
-    console.log('12. Created startDateTime toISOString():', startDateTime.toISOString());
-    console.log('13. Created endDateTime:', endDateTime);
-    console.log('14. Created endDateTime toString():', endDateTime.toString());
-    console.log('15. Created endDateTime toISOString():', endDateTime.toISOString());
-    console.log('16. Clean Date Object:', cleanDate);
-    console.log('17. Clean Date toString():', cleanDate.toString());
-    console.log('18. Clean Date toISOString():', cleanDate.toISOString());
-    console.log('19. Final Activity Data:', activityData);
+    console.log('1. Start DateTime Input:', startDateTime);
+    console.log('2. End DateTime Input:', endDateTime);
+    console.log('3. Activity Type:', activityType);
+    console.log('4. Created startDateTimeObj:', startDateTimeObj);
+    console.log('5. Created startDateTimeObj toString():', startDateTimeObj.toString());
+    console.log('6. Created startDateTimeObj toISOString():', startDateTimeObj.toISOString());
+    console.log('7. Created endDateTimeObj:', endDateTimeObj);
+    console.log('8. Created endDateTimeObj toString():', endDateTimeObj.toString());
+    console.log('9. Created endDateTimeObj toISOString():', endDateTimeObj.toISOString());
+    console.log('10. Clean Date Object:', cleanDate);
+    console.log('11. Clean Date toString():', cleanDate.toString());
+    console.log('12. Clean Date toISOString():', cleanDate.toISOString());
+    console.log('13. Duration:', duration);
+    console.log('14. Final Activity Data:', activityData);
 
     if (isEditMode) {
       updateActivityMutation.mutate(activityData);
@@ -432,31 +453,22 @@ export default function AddActivity() {
           </CardContent>
         </Card>
 
-        {/* Time Section */}
+        {/* DateTime Section */}
         <div className="mb-6">
-          <h3 className="text-gray-400 text-sm font-medium mb-4 tracking-wide">TIME</h3>
+          <h3 className="text-gray-400 text-sm font-medium mb-4 tracking-wide">DATE & TIME</h3>
           
           <div className="space-y-4">
-            <div>
-              <Label className="text-white mb-2 block">Start Time</Label>
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white"
-              />
-            </div>
+            <DateTimePicker
+              label="Start Date & Time"
+              value={startDateTime}
+              onChange={setStartDateTime}
+            />
             
-            <div>
-              <Label className="text-white mb-2 block">End Time</Label>
-              <Input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white"
-              />
-            </div>
-
+            <DateTimePicker
+              label="End Date & Time"
+              value={endDateTime}
+              onChange={setEndDateTime}
+            />
           </div>
         </div>
 
