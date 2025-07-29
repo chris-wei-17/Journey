@@ -183,14 +183,14 @@ export function DataChart({
           </CardTitle>
           
           {/* Time Range Selector */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit scale-60 origin-center">
+          <div className="flex gap-0.5 bg-gray-100 rounded-md p-0.5 w-fit">
             {timeRangeOptions.map((option) => (
               <Button
                 key={option.value}
                 variant={timeRange === option.value ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setTimeRange(option.value)}
-                className={`text-xs px-2 py-1 h-7 ${
+                className={`text-xs px-1.5 py-0.5 h-5 min-w-0 ${
                   timeRange === option.value
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-600 hover:text-gray-800'
