@@ -20,13 +20,11 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemHeight = 40; // Height of each item in pixels
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   const selectedIndex = options.findIndex(option => option === value);
-  const scrollTop = selectedIndex * itemHeight;
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (isDragging) return;
-    
     const currentScrollTop = e.currentTarget.scrollTop;
     const index = Math.round(currentScrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(index, options.length - 1));
@@ -53,14 +51,13 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
     }
   };
 
+  // Only set initial position, don't force it back
   useEffect(() => {
-    if (containerRef.current && !isDragging && selectedIndex >= 0) {
-      const targetScrollTop = selectedIndex * itemHeight;
-      if (Math.abs(containerRef.current.scrollTop - targetScrollTop) > 5) {
-        containerRef.current.scrollTop = targetScrollTop;
-      }
+    if (containerRef.current && !hasInitialized && selectedIndex >= 0) {
+      containerRef.current.scrollTop = selectedIndex * itemHeight;
+      setHasInitialized(true);
     }
-  }, [value, selectedIndex, itemHeight, isDragging]);
+  }, [selectedIndex, itemHeight, hasInitialized]);
 
   return (
     <div className={`relative ${className}`}>
@@ -87,19 +84,18 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
         onTouchStart={() => setIsDragging(true)}
         onTouchEnd={() => {
           setIsDragging(false);
-          setTimeout(snapToNearest, 100);
+          snapToNearest();
         }}
         onMouseDown={() => setIsDragging(true)}
         onMouseUp={() => {
           setIsDragging(false);
-          setTimeout(snapToNearest, 100);
+          snapToNearest();
         }}
-        onTouchMove={() => setIsDragging(true)}
       >
         {options.map((option, index) => (
           <div
             key={option}
-            className={`flex items-center justify-center text-center select-none transition-all duration-200 ${
+            className={`flex items-center justify-center text-center select-none transition-all duration-200 cursor-pointer ${
               option === value 
                 ? 'text-blue-600 font-semibold text-lg' 
                 : 'text-gray-600 text-base'
@@ -107,6 +103,15 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
             style={{ 
               height: `${itemHeight}px`,
               scrollSnapAlign: 'center'
+            }}
+            onClick={() => {
+              onChange(option);
+              if (containerRef.current) {
+                containerRef.current.scrollTo({
+                  top: index * itemHeight,
+                  behavior: 'smooth'
+                });
+              }
             }}
           >
             {option}
