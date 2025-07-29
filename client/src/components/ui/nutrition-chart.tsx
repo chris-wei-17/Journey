@@ -50,13 +50,23 @@ export function NutritionChart() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
 
   // Fetch macro data for the time range
-  const { data: allMacros = [] } = useQuery<MacroEntry[]>({
+  const { data: allMacros = [], error: macrosError, isLoading: macrosLoading } = useQuery<MacroEntry[]>({
     queryKey: ['/api/macros'],
   });
 
   // Fetch macro targets
-  const { data: macroTargets } = useQuery<MacroTarget>({
+  const { data: macroTargets, error: targetsError, isLoading: targetsLoading } = useQuery<MacroTarget>({
     queryKey: ['/api/macro-targets'],
+  });
+
+  // Debug logging
+  console.log('NutritionChart Debug:', {
+    allMacros,
+    macroTargets,
+    macrosError,
+    targetsError,
+    macrosLoading,
+    targetsLoading
   });
 
   // Get days for current range
@@ -204,6 +214,35 @@ export function NutritionChart() {
   const proteinDonut = createDonutConfig(macroPercentages.protein, '#ef4444', 'Protein');
   const fatsDonut = createDonutConfig(macroPercentages.fats, '#eab308', 'Fats');
   const carbsDonut = createDonutConfig(macroPercentages.carbs, '#22c55e', 'Carbs');
+
+  // Show loading state
+  if (macrosLoading || targetsLoading) {
+    return (
+      <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <p className="text-gray-600">Loading nutrition data...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (macrosError || targetsError) {
+    return (
+      <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <p className="text-red-600">Error loading nutrition data</p>
+            <p className="text-sm text-gray-500 mt-2">
+              {macrosError?.message || targetsError?.message}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
