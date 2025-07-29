@@ -332,20 +332,36 @@ export default function AddActivity() {
     // Handle overnight activities (like sleep)
     endDateTime = handleOvernightActivity(startDateTime, endDateTime, activityType);
 
+    const cleanDate = createDateFromString(dateStr);
+
     const activityData = {
       activityType: activityType,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       durationMinutes: duration.hours * 60 + duration.minutes,
-      date: createDateFromString(dateStr).toISOString(), // Use clean date for the selected day
+      date: cleanDate.toISOString(), // Use clean date for the selected day
     };
 
-    console.log('🚀 Activity Creation Debug:');
-    console.log('Selected Date Object:', selectedDate);
-    console.log('Selected Date ISO:', selectedDate.toISOString());
-    console.log('Selected Date Local String:', selectedDate.toString());
-    console.log('Date String (dateStr):', dateStr);
-    console.log('Activity Data:', activityData);
+    console.log('🚀🚀🚀 DETAILED Activity Creation Debug:');
+    console.log('1. Selected Date Object:', selectedDate);
+    console.log('2. Selected Date toString():', selectedDate.toString());
+    console.log('3. Selected Date toDateString():', selectedDate.toDateString());
+    console.log('4. Selected Date getDate():', selectedDate.getDate());
+    console.log('5. Selected Date getMonth():', selectedDate.getMonth());
+    console.log('6. Selected Date getFullYear():', selectedDate.getFullYear());
+    console.log('7. Formatted dateStr:', dateStr);
+    console.log('8. Start Time Input:', startTime);
+    console.log('9. End Time Input:', endTime);
+    console.log('10. Created startDateTime:', startDateTime);
+    console.log('11. Created startDateTime toString():', startDateTime.toString());
+    console.log('12. Created startDateTime toISOString():', startDateTime.toISOString());
+    console.log('13. Created endDateTime:', endDateTime);
+    console.log('14. Created endDateTime toString():', endDateTime.toString());
+    console.log('15. Created endDateTime toISOString():', endDateTime.toISOString());
+    console.log('16. Clean Date Object:', cleanDate);
+    console.log('17. Clean Date toString():', cleanDate.toString());
+    console.log('18. Clean Date toISOString():', cleanDate.toISOString());
+    console.log('19. Final Activity Data:', activityData);
 
     if (isEditMode) {
       updateActivityMutation.mutate(activityData);

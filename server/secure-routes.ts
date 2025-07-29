@@ -761,15 +761,24 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.userId!;
       const date = req.params.date;
-      console.log(`Fetching activities for userId: ${userId}, date: ${date}`);
+      console.log(`🔍🔍🔍 DETAILED ACTIVITY QUERY DEBUG:`);
+      console.log(`1. Fetching activities for userId: ${userId}`);
+      console.log(`2. Requested date param: ${date}`);
+      console.log(`3. typeof date param: ${typeof date}`);
+      
       const activities = await storage.getActivitiesForDate(userId, date);
-      console.log(`Found ${activities.length} activities:`, activities.map(a => ({
+      
+      console.log(`4. Found ${activities.length} activities total for user`);
+      console.log(`5. Activities details:`, activities.map(a => ({
         id: a.id,
         activityType: a.activityType,
         date: a.date,
+        dateToString: new Date(a.date).toString(),
+        dateToDateString: new Date(a.date).toDateString(),
         startTime: a.startTime,
         createdAt: a.createdAt
       })));
+      
       res.json(activities);
     } catch (error) {
       console.error("Error fetching activities for date:", error);
@@ -784,11 +793,19 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       console.log('Creating activity for user:', userId);
       console.log('Request body:', JSON.stringify(req.body, null, 2));
       
-      console.log('🚀 SERVER Activity Creation Debug:');
-      console.log('Raw req.body.date:', req.body.date);
-      console.log('Parsed Date Object:', new Date(req.body.date));
-      console.log('Parsed Date ISO:', new Date(req.body.date).toISOString());
-      console.log('Parsed Date Local:', new Date(req.body.date).toString());
+      console.log('🚀🚀🚀 DETAILED SERVER Activity Creation Debug:');
+      console.log('1. Raw req.body.date:', req.body.date);
+      console.log('2. typeof req.body.date:', typeof req.body.date);
+      
+      const parsedDate = new Date(req.body.date);
+      console.log('3. Parsed Date Object:', parsedDate);
+      console.log('4. Parsed Date toString():', parsedDate.toString());
+      console.log('5. Parsed Date toISOString():', parsedDate.toISOString());
+      console.log('6. Parsed Date toDateString():', parsedDate.toDateString());
+      console.log('7. Parsed Date getDate():', parsedDate.getDate());
+      console.log('8. Parsed Date getMonth():', parsedDate.getMonth());
+      console.log('9. Parsed Date getFullYear():', parsedDate.getFullYear());
+      console.log('10. Parsed Date getTimezoneOffset():', parsedDate.getTimezoneOffset());
       
       const activityData = {
         userId,
@@ -796,10 +813,13 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         startTime: new Date(req.body.startTime),
         endTime: new Date(req.body.endTime),
         durationMinutes: req.body.durationMinutes,
-        date: new Date(req.body.date),
+        date: parsedDate,
       };
       
-      console.log('Processed activity data:', JSON.stringify(activityData, null, 2));
+      console.log('11. Processed activity data:', JSON.stringify(activityData, null, 2));
+      console.log('12. Activity data date field:', activityData.date);
+      console.log('13. Activity data date toString():', activityData.date.toString());
+      console.log('14. Activity data date toISOString():', activityData.date.toISOString());
       
       const result = insertActivitySchema.safeParse(activityData);
       

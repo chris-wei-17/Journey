@@ -20,13 +20,31 @@ export default function Home() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const dateParam = params.get('date');
-    console.log('🏠 Home Page URL Debug - dateParam from URL:', dateParam);
+    console.log('🏠🏠🏠 DETAILED Home Page URL Debug:');
+    console.log('1. Current URL:', window.location.href);
+    console.log('2. URL Search Params:', window.location.search);
+    console.log('3. dateParam from URL:', dateParam);
+    console.log('4. Current selectedDate before update:', selectedDate);
+    console.log('5. Current selectedDate toString():', selectedDate.toString());
+    
     if (dateParam) {
       const newDate = new Date(dateParam);
-      console.log('🏠 Home Page URL Debug - Setting selectedDate to:', newDate, 'from dateParam:', dateParam);
+      console.log('6. Creating new Date from dateParam:', dateParam);
+      console.log('7. New Date Object:', newDate);
+      console.log('8. New Date toString():', newDate.toString());
+      console.log('9. New Date toDateString():', newDate.toDateString());
+      console.log('10. New Date getDate():', newDate.getDate());
+      console.log('11. New Date getMonth():', newDate.getMonth());
+      console.log('12. New Date getFullYear():', newDate.getFullYear());
+      
       setSelectedDate(newDate);
+      console.log('13. Set selectedDate to new date');
+      
       // Clean URL to remove the parameter
       window.history.replaceState({}, '', '/');
+      console.log('14. Cleaned URL');
+    } else {
+      console.log('6. NO dateParam found, keeping selectedDate as:', selectedDate.toString());
     }
   }, []);
 
