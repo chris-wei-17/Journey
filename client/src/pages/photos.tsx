@@ -46,21 +46,33 @@ export default function Photos() {
 
   // Check PIN protection on component mount
   useEffect(() => {
-    if (user && user.photosPinEnabled !== null) {
-      if (user.photosPinEnabled === true) {
-        setPinMode('verify');
-        setIsPinDialogOpen(true);
-      } else {
-        setIsUnlocked(true);
-      }
-    } else if (user && user.photosPinEnabled === null) {
+    if (!user) return;
+
+    // Check if PIN was already verified in this session
+    const sessionKey = `photos_unlocked_${user.id}`;
+    const isUnlockedInSession = sessionStorage.getItem(sessionKey) === 'true';
+
+    if (user.photosPinEnabled === null) {
+      // First time - show setup dialog
       setPinMode('setup');
       setIsPinDialogOpen(true);
+    } else if (user.photosPinEnabled === true && !isUnlockedInSession) {
+      // PIN enabled but not verified in session
+      setPinMode('verify');
+      setIsPinDialogOpen(true);
+    } else {
+      // PIN disabled or already verified in session
+      setIsUnlocked(true);
     }
   }, [user]);
 
   const handlePinSuccess = () => {
     setIsUnlocked(true);
+    // Remember PIN verification for this session
+    if (user) {
+      const sessionKey = `photos_unlocked_${user.id}`;
+      sessionStorage.setItem(sessionKey, 'true');
+    }
   };
 
   // Group photos by date

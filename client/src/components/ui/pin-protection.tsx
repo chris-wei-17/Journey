@@ -26,6 +26,13 @@ export function PinProtection({ isOpen, onClose, mode, onSuccess }: PinProtectio
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      // Clear session storage when PIN settings change
+      const keys = Object.keys(sessionStorage);
+      keys.forEach(key => {
+        if (key.startsWith('photos_unlocked_')) {
+          sessionStorage.removeItem(key);
+        }
+      });
       if (onSuccess) onSuccess();
       resetAndClose();
     },
@@ -114,6 +121,8 @@ export function PinProtection({ isOpen, onClose, mode, onSuccess }: PinProtectio
           <p className="text-gray-600">Please enter your 4-digit PIN to access photos</p>
           <Input
             type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={pin}
             onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
             placeholder="****"
@@ -160,6 +169,8 @@ export function PinProtection({ isOpen, onClose, mode, onSuccess }: PinProtectio
           <p className="text-gray-600">Choose a 4-digit PIN</p>
           <Input
             type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={pin}
             onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
             placeholder="****"
@@ -184,6 +195,8 @@ export function PinProtection({ isOpen, onClose, mode, onSuccess }: PinProtectio
           <p className="text-gray-600">Enter your PIN again to confirm</p>
           <Input
             type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={confirmPin}
             onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
             placeholder="****"
