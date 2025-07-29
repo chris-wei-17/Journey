@@ -254,25 +254,16 @@ export default function Photos() {
               </Button>
             </div>
 
-            {/* Sort Controls */}
-            <div className="bg-white/75 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+            {/* Sort Control */}
+            <div className="bg-white/75 backdrop-blur-sm rounded-lg shadow-lg">
               <Button
-                variant={sortOrder === 'newest' ? 'default' : 'ghost'}
+                variant="default"
                 size="sm"
-                onClick={() => setSortOrder('newest')}
-                className={`mr-1 ${sortOrder === 'newest' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}
+                onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
+                className="bg-blue-600 text-white hover:bg-blue-700"
               >
-                <i className="fas fa-arrow-down mr-2"></i>
-                Newest First
-              </Button>
-              <Button
-                variant={sortOrder === 'oldest' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setSortOrder('oldest')}
-                className={sortOrder === 'oldest' ? 'bg-blue-600 text-white' : 'text-gray-600'}
-              >
-                <i className="fas fa-arrow-up mr-2"></i>
-                Oldest First
+                <i className={`fas ${sortOrder === 'newest' ? 'fa-arrow-up' : 'fa-arrow-down'} mr-2`}></i>
+                Sort
               </Button>
             </div>
           </div>
