@@ -183,7 +183,7 @@ export function DataChart({
           </CardTitle>
           
           {/* Time Range Selector */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-1 scale-60 origin-center">
             {timeRangeOptions.map((option) => (
               <Button
                 key={option.value}
