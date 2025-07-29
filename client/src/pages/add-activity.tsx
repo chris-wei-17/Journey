@@ -338,7 +338,7 @@ export default function AddActivity() {
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       durationMinutes: duration.hours * 60 + duration.minutes,
-      date: dateStr, // Use the date string (YYYY-MM-DD) instead of full timestamp
+      date: selectedDate.toISOString(), // Use selected date like macros do
     };
 
     console.log('🚀 Activity Creation Debug:');

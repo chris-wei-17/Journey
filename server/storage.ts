@@ -282,8 +282,8 @@ export class DatabaseStorage implements IStorage {
 
   async getActivitiesForDate(userId: number, date: string): Promise<Activity[]> {
     const targetDate = new Date(date);
-    const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-    const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+    const nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
     
     return await db
       .select()
@@ -291,7 +291,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(activities.userId, userId),
-          sql`DATE(${activities.date}) = DATE(${targetDate.toISOString().split('T')[0]})`
+          sql`${activities.date} >= ${targetDate}`,
+          sql`${activities.date} < ${nextDay}`
         )
       )
       .orderBy(activities.startTime);
