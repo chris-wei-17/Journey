@@ -27,8 +27,8 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (isDragging) return;
     
-    const scrollTop = e.currentTarget.scrollTop;
-    const index = Math.round(scrollTop / itemHeight);
+    const currentScrollTop = e.currentTarget.scrollTop;
+    const index = Math.round(currentScrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(index, options.length - 1));
     
     if (options[clampedIndex] !== value) {
@@ -39,8 +39,8 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
   const snapToNearest = () => {
     if (!containerRef.current) return;
     
-    const scrollTop = containerRef.current.scrollTop;
-    const index = Math.round(scrollTop / itemHeight);
+    const currentScrollTop = containerRef.current.scrollTop;
+    const index = Math.round(currentScrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(index, options.length - 1));
     
     containerRef.current.scrollTo({
@@ -54,10 +54,13 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
   };
 
   useEffect(() => {
-    if (containerRef.current && !isDragging) {
-      containerRef.current.scrollTop = scrollTop;
+    if (containerRef.current && !isDragging && selectedIndex >= 0) {
+      const targetScrollTop = selectedIndex * itemHeight;
+      if (Math.abs(containerRef.current.scrollTop - targetScrollTop) > 5) {
+        containerRef.current.scrollTop = targetScrollTop;
+      }
     }
-  }, [value, scrollTop, isDragging]);
+  }, [value, selectedIndex, itemHeight, isDragging]);
 
   return (
     <div className={`relative ${className}`}>
@@ -84,13 +87,14 @@ function WheelPicker({ options, value, onChange, className = "" }: WheelPickerPr
         onTouchStart={() => setIsDragging(true)}
         onTouchEnd={() => {
           setIsDragging(false);
-          snapToNearest();
+          setTimeout(snapToNearest, 100);
         }}
         onMouseDown={() => setIsDragging(true)}
         onMouseUp={() => {
           setIsDragging(false);
-          snapToNearest();
+          setTimeout(snapToNearest, 100);
         }}
+        onTouchMove={() => setIsDragging(true)}
       >
         {options.map((option, index) => (
           <div
@@ -142,16 +146,16 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
   const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
   const periods = ['AM', 'PM'];
 
-  // Parse current values
-  const dateObj = new Date(tempDate);
+  // Parse current values - avoid timezone issues by parsing the date string directly
+  const [yearStr, monthStr, dayStr] = tempDate.split('-');
+  const selectedYear = parseInt(yearStr);
+  const selectedMonthIndex = parseInt(monthStr) - 1; // Month is 0-indexed
+  const selectedDay = dayStr;
+  const selectedMonth = months[selectedMonthIndex];
+  
   const timeObj = tempTime.split(':');
   const hour24 = parseInt(timeObj[0]);
   const minute = timeObj[1];
-  
-  const selectedMonthIndex = dateObj.getMonth();
-  const selectedMonth = months[selectedMonthIndex];
-  const selectedDay = String(dateObj.getDate()).padStart(2, '0');
-  const selectedYear = getYearForMonth(selectedMonthIndex);
   
   const currentHour = hour24 === 0 ? '12' : hour24 > 12 ? String(hour24 - 12).padStart(2, '0') : String(hour24).padStart(2, '0');
   const currentPeriod = hour24 >= 12 ? 'PM' : 'AM';
@@ -161,17 +165,18 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
   const days = Array.from({ length: daysInMonth }, (_, i) => String(i + 1).padStart(2, '0'));
 
   const formatDisplayValue = () => {
-    const date = new Date(value.date);
+    // Parse date string directly to avoid timezone issues
+    const [year, month, day] = value.date.split('-');
+    const monthIndex = parseInt(month) - 1;
+    const dayNum = parseInt(day);
+    
     const timeStr = value.time;
     const [hour, minute] = timeStr.split(':');
     const hour24 = parseInt(hour);
     const period = hour24 >= 12 ? 'PM' : 'AM';
     const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
     
-    return `${date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric'
-    })} at ${hour12}:${minute} ${period}`;
+    return `${months[monthIndex]} ${dayNum} at ${hour12}:${minute} ${period}`;
   };
 
   const handleMonthChange = (month: string) => {
@@ -185,6 +190,13 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
   const handleDayChange = (day: string) => {
     const yearForMonth = getYearForMonth(selectedMonthIndex);
     const newDate = `${yearForMonth}-${String(selectedMonthIndex + 1).padStart(2, '0')}-${String(parseInt(day)).padStart(2, '0')}`;
+    console.log('🗓️ Day Change Debug:', {
+      selectedDay: day,
+      selectedMonthIndex,
+      yearForMonth,
+      newDate,
+      tempDate: tempDate
+    });
     setTempDate(newDate);
   };
 
@@ -214,6 +226,11 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
   };
 
   const handleSave = () => {
+    console.log('💾 DateTime Save Debug:', {
+      tempDate,
+      tempTime,
+      formatDisplayValue: formatDisplayValue()
+    });
     onChange({ date: tempDate, time: tempTime });
     setIsOpen(false);
   };
