@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { calculateDuration, formatDuration } from "@/lib/utils";
 
 const DEFAULT_ACTIVITY_OPTIONS = [
   { value: 'walking', label: 'Walking', icon: 'fa-walking' },
@@ -273,12 +274,7 @@ export default function AddActivity() {
       return;
     }
 
-    // Use today's date automatically
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const startDateTime = new Date(`${today}T${startTime}`);
-    const endDateTime = new Date(`${today}T${endTime}`);
-
-    // Determine the activity type for the database
+    // Determine the activity type for validation
     let activityType = selectedActivity;
     
     // If it's a custom activity, we need to extract the activity name
@@ -286,6 +282,29 @@ export default function AddActivity() {
       const customActivityId = parseInt(selectedActivity.replace('custom-', ''));
       const customActivity = customActivities.find((activity: CustomActivity) => activity.id === customActivityId);
       activityType = customActivity ? customActivity.name : selectedActivity;
+    }
+
+    // Validate duration
+    const duration = calculateDuration(startTime, endTime, activityType);
+    if (!duration) {
+      toast({
+        title: "Invalid Time",
+        description: activityType === 'sleep' 
+          ? "Please check your sleep times." 
+          : "End time must be after start time.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Use today's date automatically
+    const today = format(new Date(), 'yyyy-MM-dd');
+    let startDateTime = new Date(`${today}T${startTime}`);
+    let endDateTime = new Date(`${today}T${endTime}`);
+
+    // For sleep activities, handle overnight by setting end date to next day if needed
+    if (activityType === 'sleep' && endDateTime <= startDateTime) {
+      endDateTime.setDate(endDateTime.getDate() + 1);
     }
 
     const activityData = {

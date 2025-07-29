@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, isToday } from "date-fns";
 import { Link, useLocation } from "wouter";
 import { Activity } from "@shared/schema";
-import { formatActivityName } from "@/lib/utils";
+import { formatActivityName, calculateDuration, formatDuration } from "@/lib/utils";
 
 interface MyDayBlockProps {
   selectedDate: Date;
@@ -63,20 +63,7 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
     return format(date, 'h:mm a');
   };
 
-  const formatDuration = (startTime: string, endTime: string) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const diffMs = end.getTime() - start.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    
-    if (diffMinutes < 60) {
-      return `${diffMinutes}m`;
-    } else {
-      const hours = Math.floor(diffMinutes / 60);
-      const minutes = diffMinutes % 60;
-      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-    }
-  };
+
 
   return (
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
@@ -111,9 +98,23 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
                   </div>
                 </div>
                 
-                <div className="text-right text-gray-300 text-sm">
-                  <div>{activity.startTime && formatTime(activity.startTime)}</div>
-                  <div>{activity.endTime && formatTime(activity.endTime)}</div>
+                <div className="flex items-center space-x-4">
+                  {/* Duration display */}
+                  <div className="text-gray-300 text-sm font-medium">
+                    {activity.startTime && activity.endTime && 
+                      formatDuration(calculateDuration(
+                        formatTime(activity.startTime), 
+                        formatTime(activity.endTime), 
+                        activity.activityType
+                      ))
+                    }
+                  </div>
+                  
+                  {/* Start and end times */}
+                  <div className="text-right text-gray-300 text-sm">
+                    <div>{activity.startTime && formatTime(activity.startTime)}</div>
+                    <div>{activity.endTime && formatTime(activity.endTime)}</div>
+                  </div>
                 </div>
               </div>
             ))
