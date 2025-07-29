@@ -781,6 +781,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         activityType: req.body.activityType,
         startTime: new Date(req.body.startTime),
         endTime: new Date(req.body.endTime),
+        durationMinutes: req.body.durationMinutes,
         date: new Date(req.body.date),
       };
       
@@ -824,6 +825,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         activityType: req.body.activityType,
         startTime: new Date(req.body.startTime),
         endTime: new Date(req.body.endTime),
+        durationMinutes: req.body.durationMinutes,
         date: new Date(req.body.date),
       };
       
