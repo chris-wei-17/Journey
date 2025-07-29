@@ -208,7 +208,9 @@ export default function AddActivity() {
         title: "Success",
         description: "Activity added successfully!",
       });
-      setLocation('/');
+      // Return to home with the selected date
+      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
       console.error('Frontend mutation error:', error);
@@ -237,7 +239,9 @@ export default function AddActivity() {
         title: "Success",
         description: "Activity updated successfully!",
       });
-      setLocation('/');
+      // Return to home with the selected date
+      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
       toast({
@@ -265,7 +269,9 @@ export default function AddActivity() {
         title: "Success",
         description: "Activity deleted successfully!",
       });
-      setLocation('/');
+      // Return to home with the selected date
+      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
       toast({
@@ -357,14 +363,20 @@ export default function AddActivity() {
         <Button 
           variant="ghost" 
           size="sm"
-          onClick={() => setLocation('/')}
+          onClick={() => {
+            const dateParam = format(selectedDate, 'yyyy-MM-dd');
+            setLocation(`/?date=${dateParam}`);
+          }}
           className="p-2 text-white hover:bg-white/20"
         >
           <i className="fas fa-chevron-left text-xl"></i>
         </Button>
         <h1 className="text-xl font-bold text-white">{isEditMode ? 'EDIT ACTIVITY' : 'ADD ACTIVITY'}</h1>
         <div 
-          onClick={() => setLocation('/')}
+          onClick={() => {
+            const dateParam = format(selectedDate, 'yyyy-MM-dd');
+            setLocation(`/?date=${dateParam}`);
+          }}
           className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
         >
           <i className="fas fa-times text-xl text-black"></i>

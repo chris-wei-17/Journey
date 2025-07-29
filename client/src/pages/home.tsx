@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/ui/header";
@@ -15,6 +15,17 @@ import { format, isToday } from "date-fns";
 export default function Home() {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Check for date parameter in URL on component mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dateParam = params.get('date');
+    if (dateParam) {
+      setSelectedDate(new Date(dateParam));
+      // Clean URL to remove the parameter
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   // Use date-specific query when not today
   const { data: progressData = [] } = useQuery({

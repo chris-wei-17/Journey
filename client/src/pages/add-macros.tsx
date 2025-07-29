@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { format } from "date-fns";
 
 export default function AddMacros() {
   const [, setLocation] = useLocation();
@@ -51,7 +52,9 @@ export default function AddMacros() {
         title: "Success",
         description: "Macros added successfully!",
       });
-      setLocation('/');
+      // Return to home with the selected date
+      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
       console.error('Frontend mutation error:', error);
@@ -91,14 +94,20 @@ export default function AddMacros() {
         <Button 
           variant="ghost" 
           size="sm"
-          onClick={() => setLocation('/')}
+          onClick={() => {
+            const dateParam = format(selectedDate, 'yyyy-MM-dd');
+            setLocation(`/?date=${dateParam}`);
+          }}
           className="p-2 text-white hover:bg-white/20"
         >
           <i className="fas fa-chevron-left text-xl"></i>
         </Button>
         <h1 className="text-xl font-bold text-white">ADD MACROS</h1>
         <div 
-          onClick={() => setLocation('/')}
+          onClick={() => {
+            const dateParam = format(selectedDate, 'yyyy-MM-dd');
+            setLocation(`/?date=${dateParam}`);
+          }}
           className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
         >
           <i className="fas fa-times text-xl text-black"></i>
