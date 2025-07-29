@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { useLocation } from "wouter";
 import { QuickAccess } from "@/components/ui/quick-access";
 import { PinProtection } from "@/components/ui/pin-protection";
+import { PhotoComparison } from "@/components/ui/photo-comparison";
 import { useAuth } from "@/hooks/useAuth";
 
 interface Photo {
@@ -38,6 +39,12 @@ export default function Photos() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const { user } = useAuth();
   const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Comparison feature state
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<{ date1Photo?: Photo; date2Photo?: Photo }>({});
 
     // Fetch all photos
   const { data: allPhotos = [], isLoading } = useQuery<Photo[]>({
@@ -64,6 +71,41 @@ export default function Photos() {
 
   const handlePinSuccess = () => {
     setIsUnlocked(true);
+  };
+
+  // Comparison feature handlers
+  const handleCompareClick = () => {
+    setIsCompareMode(true);
+    setSelectedDates([]);
+  };
+
+  const handleDateSelect = (dateStr: string) => {
+    if (selectedDates.includes(dateStr)) {
+      setSelectedDates(selectedDates.filter(d => d !== dateStr));
+    } else if (selectedDates.length < 2) {
+      const newDates = [...selectedDates, dateStr];
+      setSelectedDates(newDates);
+      
+      // If two dates selected, open comparison
+      if (newDates.length === 2) {
+        setIsComparisonOpen(true);
+      }
+    }
+  };
+
+  const handleExitCompare = () => {
+    setIsCompareMode(false);
+    setSelectedDates([]);
+    setIsComparisonOpen(false);
+    setSelectedPhotos({});
+  };
+
+  const handlePhotoSelect = (photo: Photo, dateIndex: number) => {
+    if (dateIndex === 0) {
+      setSelectedPhotos(prev => ({ ...prev, date1Photo: photo }));
+    } else {
+      setSelectedPhotos(prev => ({ ...prev, date2Photo: photo }));
+    }
   };
 
   // Group photos by date
@@ -198,8 +240,21 @@ export default function Photos() {
         />
         
         <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
-          {/* Sort Controls */}
-          <div className="flex justify-end mb-6">
+          {/* Compare and Sort Controls */}
+          <div className="flex justify-between items-center mb-6">
+            {/* Compare Button */}
+            <div className="bg-white/75 backdrop-blur-sm rounded-lg shadow-lg">
+              <Button
+                onClick={isCompareMode ? handleExitCompare : handleCompareClick}
+                variant={isCompareMode ? 'destructive' : 'default'}
+                size="sm"
+                className={`${isCompareMode ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'}`}
+              >
+                {isCompareMode ? 'EXIT' : 'COMPARE'}
+              </Button>
+            </div>
+
+            {/* Sort Controls */}
             <div className="bg-white/75 backdrop-blur-sm rounded-lg p-1 shadow-lg">
               <Button
                 variant={sortOrder === 'newest' ? 'default' : 'ghost'}
@@ -231,9 +286,24 @@ export default function Photos() {
                 const hasMore = datePhotos.length > 5;
 
                 return (
-                  <div key={dateStr} className="space-y-3">
+                  <div 
+                    key={dateStr} 
+                    className={`space-y-3 relative ${isCompareMode ? 'cursor-pointer' : ''}`}
+                    onClick={isCompareMode ? () => handleDateSelect(dateStr) : undefined}
+                  >
                     {/* Date Header - Right Aligned */}
-                    <div className="flex justify-end">
+                    <div className="flex justify-end items-center">
+                      {isCompareMode && (
+                        <div className="mr-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedDates.includes(dateStr)}
+                            onChange={() => handleDateSelect(dateStr)}
+                            className="w-5 h-5 text-blue-600 rounded"
+                            disabled={!selectedDates.includes(dateStr) && selectedDates.length >= 2}
+                          />
+                        </div>
+                      )}
                       <div className="bg-white/75 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
                         <h2 className="text-lg font-semibold text-gray-800">
                           {formatDisplayDate(dateStr)}
@@ -245,7 +315,10 @@ export default function Photos() {
                     </div>
 
                     {/* Photo Thumbnails */}
-                    <div className="bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl">
+                    <div className={`bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl relative ${isCompareMode && !selectedDates.includes(dateStr) ? 'opacity-50' : ''}`}>
+                      {isCompareMode && !selectedDates.includes(dateStr) && (
+                        <div className="absolute inset-0 bg-gray-600/50 rounded-xl z-10 pointer-events-none"></div>
+                      )}
                       <div 
                         className="grid gap-3"
                         style={{
@@ -395,6 +468,20 @@ export default function Photos() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Photo Comparison Modal */}
+      {isComparisonOpen && selectedDates.length === 2 && (
+        <PhotoComparison
+          isOpen={isComparisonOpen}
+          onClose={handleExitCompare}
+          date1={selectedDates[0]}
+          date2={selectedDates[1]}
+          date1Photos={photosByDate[selectedDates[0]] || []}
+          date2Photos={photosByDate[selectedDates[1]] || []}
+          selectedPhotos={selectedPhotos}
+          onPhotoSelect={handlePhotoSelect}
+        />
+      )}
     </>
   );
 }
