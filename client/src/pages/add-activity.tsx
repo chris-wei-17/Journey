@@ -333,6 +333,13 @@ export default function AddActivity() {
       date: selectedDate.toISOString(),
     };
 
+    console.log('🚀 Activity Creation Debug:');
+    console.log('Selected Date Object:', selectedDate);
+    console.log('Selected Date ISO:', selectedDate.toISOString());
+    console.log('Selected Date Local String:', selectedDate.toString());
+    console.log('Date String (dateStr):', dateStr);
+    console.log('Activity Data:', activityData);
+
     if (isEditMode) {
       updateActivityMutation.mutate(activityData);
     } else {

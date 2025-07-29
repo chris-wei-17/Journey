@@ -784,6 +784,12 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       console.log('Creating activity for user:', userId);
       console.log('Request body:', JSON.stringify(req.body, null, 2));
       
+      console.log('🚀 SERVER Activity Creation Debug:');
+      console.log('Raw req.body.date:', req.body.date);
+      console.log('Parsed Date Object:', new Date(req.body.date));
+      console.log('Parsed Date ISO:', new Date(req.body.date).toISOString());
+      console.log('Parsed Date Local:', new Date(req.body.date).toString());
+      
       const activityData = {
         userId,
         activityType: req.body.activityType,
