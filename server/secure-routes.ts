@@ -949,6 +949,19 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Macro routes for nutrition tracking
+  // Get all macros for the user
+  app.get('/api/macros', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const macros = await storage.getUserMacros(userId);
+      res.json(macros);
+    } catch (error) {
+      console.error("Error fetching all macros:", error);
+      res.status(500).json({ message: "Failed to fetch macros" });
+    }
+  });
+
+  // Get macros for a specific date
   app.get('/api/macros/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
