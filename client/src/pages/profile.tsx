@@ -25,14 +25,6 @@ export default function Profile() {
       // Clear authentication token
       localStorage.removeItem('authToken');
       
-      // Clear session storage for photos PIN
-      const keys = Object.keys(sessionStorage);
-      keys.forEach(key => {
-        if (key.startsWith('photos_unlocked_')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-      
       // Clear all cached queries
       queryClient.clear();
       

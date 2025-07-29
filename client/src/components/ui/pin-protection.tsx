@@ -26,13 +26,6 @@ export function PinProtection({ isOpen, onClose, mode, onSuccess }: PinProtectio
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      // Clear session storage when PIN settings change
-      const keys = Object.keys(sessionStorage);
-      keys.forEach(key => {
-        if (key.startsWith('photos_unlocked_')) {
-          sessionStorage.removeItem(key);
-        }
-      });
       if (onSuccess) onSuccess();
       resetAndClose();
     },
