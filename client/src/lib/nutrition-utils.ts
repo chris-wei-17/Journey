@@ -57,9 +57,9 @@ export function calculateCalories(protein: number, fats: number, carbs: number):
 export function calculateDayMacros(macros: MacroEntry[]): MacroSummary {
   const totals = macros.reduce(
     (acc, macro) => ({
-      protein: acc.protein + macro.protein,
-      fats: acc.fats + macro.fats,
-      carbs: acc.carbs + macro.carbs,
+      protein: acc.protein + (Number(macro.protein) || 0),
+      fats: acc.fats + (Number(macro.fats) || 0),
+      carbs: acc.carbs + (Number(macro.carbs) || 0),
     }),
     { protein: 0, fats: 0, carbs: 0 }
   );

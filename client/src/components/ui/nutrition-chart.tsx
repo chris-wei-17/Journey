@@ -105,9 +105,16 @@ export function NutritionChart() {
   const today = format(new Date(), 'yyyy-MM-dd');
   const todayMacros = macrosByDate[today] || [];
   const todaySummary = calculateDayMacros(todayMacros);
-  const macroPercentages = macroTargets 
-    ? calculateMacroPercentages(todaySummary, macroTargets)
-    : { protein: 0, fats: 0, carbs: 0 };
+  
+  // Use default targets if none are set
+  const defaultTargets = {
+    proteinTarget: 150,
+    fatsTarget: 80,
+    carbsTarget: 200,
+  };
+  
+  const effectiveTargets = macroTargets || defaultTargets;
+  const macroPercentages = calculateMacroPercentages(todaySummary, effectiveTargets);
 
   // Line chart data
   const chartData = {
@@ -159,6 +166,14 @@ export function NutritionChart() {
         },
         ticks: {
           maxTicksLimit: 8,
+          color: '#6b7280',
+          display: true,
+          font: {
+            size: 11,
+          },
+        },
+        border: {
+          display: true,
           color: '#6b7280',
         },
       },
@@ -281,11 +296,11 @@ export function NutritionChart() {
             <Line data={chartData} options={lineOptions} />
           </div>
 
-          {/* Today's Total Calories */}
+                    {/* Today's Total Calories */}
           <div className="text-center pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-600">Today's Total</p>
             <p className="text-xl font-bold text-gray-800">
-              {Math.round(todaySummary.totalCalories)} calories
+              {Math.round(todaySummary.totalCalories) || 0} calories
             </p>
           </div>
         </CardContent>
@@ -299,14 +314,13 @@ export function NutritionChart() {
             <Doughnut data={proteinDonut.data} options={proteinDonut.options} />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.protein)}%
+                {Math.round(macroPercentages.protein) || 0}%
               </span>
             </div>
           </div>
           <p className="text-xs text-gray-600 mt-1">Protein</p>
           <p className="text-xs text-red-500 font-medium">
-            {todaySummary.protein}g
-            {macroTargets && ` / ${macroTargets.proteinTarget}g`}
+            {Math.round(todaySummary.protein) || 0}g / {effectiveTargets.proteinTarget}g
           </p>
         </div>
 
@@ -316,14 +330,13 @@ export function NutritionChart() {
             <Doughnut data={fatsDonut.data} options={fatsDonut.options} />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.fats)}%
+                {Math.round(macroPercentages.fats) || 0}%
               </span>
             </div>
           </div>
           <p className="text-xs text-gray-600 mt-1">Fats</p>
           <p className="text-xs text-yellow-500 font-medium">
-            {todaySummary.fats}g
-            {macroTargets && ` / ${macroTargets.fatsTarget}g`}
+            {Math.round(todaySummary.fats) || 0}g / {effectiveTargets.fatsTarget}g
           </p>
         </div>
 
@@ -333,14 +346,13 @@ export function NutritionChart() {
             <Doughnut data={carbsDonut.data} options={carbsDonut.options} />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.carbs)}%
+                {Math.round(macroPercentages.carbs) || 0}%
               </span>
             </div>
           </div>
           <p className="text-xs text-gray-600 mt-1">Carbs</p>
           <p className="text-xs text-green-500 font-medium">
-            {todaySummary.carbs}g
-            {macroTargets && ` / ${macroTargets.carbsTarget}g`}
+            {Math.round(todaySummary.carbs) || 0}g / {effectiveTargets.carbsTarget}g
           </p>
         </div>
       </div>
