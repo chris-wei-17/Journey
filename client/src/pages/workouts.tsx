@@ -3,6 +3,7 @@ import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickAccess } from "@/components/ui/quick-access";
+import { DataChart } from "@/components/ui/data-chart";
 
 export default function Workouts() {
   const [, setLocation] = useLocation();
@@ -25,35 +26,22 @@ export default function Workouts() {
       
               <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
         <div className="space-y-6">
-          {/* Main Content Card */}
-          <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-                <i className="fas fa-dumbbell text-purple-500 mr-3"></i>
-                Your Workouts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-16">
-                <div className="bg-gray-50 rounded-xl p-8 max-w-md mx-auto">
-                  <i className="fas fa-dumbbell text-4xl text-gray-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    Workout Library
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    Access your workout routines, track exercises, and log your training sessions.
-                  </p>
-                  <Button
-                    onClick={() => setLocation('/')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <i className="fas fa-home mr-2"></i>
-                    Back to Dashboard
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Workout Chart */}
+          <DataChart 
+            title="Workout Intensity"
+            data={[
+              { date: '2024-01-01', value: 6 },
+              { date: '2024-01-02', value: 8 },
+              { date: '2024-01-03', value: 7 },
+              { date: '2024-01-04', value: 9 },
+              { date: '2024-01-05', value: 6 },
+              { date: '2024-01-06', value: 8 },
+              { date: '2024-01-07', value: 7 },
+            ]}
+            lineColor="#8b5cf6"
+            backgroundColor="rgba(139, 92, 246, 0.1)"
+            yAxisLabel="Intensity (1-10)"
+          />
 
           {/* Workout Categories */}
           <div className="grid grid-cols-2 gap-4">

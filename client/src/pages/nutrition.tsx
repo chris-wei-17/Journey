@@ -3,6 +3,7 @@ import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickAccess } from "@/components/ui/quick-access";
+import { DataChart } from "@/components/ui/data-chart";
 
 export default function Nutrition() {
   const [, setLocation] = useLocation();
@@ -25,35 +26,22 @@ export default function Nutrition() {
       
               <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
         <div className="space-y-6">
-          {/* Main Content Card */}
-          <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-                <i className="fas fa-apple-alt text-green-500 mr-3"></i>
-                Your Nutrition
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-16">
-                <div className="bg-gray-50 rounded-xl p-8 max-w-md mx-auto">
-                  <i className="fas fa-apple-alt text-4xl text-gray-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    Nutrition Tracking
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    Track your meals, calories, and nutrition to fuel your fitness journey.
-                  </p>
-                  <Button
-                    onClick={() => setLocation('/')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <i className="fas fa-home mr-2"></i>
-                    Back to Dashboard
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Nutrition Chart */}
+          <DataChart 
+            title="Daily Calories"
+            data={[
+              { date: '2024-01-01', value: 2200 },
+              { date: '2024-01-02', value: 2350 },
+              { date: '2024-01-03', value: 2100 },
+              { date: '2024-01-04', value: 2400 },
+              { date: '2024-01-05', value: 2150 },
+              { date: '2024-01-06', value: 2300 },
+              { date: '2024-01-07', value: 2250 },
+            ]}
+            lineColor="#10b981"
+            backgroundColor="rgba(16, 185, 129, 0.1)"
+            yAxisLabel="Calories"
+          />
 
           {/* Nutrition Categories */}
           <div className="grid grid-cols-2 gap-4">

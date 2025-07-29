@@ -3,6 +3,7 @@ import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickAccess } from "@/components/ui/quick-access";
+import { DataChart } from "@/components/ui/data-chart";
 
 export default function Sleep() {
   const [, setLocation] = useLocation();
@@ -25,35 +26,22 @@ export default function Sleep() {
       
               <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
         <div className="space-y-6">
-          {/* Main Content Card */}
-          <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-                <i className="fas fa-moon text-indigo-500 mr-3"></i>
-                Your Sleep
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-16">
-                <div className="bg-gray-50 rounded-xl p-8 max-w-md mx-auto">
-                  <i className="fas fa-moon text-4xl text-gray-400 mb-4"></i>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    Sleep Tracking
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    Monitor your sleep patterns and quality to optimize your recovery and performance.
-                  </p>
-                  <Button
-                    onClick={() => setLocation('/')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <i className="fas fa-home mr-2"></i>
-                    Back to Dashboard
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Sleep Chart */}
+          <DataChart 
+            title="Sleep Hours"
+            data={[
+              { date: '2024-01-01', value: 7.5 },
+              { date: '2024-01-02', value: 8.2 },
+              { date: '2024-01-03', value: 6.8 },
+              { date: '2024-01-04', value: 7.9 },
+              { date: '2024-01-05', value: 8.1 },
+              { date: '2024-01-06', value: 7.3 },
+              { date: '2024-01-07', value: 8.5 },
+            ]}
+            lineColor="#6366f1"
+            backgroundColor="rgba(99, 102, 241, 0.1)"
+            yAxisLabel="Hours"
+          />
 
           {/* Sleep Metrics */}
           <div className="grid grid-cols-2 gap-4">
