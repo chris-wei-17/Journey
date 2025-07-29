@@ -43,6 +43,7 @@ export default function AddActivity() {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
@@ -118,6 +119,8 @@ export default function AddActivity() {
 
   // Get activity from URL params if coming from select page or edit mode
   useEffect(() => {
+    if (hasInitialized) return; // Prevent re-parsing on re-renders
+    
     const urlParams = new URLSearchParams(window.location.search);
     const activityParam = urlParams.get('activity');
     const editParam = urlParams.get('edit');
@@ -166,7 +169,9 @@ export default function AddActivity() {
       // Clean URL
       window.history.replaceState({}, '', '/add-activity');
     }
-  }, [customActivities]);
+    
+    setHasInitialized(true);
+  }, [customActivities, hasInitialized]);
 
   // Check for changes
   useEffect(() => {
