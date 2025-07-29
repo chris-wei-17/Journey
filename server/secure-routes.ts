@@ -761,7 +761,15 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.userId!;
       const date = req.params.date;
+      console.log(`Fetching activities for userId: ${userId}, date: ${date}`);
       const activities = await storage.getActivitiesForDate(userId, date);
+      console.log(`Found ${activities.length} activities:`, activities.map(a => ({
+        id: a.id,
+        activityType: a.activityType,
+        date: a.date,
+        startTime: a.startTime,
+        createdAt: a.createdAt
+      })));
       res.json(activities);
     } catch (error) {
       console.error("Error fetching activities for date:", error);
