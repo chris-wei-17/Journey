@@ -3,7 +3,7 @@ import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickAccess } from "@/components/ui/quick-access";
-import { DataChart } from "@/components/ui/data-chart";
+import { NutritionChart } from "@/components/ui/nutrition-chart";
 
 export default function Nutrition() {
   const [, setLocation] = useLocation();
@@ -26,22 +26,8 @@ export default function Nutrition() {
       
               <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
         <div className="space-y-6">
-          {/* Nutrition Chart */}
-          <DataChart 
-            title="Daily Calories"
-            data={[
-              { date: '2024-01-01', value: 2200 },
-              { date: '2024-01-02', value: 2350 },
-              { date: '2024-01-03', value: 2100 },
-              { date: '2024-01-04', value: 2400 },
-              { date: '2024-01-05', value: 2150 },
-              { date: '2024-01-06', value: 2300 },
-              { date: '2024-01-07', value: 2250 },
-            ]}
-            lineColor="#10b981"
-            backgroundColor="rgba(16, 185, 129, 0.1)"
-            yAxisLabel="Calories"
-          />
+          {/* Enhanced Nutrition Chart */}
+          <NutritionChart />
 
           {/* Nutrition Categories */}
           <div className="grid grid-cols-2 gap-4">
