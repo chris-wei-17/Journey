@@ -130,8 +130,15 @@ export default function AddActivity() {
     const dateParam = urlParams.get('date');
     
     // Set selected date from URL param if provided
+    console.log('🔍 Add-Activity URL Debug - dateParam from URL:', dateParam);
+    console.log('🔍 Add-Activity URL Debug - current selectedDate before update:', selectedDate);
     if (dateParam) {
-      setSelectedDate(new Date(dateParam));
+      const newDate = new Date(dateParam);
+      console.log('🔍 Add-Activity URL Debug - creating new Date from dateParam:', newDate);
+      setSelectedDate(newDate);
+      console.log('🔍 Add-Activity URL Debug - set selectedDate to:', newDate);
+    } else {
+      console.log('🔍 Add-Activity URL Debug - NO dateParam found, keeping default selectedDate:', selectedDate);
     }
     
     if (editParam && activityTypeParam && startTimeParam && endTimeParam) {

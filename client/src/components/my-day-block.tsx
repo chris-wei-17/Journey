@@ -125,7 +125,12 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
           )}
         </div>
         
-        <Link href={`/add-activity?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
+        <Link href={`/add-activity?date=${format(selectedDate, 'yyyy-MM-dd')}`} onClick={() => {
+          const dateParam = format(selectedDate, 'yyyy-MM-dd');
+          console.log('🔗 MyDayBlock Link Debug - selectedDate:', selectedDate);
+          console.log('🔗 MyDayBlock Link Debug - formatted date param:', dateParam);
+          console.log('🔗 MyDayBlock Link Debug - full URL:', `/add-activity?date=${dateParam}`);
+        }}>
           <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
             <i className="fas fa-plus mr-2"></i>
             ADD ACTIVITY
