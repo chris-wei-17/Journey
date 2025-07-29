@@ -103,8 +103,8 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
                   <div className="text-gray-300 text-sm font-medium">
                     {activity.startTime && activity.endTime && 
                       formatDuration(calculateDuration(
-                        formatTime(activity.startTime), 
-                        formatTime(activity.endTime), 
+                        format(new Date(activity.startTime), 'HH:mm'), 
+                        format(new Date(activity.endTime), 'HH:mm'), 
                         activity.activityType
                       ))
                     }

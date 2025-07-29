@@ -311,6 +311,7 @@ export default function AddActivity() {
       activityType: activityType,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
+      durationMinutes: duration.hours * 60 + duration.minutes,
       date: new Date(today).toISOString(),
     };
 

@@ -165,6 +165,7 @@ export const activities = pgTable("activities", {
   activityType: varchar("activity_type").notNull(), // walking, running, cycling, etc.
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
+  durationMinutes: integer("duration_minutes"), // Duration in minutes for analytics
   date: timestamp("date").notNull(), // The day this activity belongs to
   location: varchar("location"),
   notes: text("notes"),
@@ -174,6 +175,7 @@ export const activities = pgTable("activities", {
 export const insertActivitySchema = createInsertSchema(activities).omit({
   id: true,
   createdAt: true,
+  durationMinutes: true, // Calculated field, not input
   location: true, // Remove optional location field from validation
   notes: true,    // Remove optional notes field from validation
 });

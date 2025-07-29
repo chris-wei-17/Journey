@@ -319,6 +319,7 @@ export class DatabaseStorage implements IStorage {
         activityType: activity.activityType,
         startTime: activity.startTime,
         endTime: activity.endTime,
+        durationMinutes: activity.durationMinutes,
         date: activity.date,
         location: null, // Set optional fields to null
         notes: null,
