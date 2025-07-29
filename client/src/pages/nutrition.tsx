@@ -28,11 +28,6 @@ export default function Nutrition() {
         <div className="space-y-6">
           {/* Enhanced Nutrition Chart */}
           <NutritionChart />
-          
-          {/* Floating Macro Donut Charts */}
-          <div className="mt-6">
-            {/* Placeholder for macro charts - will implement after fixing imports */}
-          </div>
 
           {/* Nutrition Categories */}
           <div className="grid grid-cols-2 gap-4">

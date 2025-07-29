@@ -205,59 +205,106 @@ export function NutritionChart() {
   const fatsDonut = createDonutConfig(macroPercentages.fats, '#eab308', 'Fats');
   const carbsDonut = createDonutConfig(macroPercentages.carbs, '#22c55e', 'Carbs');
 
-  return {
-    chart: (
-    <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-gray-800">
-            Daily Calories
-          </CardTitle>
-          
-          {/* Time Range Selector */}
-          <div className="flex gap-0.5 bg-gray-100 rounded-md p-0.5 w-fit">
-            {timeRangeOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={timeRange === option.value ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setTimeRange(option.value)}
-                className={`text-xs px-1.5 py-0.5 h-5 min-w-0 ${
-                  timeRange === option.value
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                {option.label}
-              </Button>
-            ))}
+  return (
+    <>
+      {/* Main Chart */}
+      <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold text-gray-800">
+              Daily Calories
+            </CardTitle>
+            
+            {/* Time Range Selector */}
+            <div className="flex gap-0.5 bg-gray-100 rounded-md p-0.5 w-fit">
+              {timeRangeOptions.map((option) => (
+                <Button
+                  key={option.value}
+                  variant={timeRange === option.value ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setTimeRange(option.value)}
+                  className={`text-xs px-1.5 py-0.5 h-5 min-w-0 ${
+                    timeRange === option.value
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-0 space-y-6">
-        {/* Line Chart */}
-        <div className="h-64 w-full">
-          <Line data={chartData} options={lineOptions} />
-        </div>
+        </CardHeader>
+        
+        <CardContent className="pt-0 space-y-6">
+          {/* Line Chart */}
+          <div className="h-64 w-full">
+            <Line data={chartData} options={lineOptions} />
+          </div>
 
-        {/* Today's Total Calories */}
-        <div className="text-center pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600">Today's Total</p>
-          <p className="text-xl font-bold text-gray-800">
-            {Math.round(todaySummary.totalCalories)} calories
+          {/* Today's Total Calories */}
+          <div className="text-center pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">Today's Total</p>
+            <p className="text-xl font-bold text-gray-800">
+              {Math.round(todaySummary.totalCalories)} calories
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Floating Macro Donut Charts */}
+      <div className="flex justify-center gap-8 px-4 mt-6">
+        {/* Protein */}
+        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
+          <div className="w-16 h-16 mx-auto relative">
+            <Doughnut data={proteinDonut.data} options={proteinDonut.options} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-700">
+                {Math.round(macroPercentages.protein)}%
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">Protein</p>
+          <p className="text-xs text-red-500 font-medium">
+            {todaySummary.protein}g
+            {macroTargets && ` / ${macroTargets.proteinTarget}g`}
           </p>
         </div>
-      </CardContent>
-    </Card>
-    ),
-    macroData: {
-      todaySummary,
-      macroTargets,
-      macroPercentages,
-      proteinDonut,
-      fatsDonut,
-      carbsDonut,
-    }
-  };
+
+        {/* Fats */}
+        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
+          <div className="w-16 h-16 mx-auto relative">
+            <Doughnut data={fatsDonut.data} options={fatsDonut.options} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-700">
+                {Math.round(macroPercentages.fats)}%
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">Fats</p>
+          <p className="text-xs text-yellow-500 font-medium">
+            {todaySummary.fats}g
+            {macroTargets && ` / ${macroTargets.fatsTarget}g`}
+          </p>
+        </div>
+
+        {/* Carbs */}
+        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
+          <div className="w-16 h-16 mx-auto relative">
+            <Doughnut data={carbsDonut.data} options={carbsDonut.options} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-700">
+                {Math.round(macroPercentages.carbs)}%
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">Carbs</p>
+          <p className="text-xs text-green-500 font-medium">
+            {todaySummary.carbs}g
+            {macroTargets && ` / ${macroTargets.carbsTarget}g`}
+          </p>
+        </div>
+      </div>
+    </>
+  );
 }
