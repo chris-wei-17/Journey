@@ -11,6 +11,7 @@ import { format, isToday } from "date-fns";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { calculateCalories } from "@/lib/nutrition-utils";
 import * as React from "react";
 
 interface MacroEntry {
@@ -129,24 +130,25 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                   </span>
                 </div>
               </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Edit Macro Targets</DialogTitle>
+                <DialogContent className="sm:max-w-[425px] bg-white border-0 shadow-2xl">
+                  <DialogHeader className="pb-4">
+                    <DialogTitle className="text-xl font-bold text-gray-800 text-center">Edit Macro Targets</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 px-1">
                       <FormField
                         control={form.control}
                         name="proteinTarget"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Protein Target (grams)</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium">Protein Target (grams)</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
                                 inputMode="decimal"
                                 step="0.1"
                                 placeholder="0"
+                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                 {...field}
                               />
                             </FormControl>
@@ -159,13 +161,14 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                         name="fatsTarget"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Fats Target (grams)</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium">Fats Target (grams)</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
                                 inputMode="decimal"
                                 step="0.1"
                                 placeholder="0"
+                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                 {...field}
                               />
                             </FormControl>
@@ -178,13 +181,14 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                         name="carbsTarget"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Carbs Target (grams)</FormLabel>
+                            <FormLabel className="text-gray-700 font-medium">Carbs Target (grams)</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
                                 inputMode="decimal"
                                 step="0.1"
                                 placeholder="0"
+                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                 {...field}
                               />
                             </FormControl>
@@ -192,9 +196,29 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                           </FormItem>
                         )}
                       />
+                      
+                      {/* Real-time calorie calculation */}
+                      <div className="pt-6 border-t border-gray-200 bg-gray-50 -mx-1 px-4 py-4 rounded-lg">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600 mb-2 font-medium">Total Calories</p>
+                          <p className="text-3xl font-bold text-blue-600">
+                            {Math.round(calculateCalories(
+                              parseFloat(form.watch('proteinTarget')) || 0,
+                              parseFloat(form.watch('fatsTarget')) || 0,
+                              parseFloat(form.watch('carbsTarget')) || 0
+                            ))}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            P: {parseFloat(form.watch('proteinTarget')) || 0}g × 4 + 
+                            F: {parseFloat(form.watch('fatsTarget')) || 0}g × 9 + 
+                            C: {parseFloat(form.watch('carbsTarget')) || 0}g × 4
+                          </p>
+                        </div>
+                      </div>
+                      
                       <Button 
                         type="submit" 
-                        className="w-full"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                         disabled={updateTargetsMutation.isPending}
                       >
                         {updateTargetsMutation.isPending ? 'Updating...' : 'Update Targets'}
