@@ -89,6 +89,58 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
   console.log('✅ health route registered');
 
+  // Goals API endpoints - MOVED TO SAFE POSITION
+  app.get('/api/goals/test', (req, res) => {
+    console.log('🧪 Goals test endpoint hit');
+    res.json({ message: 'Goals routes working!', timestamp: new Date() });
+  });
+  console.log('✅ goals/test route registered');
+
+  app.get('/api/goals', authenticateToken, async (req: any, res) => {
+    try {
+      console.log('🎯 GET /api/goals - Fetching goals for user:', req.userId);
+      const goals = await storage.getUserGoalTargets(req.userId!);
+      console.log('✅ Found goals:', goals.length);
+      res.json(goals);
+    } catch (error) {
+      console.error('❌ Get goals error:', error);
+      res.status(500).json({ message: 'Failed to fetch goals' });
+    }
+  });
+  console.log('✅ GET /api/goals route registered');
+
+  app.post('/api/goals', authenticateToken, async (req: any, res) => {
+    try {
+      console.log('Creating goal with data:', req.body);
+      const { goalType, goalName, targetValuePrimary, targetUnitPrimary } = req.body;
+
+      if (!goalType || !goalName || !targetValuePrimary || !targetUnitPrimary) {
+        return res.status(400).json({
+          message: 'Missing required fields: goalType, goalName, targetValuePrimary, targetUnitPrimary'
+        });
+      }
+
+      const goalData = {
+        userId: req.userId!,
+        goalType,
+        goalName,
+        targetValuePrimary: Number(targetValuePrimary),
+        targetUnitPrimary,
+        targetValueSecondary: req.body.targetValueSecondary ? Number(req.body.targetValueSecondary) : null,
+        targetUnitSecondary: req.body.targetUnitSecondary || null,
+        isActive: true,
+      };
+
+      const newGoal = await storage.createGoalTarget(goalData);
+      console.log('Goal created successfully:', newGoal);
+      res.status(201).json(newGoal);
+    } catch (error) {
+      console.error('Create goal error:', error);
+      res.status(500).json({ message: 'Failed to create goal' });
+    }
+  });
+  console.log('✅ POST /api/goals route registered');
+
   // Database connectivity test endpoint
   app.get('/api/debug/db', async (req, res) => {
     try {
@@ -1433,104 +1485,7 @@ app.get('/api/debug/storage', (req, res) => {
 });
 console.log('✅ debug/storage route registered');
 
-// Goals API endpoints
-// Simple test endpoint without authentication
-app.get('/api/goals/test', (req, res) => {
-  console.log('🧪 Goals test endpoint hit');
-  res.json({ message: 'Goals routes are being registered', timestamp: new Date() });
-});
-
-// Even simpler test route
-app.get('/api/goals/simple', (req, res) => {
-  console.log('🎯 Simple goals test hit');
-  res.json({ message: 'Simple goals route works', timestamp: new Date() });
-});
-
-app.get('/api/goals', authenticateToken, async (req: any, res) => {
-  try {
-    console.log('🎯 GET /api/goals - Fetching goals for user:', req.userId);
-    
-    // Check if storage method exists
-    if (typeof storage.getUserGoalTargets !== 'function') {
-      console.error('❌ storage.getUserGoalTargets is not a function');
-      return res.status(500).json({ message: 'Server configuration error' });
-    }
-    
-    const goals = await storage.getUserGoalTargets(req.userId!);
-    console.log('✅ Found goals:', goals.length);
-    res.json(goals);
-  } catch (error) {
-    console.error('❌ Get goals error:', error);
-    res.status(500).json({ message: 'Failed to fetch goals', error: error instanceof Error ? error.message : 'Unknown error' });
-  }
-});
-
-app.post('/api/goals', authenticateToken, async (req: any, res) => {
-  try {
-    console.log('Creating goal with data:', req.body);
-    console.log('User ID:', req.userId);
-    
-    // Basic validation
-    const { goalType, goalName, targetValuePrimary, targetUnitPrimary } = req.body;
-    
-    if (!goalType || !goalName || !targetValuePrimary || !targetUnitPrimary) {
-      return res.status(400).json({ 
-        message: 'Missing required fields: goalType, goalName, targetValuePrimary, targetUnitPrimary' 
-      });
-    }
-
-    const goalData = {
-      userId: req.userId!,
-      goalType,
-      goalName,
-      targetValuePrimary: Number(targetValuePrimary),
-      targetUnitPrimary,
-      targetValueSecondary: req.body.targetValueSecondary ? Number(req.body.targetValueSecondary) : null,
-      targetUnitSecondary: req.body.targetUnitSecondary || null,
-      isActive: true,
-    };
-
-    console.log('Processed goal data:', goalData);
-
-    const newGoal = await storage.createGoalTarget(goalData);
-    console.log('Goal created successfully:', newGoal);
-    res.status(201).json(newGoal);
-  } catch (error) {
-    console.error('Create goal error:', error);
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'Failed to create goal' });
-    }
-  }
-});
-
-app.put('/api/goals/:id', authenticateToken, async (req: any, res) => {
-  try {
-    const goalId = parseInt(req.params.id);
-    const goalData = {
-      ...req.body,
-      userId: req.userId!,
-    };
-
-    const updatedGoal = await storage.updateGoalTarget(goalId, goalData);
-    res.json(updatedGoal);
-  } catch (error) {
-    console.error('Update goal error:', error);
-    res.status(500).json({ message: 'Failed to update goal' });
-  }
-});
-
-app.delete('/api/goals/:id', authenticateToken, async (req: any, res) => {
-  try {
-    const goalId = parseInt(req.params.id);
-    await storage.deleteGoalTarget(goalId, req.userId!);
-    res.json({ message: 'Goal deleted successfully' });
-  } catch (error) {
-    console.error('Delete goal error:', error);
-    res.status(500).json({ message: 'Failed to delete goal' });
-  }
-});
+// OLD GOALS ROUTES REMOVED - MOVED TO SAFE POSITION AFTER HEALTH CHECK
 
     console.log('🎉 ALL ROUTES REGISTERED SUCCESSFULLY');
     const httpServer = createServer(app);
