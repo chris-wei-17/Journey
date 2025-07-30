@@ -6,6 +6,8 @@ import {
   photos,
   goalTargets,
   goalProgress,
+  metrics,
+  customMetricFields,
   type User,
   type InsertUser,
   type UserProfile,
@@ -18,6 +20,9 @@ import {
   type InsertPhoto,
   type GoalTarget,
   type InsertGoalTarget,
+  type MetricEntry,
+  type InsertMetric,
+  type CustomMetricField,
   type GoalProgress,
   type InsertGoalProgress,
   activities,
@@ -506,10 +511,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrUpdateMetric(metricData: InsertMetric): Promise<MetricEntry> {
-    const startOfDay = new Date(metricData.date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(metricData.date);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Convert date to YYYY-MM-DD format for comparison
+    const dateStr = new Date(metricData.date).toISOString().split('T')[0];
+    
+    console.log('Creating/updating metric for date:', dateStr, 'userId:', metricData.userId);
 
     // Check if metric exists for this date
     const [existingMetric] = await db
@@ -518,7 +523,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(metrics.userId, metricData.userId),
-          sql`${metrics.date} >= ${startOfDay} AND ${metrics.date} <= ${endOfDay}`
+          sql`DATE(${metrics.date}) = ${dateStr}`
         )
       );
 
