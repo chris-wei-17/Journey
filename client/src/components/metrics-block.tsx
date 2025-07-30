@@ -84,7 +84,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const deleteCustomFieldMutation = useMutation({
     mutationFn: async (fieldId: number) => {
-      return apiRequest(`/api/custom-metric-fields/${fieldId}`, "DELETE");
+      return apiRequest("DELETE", `/api/custom-metric-fields/${fieldId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
@@ -97,21 +97,19 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const saveMetricsMutation = useMutation({
     mutationFn: async (data: { weight?: number; customFields: Record<string, number> }) => {
-      return apiRequest("/api/metrics", "POST", {
+      return apiRequest("POST", "/api/metrics", {
         date: dateStr,
         weight: data.weight,
         customFields: data.customFields,
       });
     },
     onSuccess: (data) => {
-      alert('SUCCESS: Metric saved to database!');
       console.log('Metric saved successfully:', data);
       queryClient.invalidateQueries({ queryKey: [`/api/metrics/date/${dateStr}`] });
       // Clear temp values after successful save
       setTempValues({});
     },
     onError: (error) => {
-      alert(`ERROR: Failed to save metric - ${error.message}`);
       console.error('Error saving metric:', error);
     },
   });
@@ -119,25 +117,18 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
 
   const handleFieldSave = (fieldName: string) => {
-    alert(`handleFieldSave called for: ${fieldName}`);
-    
     // Get the current value from input (tempValues) or use empty string
     const inputValue = tempValues[fieldName] || "";
-    alert(`Input value: "${inputValue}"`);
     console.log('Saving field:', fieldName, 'input value:', inputValue);
     
     if (!inputValue.trim()) {
-      alert('No value to save - empty input');
       console.log('No value to save');
       return;
     }
     
-    alert('Value found, proceeding to save...');
-    
     if (fieldName === "weight") {
       const weight = parseFloat(inputValue);
       const customFields = currentMetric?.customFields || {};
-      alert(`About to save weight: ${weight}`);
       console.log('Saving weight:', weight);
       saveMetricsMutation.mutate({ weight, customFields });
     } else {
@@ -146,7 +137,6 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
         ...(currentMetric?.customFields || {}), 
         [fieldName]: parseFloat(inputValue)
       };
-      alert(`About to save custom field: ${fieldName} = ${parseFloat(inputValue)}`);
       console.log('Saving custom field:', fieldName, 'value:', parseFloat(inputValue));
       saveMetricsMutation.mutate({ weight, customFields });
     }
@@ -201,7 +191,6 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <span className="text-xs text-gray-500">lbs</span>
                 <button
                   onClick={() => {
-                    alert('BUTTON CLICKED!');
                     console.log('Save weight clicked!');
                     handleFieldSave("weight");
                   }}
@@ -239,7 +228,6 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <span className="text-xs text-gray-500">{field.unit}</span>
                 <button
                   onClick={() => {
-                    alert('CUSTOM FIELD BUTTON CLICKED!');
                     console.log('Save', field.fieldName, 'clicked!');
                     handleFieldSave(field.fieldName);
                   }}
