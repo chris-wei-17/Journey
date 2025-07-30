@@ -65,6 +65,7 @@ export default function Goals() {
         title="Goals"
         showBackButton={false}
         onBack={handleBack}
+        showHomeButton={true}
       />
       
               <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
