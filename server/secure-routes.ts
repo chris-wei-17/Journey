@@ -36,18 +36,21 @@ import {
   insertMacroTargetSchema,
   insertMetricsSchema,
   insertCustomMetricFieldSchema,
-  insertGoalTargetSchema,
-  insertGoalProgressSchema,
+  // TEMPORARILY REMOVED GOAL IMPORTS TO TEST
+  // insertGoalTargetSchema,
+  // insertGoalProgressSchema,
   type MetricEntry,
   type CustomMetricField,
   type CustomActivity,
-  type GoalTarget,
-  type InsertGoalTarget
+  // type GoalTarget,
+  // type InsertGoalTarget
 } from "../shared/schema.js";
 import multer from "multer";
 import sharp from "sharp";
 import { supabase, PHOTOS_BUCKET, generateSignedUrl } from "./supabase-client.js";
 import { photoUrlService } from "./photo-url-service.js";
+
+console.log('🎯 ALL IMPORTS SUCCESSFUL - secure-routes.ts loaded');
 
 // Configure multer for photo uploads - use memory storage since we're storing in database
 const upload = multer({
@@ -66,11 +69,14 @@ const upload = multer({
 });
 
 export async function registerSecureRoutes(app: Express): Promise<Server> {
+  console.log('🎬 ENTER registerSecureRoutes function');
+  
   // FIRST ROUTE - Test if function is executing at all
   app.get('/api/test-first', (req, res) => {
     console.log('🚀 FIRST ROUTE HIT - registerSecureRoutes is executing');
     res.json({ message: 'Function is executing', timestamp: new Date() });
   });
+  console.log('✅ test-first route registered');
 
   // Health check endpoint for debugging
   app.get('/api/health', (req, res) => {
@@ -81,6 +87,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       vercel: !!process.env.VERCEL
     });
   });
+  console.log('✅ health route registered');
 
   // Database connectivity test endpoint
   app.get('/api/debug/db', async (req, res) => {
@@ -1503,6 +1510,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
   await resetPasswordWithToken(req, res);
 });
 
+console.log('🔍 About to register debug/routes endpoint');
 // Debug route to verify route registration
 app.get('/api/debug/routes', (req, res) => {
   console.log('🧪 Debug route hit - routes are registering correctly');
@@ -1512,7 +1520,9 @@ app.get('/api/debug/routes', (req, res) => {
     totalRoutes: app._router ? app._router.stack.length : 'unknown'
   });
 });
+console.log('✅ debug/routes route registered');
 
+console.log('🔍 About to register debug/storage endpoint');
 // Test if the issue is with storage import
 app.get('/api/debug/storage', (req, res) => {
   try {
@@ -1531,6 +1541,7 @@ app.get('/api/debug/storage', (req, res) => {
     res.status(500).json({ message: 'Storage error', error: error instanceof Error ? error.message : 'Unknown' });
   }
 });
+console.log('✅ debug/storage route registered');
 
 // Goals API endpoints - TEMPORARILY COMMENTED OUT TO FIX ROUTE REGISTRATION
 // TODO: Uncomment after fixing import issues
