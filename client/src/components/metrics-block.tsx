@@ -37,7 +37,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   const [newFieldName, setNewFieldName] = useState("");
   const [newFieldUnit, setNewFieldUnit] = useState("length");
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [tempValue, setTempValue] = useState("");
+  const [tempValues, setTempValues] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -56,7 +56,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   const currentMetric = metrics.find(m => format(new Date(m.date), 'yyyy-MM-dd') === dateStr);
   
   // Debug logging
-  console.log('Metrics Debug:', { editingField, tempValue });
+  console.log('Metrics Debug:', { editingField, tempValues });
 
   const createCustomFieldMutation = useMutation({
     mutationFn: async (data: { fieldName: string; unit: string }) => {
@@ -100,11 +100,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     },
     onSuccess: (data) => {
       console.log('Metric saved successfully:', data);
-      console.log('Invalidating cache for:', `/api/metrics/date/${dateStr}`);
       queryClient.invalidateQueries({ queryKey: [`/api/metrics/date/${dateStr}`] });
       // Exit editing mode after successful save
       setEditingField(null);
-      setTempValue("");
+      setTempValues({});
     },
     onError: (error) => {
       console.error('Error saving metric:', error);
@@ -113,24 +112,23 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const handleFieldEdit = (fieldName: string, currentValue: string) => {
     console.log('Edit field:', fieldName);
-    alert(`Setting editingField to: ${fieldName}`);
     setEditingField(fieldName);
-    setTempValue(currentValue);
-    console.log('Should now be editing:', fieldName);
+    setTempValues(prev => ({ ...prev, [fieldName]: currentValue }));
   };
 
   const handleFieldSave = (fieldName: string) => {
-    console.log('Saving field:', fieldName, 'value:', tempValue);
+    const value = tempValues[fieldName] || "";
+    console.log('Saving field:', fieldName, 'value:', value);
     
     if (fieldName === "weight") {
-      const weight = tempValue ? parseFloat(tempValue) : undefined;
+      const weight = value ? parseFloat(value) : undefined;
       const customFields = currentMetric?.customFields || {};
       saveMetricsMutation.mutate({ weight, customFields });
     } else {
       const weight = currentMetric?.weight ? parseFloat(currentMetric.weight.toString()) : undefined;
       const customFields = { 
         ...(currentMetric?.customFields || {}), 
-        [fieldName]: tempValue ? parseFloat(tempValue) : 0
+        [fieldName]: value ? parseFloat(value) : 0
       };
       saveMetricsMutation.mutate({ weight, customFields });
     }
@@ -173,13 +171,13 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
               )}
               <span className="text-sm font-medium text-gray-700">Weight</span>
             </div>
-            {true ? (
+            {editingField === "weight" ? (
               <div className="flex items-center space-x-2">
                 <Input
                   type="number"
                   inputMode="decimal"
-                  value={tempValue}
-                  onChange={(e) => setTempValue(e.target.value)}
+                  value={tempValues["weight"] || ""}
+                  onChange={(e) => setTempValues(prev => ({ ...prev, weight: e.target.value }))}
                   className="w-20 h-8"
                   autoFocus
                 />
@@ -228,8 +226,8 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                   <Input
                     type="number"
                     inputMode="decimal"
-                    value={tempValue}
-                    onChange={(e) => setTempValue(e.target.value)}
+                    value={tempValues[field.fieldName] || ""}
+                    onChange={(e) => setTempValues(prev => ({ ...prev, [field.fieldName]: e.target.value }))}
                     className="w-20 h-8"
                     autoFocus
                   />
