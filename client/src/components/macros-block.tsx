@@ -117,7 +117,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-gray-800">Macros</CardTitle>
+          <CardTitle className="text-xl font-bold text-gray-800">Nutrition</CardTitle>
           <div className="flex items-center justify-end">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
@@ -234,7 +234,6 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       <CardContent className="pt-0">
         <div className="space-y-3 mb-2">
           <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
-            <span>NUTRITION</span>
             {macros.length > 0 && (
               <span className="text-xs text-right">
                 P: {totals.protein}g | F: {totals.fats}g | C: {totals.carbs}g
