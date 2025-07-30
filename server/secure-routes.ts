@@ -36,14 +36,13 @@ import {
   insertMacroTargetSchema,
   insertMetricsSchema,
   insertCustomMetricFieldSchema,
-  // TEMPORARILY REMOVED GOAL IMPORTS TO TEST
-  // insertGoalTargetSchema,
-  // insertGoalProgressSchema,
+  insertGoalTargetSchema,
+  insertGoalProgressSchema,
   type MetricEntry,
   type CustomMetricField,
   type CustomActivity,
-  // type GoalTarget,
-  // type InsertGoalTarget
+  type GoalTarget,
+  type InsertGoalTarget
 } from "../shared/schema.js";
 import multer from "multer";
 import sharp from "sharp";
@@ -1434,10 +1433,7 @@ app.get('/api/debug/storage', (req, res) => {
 });
 console.log('✅ debug/storage route registered');
 
-// Goals API endpoints - TEMPORARILY COMMENTED OUT TO FIX ROUTE REGISTRATION
-// TODO: Uncomment after fixing import issues
-
-/*
+// Goals API endpoints
 // Simple test endpoint without authentication
 app.get('/api/goals/test', (req, res) => {
   console.log('🧪 Goals test endpoint hit');
@@ -1529,7 +1525,6 @@ app.delete('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest
     res.status(500).json({ message: 'Failed to delete goal' });
   }
 });
-*/
 
     console.log('🎉 ALL ROUTES REGISTERED SUCCESSFULLY');
     const httpServer = createServer(app);
