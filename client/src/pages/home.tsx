@@ -11,6 +11,7 @@ import { MacrosBlock } from "@/components/macros-block";
 import { MetricsBlock } from "@/components/metrics-block";
 import { PhotosBlock } from "@/components/photos-block";
 import { format, isToday } from "date-fns";
+import { createDateFromString } from "@/lib/date-utils";
 
 export default function Home() {
   const { user } = useAuth();
@@ -28,8 +29,8 @@ export default function Home() {
     console.log('5. Current selectedDate toString():', selectedDate.toString());
     
     if (dateParam) {
-      const newDate = new Date(dateParam);
-      console.log('6. Creating new Date from dateParam:', dateParam);
+      const newDate = createDateFromString(dateParam); // Use timezone-safe date creation
+      console.log('6. Creating new Date from dateParam using createDateFromString:', dateParam);
       console.log('7. New Date Object:', newDate);
       console.log('8. New Date toString():', newDate.toString());
       console.log('9. New Date toDateString():', newDate.toDateString());
