@@ -1163,6 +1163,8 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.userId!;
       
+      console.log('Metrics POST request body:', req.body);
+      
       const metricData = {
         userId,
         date: new Date(req.body.date),
@@ -1170,8 +1172,11 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         customFields: req.body.customFields || {},
       };
 
+      console.log('Constructed metricData:', metricData);
+
       const result = insertMetricsSchema.safeParse(metricData);
       if (!result.success) {
+        console.log('Validation failed:', result.error.issues);
         return res.status(400).json({ 
           message: 'Invalid request body', 
           errors: result.error.issues 
