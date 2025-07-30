@@ -1440,7 +1440,13 @@ app.get('/api/goals/test', (req, res) => {
   res.json({ message: 'Goals routes are being registered', timestamp: new Date() });
 });
 
-app.get('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) => {
+// Even simpler test route
+app.get('/api/goals/simple', (req, res) => {
+  console.log('🎯 Simple goals test hit');
+  res.json({ message: 'Simple goals route works', timestamp: new Date() });
+});
+
+app.get('/api/goals', authenticateToken, async (req: any, res) => {
   try {
     console.log('🎯 GET /api/goals - Fetching goals for user:', req.userId);
     
@@ -1459,7 +1465,7 @@ app.get('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) 
   }
 });
 
-app.post('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) => {
+app.post('/api/goals', authenticateToken, async (req: any, res) => {
   try {
     console.log('Creating goal with data:', req.body);
     console.log('User ID:', req.userId);
@@ -1499,7 +1505,7 @@ app.post('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res)
   }
 });
 
-app.put('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+app.put('/api/goals/:id', authenticateToken, async (req: any, res) => {
   try {
     const goalId = parseInt(req.params.id);
     const goalData = {
@@ -1515,7 +1521,7 @@ app.put('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest, r
   }
 });
 
-app.delete('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+app.delete('/api/goals/:id', authenticateToken, async (req: any, res) => {
   try {
     const goalId = parseInt(req.params.id);
     await storage.deleteGoalTarget(goalId, req.userId!);
