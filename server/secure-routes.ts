@@ -826,6 +826,49 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
 
   // Activity routes for "My Day" functionality
+  
+  // Get sleep activities for chart (last 7 days)
+  app.get('/api/activities/sleep/chart', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      
+      // Get last 7 days of sleep activities
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 6); // 7 days total
+      
+      console.log('Fetching sleep activities from', startDate.toISOString(), 'to', endDate.toISOString());
+      
+      const sleepActivities = await storage.getSleepActivitiesForRange(userId, startDate.toISOString(), endDate.toISOString());
+      
+      // Group by date and calculate total sleep hours per day
+      const sleepByDate = sleepActivities.reduce((acc: Record<string, number>, activity) => {
+        const date = new Date(activity.date).toISOString().split('T')[0];
+        const hours = (activity.durationMinutes || 0) / 60;
+        acc[date] = (acc[date] || 0) + hours;
+        return acc;
+      }, {});
+      
+      // Convert to chart format
+      const chartData = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        chartData.push({
+          date: dateStr,
+          value: sleepByDate[dateStr] || 0
+        });
+      }
+      
+      console.log('Sleep chart data:', chartData);
+      res.json(chartData);
+    } catch (error) {
+      console.error('Error fetching sleep chart data:', error);
+      res.status(500).json({ message: 'Failed to fetch sleep data' });
+    }
+  });
+
   app.get('/api/activities/date/:date', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;

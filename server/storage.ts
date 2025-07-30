@@ -86,6 +86,7 @@ export interface IStorage {
   // Activity operations
   getUserActivities(userId: number): Promise<Activity[]>;
   getActivitiesForDate(userId: number, date: string): Promise<Activity[]>;
+  getSleepActivitiesForRange(userId: number, startDate: string, endDate: string): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
   updateActivity(id: number, activity: InsertActivity): Promise<Activity>;
   deleteActivity(id: number, userId: number): Promise<void>;
