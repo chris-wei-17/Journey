@@ -214,7 +214,8 @@ export default function Photos() {
           <Header 
             title="Photos"
             showBackButton={false}
-          onBack={handleBack}
+            showHomeButton={true}
+            onBack={handleBack}
         />
           <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+6rem)]">
             {isLoading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>}
@@ -236,6 +237,7 @@ export default function Photos() {
         <Header 
           title="Photos"
           showBackButton={false}
+          showHomeButton={true}
           onBack={handleBack}
         />
         
