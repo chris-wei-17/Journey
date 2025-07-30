@@ -184,12 +184,13 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <span className="text-xs text-gray-500">lbs</span>
                 <button
                   onClick={() => {
-                    alert('BUTTON CLICKED!');
-                    console.log('BUTTON CLICKED!');
+                    console.log('Save button clicked!');
+                    handleFieldSave("weight");
                   }}
-                  className="h-8 px-4 bg-red-500 text-white rounded"
+                  disabled={saveMetricsMutation.isPending}
+                  className="h-8 px-4 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded"
                 >
-                  TEST
+                  {saveMetricsMutation.isPending ? "Saving..." : "Save"}
                 </button>
               </div>
             ) : (
