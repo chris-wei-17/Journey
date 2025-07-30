@@ -164,7 +164,7 @@ export const metrics = pgTable("metrics", {
   userId: integer("user_id").notNull().references(() => users.id),
   date: timestamp("date").notNull(),
   weight: numeric("weight", { precision: 5, scale: 2 }),
-  customFields: jsonb("custom_fields").$type<Record<string, number>>().default({}),
+  customFields: jsonb("custom_fields").$type<Record<string, string>>().default({}),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

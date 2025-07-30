@@ -1168,8 +1168,11 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       const metricData = {
         userId,
         date: new Date(req.body.date),
-        weight: req.body.weight || null,
-        customFields: req.body.customFields || {},
+        weight: req.body.weight ? req.body.weight.toString() : null,
+        customFields: req.body.customFields ? 
+          Object.fromEntries(
+            Object.entries(req.body.customFields).map(([key, value]) => [key, value?.toString()])
+          ) : {},
       };
 
       console.log('Constructed metricData:', metricData);
