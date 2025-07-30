@@ -168,7 +168,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {/* Weight field - always present */}
           <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
