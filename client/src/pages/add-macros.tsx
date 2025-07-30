@@ -26,7 +26,9 @@ export default function AddMacros() {
     const params = new URLSearchParams(window.location.search);
     const dateParam = params.get('date');
     if (dateParam) {
-      setSelectedDate(new Date(dateParam));
+      // Create date safely to avoid timezone issues
+      const [year, month, day] = dateParam.split('-').map(Number);
+      setSelectedDate(new Date(year, month - 1, day));
     }
   }, []);
 
@@ -81,7 +83,7 @@ export default function AddMacros() {
       protein: parseFloat(protein),
       fats: parseFloat(fats),
       carbs: parseFloat(carbs),
-      date: selectedDate.toISOString(), // Use selected date
+      date: format(selectedDate, 'yyyy-MM-dd'), // Use date-only format to avoid timezone issues
     };
 
     createMacroMutation.mutate(macroData);
