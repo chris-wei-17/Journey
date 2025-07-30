@@ -21,6 +21,7 @@ export default function Workouts() {
       <Header 
         title="Workouts"
         showBackButton={false}
+        showHomeButton={true}
         onBack={handleBack}
       />
       
