@@ -57,13 +57,20 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const createCustomFieldMutation = useMutation({
     mutationFn: async (data: { fieldName: string; unit: string }) => {
-      return apiRequest("/api/custom-metric-fields", "POST", data);
+      console.log('Creating custom metric field:', data);
+      const result = await apiRequest("POST", "/api/custom-metric-fields", data);
+      console.log('Custom metric field created:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Custom field creation successful:', data);
       queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
       setNewFieldName("");
       setNewFieldUnit("length");
       setIsAddingField(false);
+    },
+    onError: (error) => {
+      console.error('Error creating custom metric field:', error);
     },
   });
 
@@ -118,13 +125,17 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   };
 
   const addCustomField = () => {
+    console.log('addCustomField called', { newFieldName, newFieldUnit });
     if (newFieldName.trim()) {
       const unitType = newFieldUnit;
       const unit = UNITS[unitType as keyof typeof UNITS][0];
+      console.log('Creating field with:', { fieldName: newFieldName.trim(), unit });
       createCustomFieldMutation.mutate({ 
         fieldName: newFieldName.trim(),
         unit: unit
       });
+    } else {
+      console.log('Field name is empty, not creating');
     }
   };
 
@@ -291,11 +302,14 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                     Cancel
                   </Button>
                   <Button
-                    onClick={addCustomField}
+                    onClick={() => {
+                      console.log('Add Metric button clicked');
+                      addCustomField();
+                    }}
                     disabled={!newFieldName.trim() || createCustomFieldMutation.isPending}
                     className="bg-purple-500 hover:bg-purple-600 text-white"
                   >
-                    Add Metric
+                    {createCustomFieldMutation.isPending ? "Adding..." : "Add Metric"}
                   </Button>
                 </div>
               </div>
