@@ -138,7 +138,7 @@ export function PinProtection({ isOpen, onClose, mode, onSuccess }: PinProtectio
         <div className="text-center space-y-4">
           <h3 className="text-lg font-semibold">Protect Your Photos</h3>
           <p className="text-gray-600">
-            Would you like to set a PIN to protect your photos? This will require entering a 4-digit PIN every time you access your photos.
+            We know your progress can be personal, so we securely store your photos here in the app instead of your camera roll.  Would you like to set up a 4 digit PIN to access the photos page? If you opt out now and change your mind, you can always create one in the settings.
           </p>
           <div className="space-y-2">
             <Button onClick={() => handleAskResponse(true)} className="w-full">
