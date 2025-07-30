@@ -54,6 +54,15 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   // Get current metric entry for today
   const currentMetric = metrics.find(m => format(new Date(m.date), 'yyyy-MM-dd') === dateStr);
+  
+  // Debug logging
+  console.log('Metrics Block Debug:', {
+    dateStr,
+    metricsCount: metrics.length,
+    currentMetric,
+    customFieldsCount: customFields.length,
+    editingField
+  });
 
   const createCustomFieldMutation = useMutation({
     mutationFn: async (data: { fieldName: string; unit: string }) => {
@@ -95,11 +104,16 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
         customFields: data.customFields,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Metric saved successfully:', data);
+      console.log('Invalidating cache for:', `/api/metrics/date/${dateStr}`);
       queryClient.invalidateQueries({ queryKey: [`/api/metrics/date/${dateStr}`] });
       // Exit editing mode after successful save
       setEditingField(null);
       setTempValue("");
+    },
+    onError: (error) => {
+      console.error('Error saving metric:', error);
     },
   });
 
@@ -109,17 +123,23 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   };
 
   const handleFieldSave = (fieldName: string) => {
+    console.log('handleFieldSave called:', { fieldName, tempValue, currentMetric });
+    
     if (fieldName === "weight") {
       const weight = tempValue ? parseFloat(tempValue) : undefined;
       const customFields = currentMetric?.customFields || {};
-      saveMetricsMutation.mutate({ weight, customFields });
+      const saveData = { weight, customFields };
+      console.log('Saving weight data:', saveData);
+      saveMetricsMutation.mutate(saveData);
     } else {
       const weight = currentMetric?.weight ? parseFloat(currentMetric.weight.toString()) : undefined;
       const customFields = { 
         ...(currentMetric?.customFields || {}), 
         [fieldName]: tempValue ? parseFloat(tempValue) : 0
       };
-      saveMetricsMutation.mutate({ weight, customFields });
+      const saveData = { weight, customFields };
+      console.log('Saving custom field data:', saveData);
+      saveMetricsMutation.mutate(saveData);
     }
     // Don't reset editing state here - wait for mutation success
   };
