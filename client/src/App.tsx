@@ -24,6 +24,8 @@ import Sleep from "@/pages/sleep";
 import ForgotPassword from "@/pages/forgot-password"; 
 import ResetPassword from "@/pages/reset-password";
 import ResetPasswordToken from "@/pages/reset-password-token";
+// import Template from "@/pages/template"; // Uncomment when creating new pages
+// import YourNewPage from "@/pages/your-new-page"; // Example: replace with actual page name
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -64,6 +66,8 @@ function Router() {
                 <Route path="/select-activity" component={SelectActivity} />
                 <Route path="/add-macros" component={AddMacros} />
                 <Route path="/change-password" component={ResetPassword} />
+                {/* <Route path="/template" component={Template} /> */} {/* Uncomment when using template */}
+                {/* <Route path="/your-route" component={YourNewPage} /> */} {/* Example: replace with actual route and component */}
               </>
             )}
           </>
