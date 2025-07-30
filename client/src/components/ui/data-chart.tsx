@@ -5,12 +5,13 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
   TimeScale,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, subDays, addDays, startOfDay } from "date-fns";
@@ -21,6 +22,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -38,6 +40,8 @@ interface DataChartProps {
   lineColor?: string;
   backgroundColor?: string;
   yAxisLabel?: string;
+  chartType?: 'line' | 'bar';
+  goalValue?: number; // For bar charts with goal-based coloring
 }
 
 type TimeRange = '7d' | '14d' | '30d' | '90d';
@@ -49,12 +53,39 @@ const timeRangeOptions = [
   { value: '90d' as TimeRange, label: '90D', days: 90 },
 ];
 
+// Function to get color based on percentage of goal
+const getBarColor = (value: number, goal: number): string => {
+  const percentage = (value / goal) * 100;
+  
+  if (percentage <= 0) return '#ef4444'; // Full red for 0%
+  if (percentage >= 100) return '#22c55e'; // Full green for 100%+
+  
+  // Linear interpolation between red, yellow, and green
+  if (percentage <= 50) {
+    // Red to Yellow (0% to 50%)
+    const ratio = percentage / 50;
+    const r = 239; // Red component stays high
+    const g = Math.round(68 + (234 - 68) * ratio); // Green increases from 68 to 234
+    const b = 68; // Blue stays low
+    return `rgb(${r}, ${g}, ${b})`;
+  } else {
+    // Yellow to Green (50% to 100%)
+    const ratio = (percentage - 50) / 50;
+    const r = Math.round(234 - (234 - 34) * ratio); // Red decreases from 234 to 34
+    const g = Math.round(234 - (234 - 197) * ratio); // Green decreases from 234 to 197
+    const b = Math.round(68 + (94 - 68) * ratio); // Blue increases from 68 to 94
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+};
+
 export function DataChart({ 
   title, 
   data, 
   lineColor = '#3b82f6', 
   backgroundColor = 'rgba(59, 130, 246, 0.1)',
-  yAxisLabel = 'Y Axis'
+  yAxisLabel = 'Y Axis',
+  chartType = 'line',
+  goalValue = 8 // Default 8 hours for sleep
 }: DataChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
   
@@ -92,25 +123,41 @@ export function DataChart({
   const dateRange = generateDateRange();
 
   // Create chart data
+  const dataValues = dateRange.map(date => {
+    const point = filteredData.find(p => 
+      format(new Date(p.date), 'yyyy-MM-dd') === date
+    );
+    return point ? point.value : null;
+  });
+
   const chartData = {
     labels: dateRange,
     datasets: [
       {
         label: title,
-        data: dateRange.map(date => {
-          const point = filteredData.find(p => 
-            format(new Date(p.date), 'yyyy-MM-dd') === date
-          );
-          return point ? point.value : null;
+        data: dataValues,
+        ...(chartType === 'bar' ? {
+          // Bar chart configuration
+          backgroundColor: dataValues.map(value => 
+            value !== null ? getBarColor(value, goalValue) : 'transparent'
+          ),
+          borderColor: dataValues.map(value => 
+            value !== null ? getBarColor(value, goalValue) : 'transparent'
+          ),
+          borderWidth: 1,
+          barThickness: 20,
+          maxBarThickness: 30,
+        } : {
+          // Line chart configuration
+          borderColor: lineColor,
+          backgroundColor: backgroundColor,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          spanGaps: false, // Don't connect null values
         }),
-        borderColor: lineColor,
-        backgroundColor: backgroundColor,
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        spanGaps: false, // Don't connect null values
       },
     ],
   };
@@ -205,7 +252,11 @@ export function DataChart({
       
       <CardContent className="pt-0">
         <div className="h-64 w-full">
-          <Line data={chartData} options={options} />
+          {chartType === 'bar' ? (
+            <Bar data={chartData} options={options} />
+          ) : (
+            <Line data={chartData} options={options} />
+          )}
         </div>
       </CardContent>
     </Card>

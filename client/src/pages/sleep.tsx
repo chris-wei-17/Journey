@@ -53,8 +53,8 @@ export default function Sleep() {
           <DataChart 
             title="Sleep Hours"
             data={sleepLoading ? [] : sleepData}
-            lineColor="#6366f1"
-            backgroundColor="rgba(99, 102, 241, 0.1)"
+            chartType="bar"
+            goalValue={8}
             yAxisLabel="Hours"
           />
 
