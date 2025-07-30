@@ -1497,16 +1497,39 @@ app.post('/api/auth/reset-password', async (req, res) => {
   await resetPasswordWithToken(req, res);
 });
 
+// Debug route to verify route registration
+app.get('/api/debug/routes', (req, res) => {
+  console.log('🧪 Debug route hit - routes are registering correctly');
+  res.json({ 
+    message: 'Routes are working', 
+    timestamp: new Date(),
+    totalRoutes: app._router ? app._router.stack.length : 'unknown'
+  });
+});
+
 // Goals API endpoints
+// Simple test endpoint without authentication
+app.get('/api/goals/test', (req, res) => {
+  console.log('🧪 Goals test endpoint hit');
+  res.json({ message: 'Goals routes are being registered', timestamp: new Date() });
+});
+
 app.get('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
-    console.log('Fetching goals for user:', req.userId);
+    console.log('🎯 GET /api/goals - Fetching goals for user:', req.userId);
+    
+    // Check if storage method exists
+    if (typeof storage.getUserGoalTargets !== 'function') {
+      console.error('❌ storage.getUserGoalTargets is not a function');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+    
     const goals = await storage.getUserGoalTargets(req.userId!);
-    console.log('Found goals:', goals.length);
+    console.log('✅ Found goals:', goals.length);
     res.json(goals);
   } catch (error) {
-    console.error('Get goals error:', error);
-    res.status(500).json({ message: 'Failed to fetch goals' });
+    console.error('❌ Get goals error:', error);
+    res.status(500).json({ message: 'Failed to fetch goals', error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 
