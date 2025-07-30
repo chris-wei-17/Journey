@@ -191,7 +191,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
         <CardContent className="pt-0">
           {photos.length > 0 ? (
             <div 
-              className="grid gap-2 mb-4 overflow-y-auto"
+              className="grid gap-2 mb-2 overflow-y-auto"
               style={{
                 gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
                 maxHeight: "calc(70vh - 200px)"
@@ -219,7 +219,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
           )}
 
           {/* Action Buttons */}
-          <div className="flex space-x-2 mt-4">
+          <div className="flex space-x-2 mt-2">
             <Button
               onClick={handleAddPhotos}
               disabled={uploadPhotosMutation.isPending}
