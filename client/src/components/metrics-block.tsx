@@ -241,9 +241,6 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
           ))}
 
           {customFields.length === 0 && !currentMetric?.weight && (
-            <p className="text-gray-500 text-center py-4">
-              No metrics tracked yet. Tap the + button to add custom measurements.
-            </p>
           )}
         </div>
 
