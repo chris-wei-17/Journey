@@ -71,12 +71,13 @@ const upload = multer({
 export async function registerSecureRoutes(app: Express): Promise<Server> {
   console.log('🎬 ENTER registerSecureRoutes function');
   
-  // FIRST ROUTE - Test if function is executing at all
-  app.get('/api/test-first', (req, res) => {
-    console.log('🚀 FIRST ROUTE HIT - registerSecureRoutes is executing');
-    res.json({ message: 'Function is executing', timestamp: new Date() });
-  });
-  console.log('✅ test-first route registered');
+  try {
+    // FIRST ROUTE - Test if function is executing at all
+    app.get('/api/test-first', (req, res) => {
+      console.log('🚀 FIRST ROUTE HIT - registerSecureRoutes is executing');
+      res.json({ message: 'Function is executing', timestamp: new Date() });
+    });
+    console.log('✅ test-first route registered');
 
   // Health check endpoint for debugging
   app.get('/api/health', (req, res) => {
@@ -1510,6 +1511,8 @@ app.post('/api/auth/reset-password', async (req, res) => {
   await resetPasswordWithToken(req, res);
 });
 
+console.log('🚀 CHECKPOINT: Just before debug/routes - function still executing');
+
 console.log('🔍 About to register debug/routes endpoint');
 // Debug route to verify route registration
 app.get('/api/debug/routes', (req, res) => {
@@ -1640,7 +1643,20 @@ app.delete('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest
 });
 */
 
-  const httpServer = createServer(app);
-  return httpServer;
+    console.log('🎉 ALL ROUTES REGISTERED SUCCESSFULLY');
+    const httpServer = createServer(app);
+    return httpServer;
+    
+  } catch (error) {
+    console.error('💥 CRITICAL ERROR in registerSecureRoutes:');
+    console.error('Error message:', error instanceof Error ? error.message : error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('Error type:', typeof error);
+    console.error('Error constructor:', error instanceof Error ? error.constructor.name : 'Unknown');
+    
+    // Still return a server even if routes fail, with at least the test route
+    const httpServer = createServer(app);
+    return httpServer;
+  }
 }
 
