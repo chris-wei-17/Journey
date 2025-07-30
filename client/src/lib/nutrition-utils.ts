@@ -84,12 +84,15 @@ export function generateCalorieData(
     const date = subDays(endDate, i);
     const dateKey = format(date, 'yyyy-MM-dd');
     const dayMacros = macrosByDate[dateKey] || [];
-    const summary = calculateDayMacros(dayMacros);
-
-    dataPoints.push({
-      date: dateKey,
-      value: summary.totalCalories,
-    });
+    
+    // Only add data point if there are actual macro entries for this day
+    if (dayMacros.length > 0) {
+      const summary = calculateDayMacros(dayMacros);
+      dataPoints.push({
+        date: dateKey,
+        value: summary.totalCalories,
+      });
+    }
   }
 
   return dataPoints;
