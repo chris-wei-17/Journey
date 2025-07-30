@@ -196,12 +196,13 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
             ) : (
               <button
                 onClick={() => {
+                  alert('Tap to add clicked!');
                   console.log('Tap to add weight');
                   handleFieldEdit("weight", currentMetric?.weight?.toString() || "");
                 }}
                 className="px-3 py-1 bg-gray-200 rounded text-sm text-gray-700 hover:bg-gray-300 transition-colors"
               >
-                {currentMetric?.weight ? `${currentMetric.weight} lbs` : "Tap to add"}
+                {currentMetric?.weight ? `${currentMetric.weight} lbs` : "Tap to add"} (editing: {editingField || 'none'})
               </button>
             )}
           </div>
