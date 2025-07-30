@@ -22,6 +22,7 @@ import {
   calculateMacroPercentages,
   type MacroEntry,
   type MacroTarget,
+  type CalorieDataPoint,
 } from "@/lib/nutrition-utils";
 import 'chartjs-adapter-date-fns';
 
@@ -69,6 +70,11 @@ export function NutritionChart() {
     targetsLoading
   });
 
+  // Additional debug for date issues
+  if (allMacros.length > 0) {
+    console.log('Sample macro dates:', allMacros.slice(0, 3).map(m => ({ id: m.id, date: m.date, dateType: typeof m.date })));
+  }
+
   // Get days for current range
   const getDaysForRange = (range: TimeRange) => {
     return timeRangeOptions.find(opt => opt.value === range)?.days || 7;
@@ -84,22 +90,55 @@ export function NutritionChart() {
     
     allMacros
       .filter(macro => {
-        const macroDate = new Date(macro.date);
-        return macroDate >= startDate && macroDate <= endDate;
+        try {
+          // Add validation for macro.date
+          if (!macro.date) {
+            console.warn('Macro entry missing date:', macro);
+            return false;
+          }
+          
+          const macroDate = new Date(macro.date);
+          
+          // Check if date is valid
+          if (isNaN(macroDate.getTime())) {
+            console.warn('Invalid date in macro entry:', macro.date, macro);
+            return false;
+          }
+          
+          return macroDate >= startDate && macroDate <= endDate;
+        } catch (error) {
+          console.error('Error processing macro date:', macro.date, error);
+          return false;
+        }
       })
       .forEach(macro => {
-        const dateKey = format(new Date(macro.date), 'yyyy-MM-dd');
-        if (!macrosByDate[dateKey]) {
-          macrosByDate[dateKey] = [];
+        try {
+          const macroDate = new Date(macro.date);
+          const dateKey = format(macroDate, 'yyyy-MM-dd');
+          
+          if (!macrosByDate[dateKey]) {
+            macrosByDate[dateKey] = [];
+          }
+          macrosByDate[dateKey].push(macro);
+        } catch (error) {
+          console.error('Error formatting macro date:', macro.date, error);
         }
-        macrosByDate[dateKey].push(macro);
       });
 
     return macrosByDate;
   };
 
   const macrosByDate = getMacrosByDate();
-  const calorieData = generateCalorieData(macrosByDate, getDaysForRange(timeRange));
+  
+  // Safely generate calorie data with error handling
+  let calorieData: CalorieDataPoint[] = [];
+  try {
+    calorieData = generateCalorieData(macrosByDate, getDaysForRange(timeRange));
+  } catch (error) {
+    console.error('Error generating calorie data:', error);
+    // Provide empty data if generation fails
+    calorieData = [];
+  }
 
   // Get today's macros for donut charts
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -114,7 +153,15 @@ export function NutritionChart() {
   };
   
   const effectiveTargets = macroTargets || defaultTargets;
-  const macroPercentages = calculateMacroPercentages(todaySummary, effectiveTargets);
+  
+  // Safely calculate macro percentages with error handling
+  let macroPercentages = { protein: 0, fats: 0, carbs: 0 };
+  try {
+    macroPercentages = calculateMacroPercentages(todaySummary, effectiveTargets);
+  } catch (error) {
+    console.error('Error calculating macro percentages:', error);
+    // Use default empty percentages if calculation fails
+  }
 
   // Line chart data
   const chartData = {
@@ -253,6 +300,17 @@ export function NutritionChart() {
             <p className="text-sm text-gray-500 mt-2">
               {macrosError?.message || targetsError?.message}
             </p>
+            <details className="mt-4 text-left">
+              <summary className="text-xs text-gray-400 cursor-pointer">Debug Info</summary>
+              <pre className="text-xs text-gray-400 mt-2 overflow-auto max-h-32">
+                {JSON.stringify({ 
+                  macrosError: macrosError?.message, 
+                  targetsError: targetsError?.message,
+                  macrosCount: allMacros?.length || 0,
+                  sampleMacro: allMacros?.[0] || null
+                }, null, 2)}
+              </pre>
+            </details>
           </div>
         </CardContent>
       </Card>
