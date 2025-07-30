@@ -104,12 +104,14 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
       });
     },
     onSuccess: (data) => {
+      alert('SUCCESS: Metric saved to database!');
       console.log('Metric saved successfully:', data);
       queryClient.invalidateQueries({ queryKey: [`/api/metrics/date/${dateStr}`] });
       // Clear temp values after successful save
       setTempValues({});
     },
     onError: (error) => {
+      alert(`ERROR: Failed to save metric - ${error.message}`);
       console.error('Error saving metric:', error);
     },
   });
