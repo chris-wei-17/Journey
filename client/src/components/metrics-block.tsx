@@ -239,9 +239,6 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
               </div>
             </div>
           ))}
-
-          {customFields.length === 0 && !currentMetric?.weight && (
-          )}
         </div>
 
         {/* Action Buttons */}
