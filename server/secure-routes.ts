@@ -1493,6 +1493,59 @@ app.post('/api/auth/reset-password', async (req, res) => {
   await resetPasswordWithToken(req, res);
 });
 
+// Goals API endpoints
+app.get('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const goals = await storage.getUserGoalTargets(req.userId!);
+    res.json(goals);
+  } catch (error) {
+    console.error('Get goals error:', error);
+    res.status(500).json({ message: 'Failed to fetch goals' });
+  }
+});
+
+app.post('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const goalData = {
+      ...req.body,
+      userId: req.userId!,
+    };
+
+    const newGoal = await storage.createGoalTarget(goalData);
+    res.status(201).json(newGoal);
+  } catch (error) {
+    console.error('Create goal error:', error);
+    res.status(500).json({ message: 'Failed to create goal' });
+  }
+});
+
+app.put('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const goalId = parseInt(req.params.id);
+    const goalData = {
+      ...req.body,
+      userId: req.userId!,
+    };
+
+    const updatedGoal = await storage.updateGoalTarget(goalId, goalData);
+    res.json(updatedGoal);
+  } catch (error) {
+    console.error('Update goal error:', error);
+    res.status(500).json({ message: 'Failed to update goal' });
+  }
+});
+
+app.delete('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const goalId = parseInt(req.params.id);
+    await storage.deleteGoalTarget(goalId, req.userId!);
+    res.json({ message: 'Goal deleted successfully' });
+  } catch (error) {
+    console.error('Delete goal error:', error);
+    res.status(500).json({ message: 'Failed to delete goal' });
+  }
+});
+
   const httpServer = createServer(app);
   return httpServer;
 }

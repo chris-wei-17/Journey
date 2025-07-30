@@ -4,6 +4,8 @@ import {
   userGoals,
   progressEntries,
   photos,
+  goalTargets,
+  goalProgress,
   type User,
   type InsertUser,
   type UserProfile,
@@ -14,6 +16,10 @@ import {
   type InsertProgressEntry,
   type Photo,
   type InsertPhoto,
+  type GoalTarget,
+  type InsertGoalTarget,
+  type GoalProgress,
+  type InsertGoalProgress,
   activities,
   type Activity,
   type InsertActivity,
@@ -53,6 +59,12 @@ export interface IStorage {
   getUserGoals(userId: number): Promise<UserGoal[]>;
   createUserGoal(goal: InsertUserGoal): Promise<UserGoal>;
   deleteUserGoals(userId: number): Promise<void>;
+  
+  // Goal Target operations
+  getUserGoalTargets(userId: number): Promise<GoalTarget[]>;
+  createGoalTarget(goal: InsertGoalTarget): Promise<GoalTarget>;
+  updateGoalTarget(id: number, goal: InsertGoalTarget): Promise<GoalTarget>;
+  deleteGoalTarget(id: number, userId: number): Promise<void>;
   
   // Progress operations
   getUserProgress(userId: number): Promise<ProgressEntry[]>;
@@ -181,6 +193,46 @@ export class DatabaseStorage implements IStorage {
       .update(userGoals)
       .set({ isActive: false })
       .where(eq(userGoals.userId, userId));
+  }
+
+  // Goal Target operations
+  async getUserGoalTargets(userId: number): Promise<GoalTarget[]> {
+    return await db
+      .select()
+      .from(goalTargets)
+      .where(and(eq(goalTargets.userId, userId), eq(goalTargets.isActive, true)))
+      .orderBy(goalTargets.createdAt);
+  }
+
+  async createGoalTarget(goal: InsertGoalTarget): Promise<GoalTarget> {
+    const [newGoal] = await db
+      .insert(goalTargets)
+      .values({
+        ...goal,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return newGoal;
+  }
+
+  async updateGoalTarget(id: number, goal: InsertGoalTarget): Promise<GoalTarget> {
+    const [updatedGoal] = await db
+      .update(goalTargets)
+      .set({
+        ...goal,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(goalTargets.id, id), eq(goalTargets.userId, goal.userId!)))
+      .returning();
+    return updatedGoal;
+  }
+
+  async deleteGoalTarget(id: number, userId: number): Promise<void> {
+    await db
+      .update(goalTargets)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(and(eq(goalTargets.id, id), eq(goalTargets.userId, userId)));
   }
 
   // Progress operations

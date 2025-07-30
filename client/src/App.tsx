@@ -19,6 +19,7 @@ import AddMacros from "@/pages/add-macros";
 import Photos from "@/pages/photos";
 import Progress from "@/pages/progress";
 import Goals from "@/pages/goals";
+import AddGoal from "@/pages/add-goal";
 import Workouts from "@/pages/workouts";
 import Nutrition from "@/pages/nutrition";
 import Sleep from "@/pages/sleep";
@@ -60,6 +61,7 @@ function Router() {
                 <Route path="/photos" component={Photos} />
                 <Route path="/progress" component={Progress} />
                 <Route path="/goals" component={Goals} />
+                <Route path="/add-goal" component={AddGoal} />
                 <Route path="/workouts" component={Workouts} />
                 <Route path="/nutrition" component={Nutrition} />
                 <Route path="/sleep" component={Sleep} />

@@ -65,6 +65,33 @@ export const progressEntries = pgTable("progress_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Goal targets table - specific goals with target values
+export const goalTargets = pgTable("goal_targets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  goalType: varchar("goal_type", { length: 100 }).notNull(), // 'sleep', 'nutrition', 'daily_move', 'custom'
+  goalName: varchar("goal_name", { length: 255 }).notNull(), // Display name for the goal
+  targetValuePrimary: decimal("target_value_primary", { precision: 10, scale: 2 }).notNull(), // Main value
+  targetUnitPrimary: varchar("target_unit_primary", { length: 50 }).notNull(), // 'hours', 'calories', 'minutes'
+  targetValueSecondary: decimal("target_value_secondary", { precision: 10, scale: 2 }), // Optional secondary value
+  targetUnitSecondary: varchar("target_unit_secondary", { length: 50 }), // 'minutes', etc.
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Goal progress tracking table
+export const goalProgress = pgTable("goal_progress", {
+  id: serial("id").primaryKey(),
+  goalTargetId: integer("goal_target_id").notNull().references(() => goalTargets.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  progressDate: date("progress_date").notNull(),
+  actualValuePrimary: decimal("actual_value_primary", { precision: 10, scale: 2 }).notNull(),
+  actualValueSecondary: decimal("actual_value_secondary", { precision: 10, scale: 2 }),
+  percentageAchieved: decimal("percentage_achieved", { precision: 5, scale: 2 }), // Calculated percentage
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Photos table - store file paths (not URLs) for private bucket access
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
@@ -263,6 +290,12 @@ export type InsertProgressEntry = typeof progressEntries.$inferInsert;
 export type Photo = typeof photos.$inferSelect;
 export type InsertPhoto = typeof photos.$inferInsert;
 
+export type GoalTarget = typeof goalTargets.$inferSelect;
+export type InsertGoalTarget = typeof goalTargets.$inferInsert;
+
+export type GoalProgress = typeof goalProgress.$inferSelect;
+export type InsertGoalProgress = typeof goalProgress.$inferInsert;
+
 // Extended types for API responses
 export type UserWithProfile = User & {
   profile?: UserProfile;
@@ -292,6 +325,17 @@ export const insertProgressEntrySchema = createInsertSchema(progressEntries).omi
 export const insertPhotoSchema = createInsertSchema(photos).omit({
   id: true,
   uploadDate: true,
+});
+
+export const insertGoalTargetSchema = createInsertSchema(goalTargets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertGoalProgressSchema = createInsertSchema(goalProgress).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Authentication schemas
