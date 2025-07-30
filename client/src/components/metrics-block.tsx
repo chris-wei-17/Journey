@@ -191,6 +191,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <span className="text-xs text-gray-500">lbs</span>
                 <button
                   onClick={() => {
+                    alert('BUTTON CLICKED!');
                     console.log('Save weight clicked!');
                     handleFieldSave("weight");
                   }}
@@ -228,6 +229,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <span className="text-xs text-gray-500">{field.unit}</span>
                 <button
                   onClick={() => {
+                    alert('CUSTOM FIELD BUTTON CLICKED!');
                     console.log('Save', field.fieldName, 'clicked!');
                     handleFieldSave(field.fieldName);
                   }}
