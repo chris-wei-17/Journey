@@ -152,12 +152,41 @@ export function NutritionChart() {
     carbsTarget: 200,
   };
   
-  const effectiveTargets = macroTargets || defaultTargets;
+  // More robust check for valid macro targets
+  const hasValidTargets = macroTargets && 
+    typeof macroTargets.proteinTarget === 'number' && 
+    typeof macroTargets.fatsTarget === 'number' && 
+    typeof macroTargets.carbsTarget === 'number' &&
+    macroTargets.proteinTarget > 0 &&
+    macroTargets.fatsTarget > 0 &&
+    macroTargets.carbsTarget > 0;
+  
+  const effectiveTargets = hasValidTargets ? macroTargets : defaultTargets;
+  
+  console.log('Macro targets debug:', { 
+    macroTargets, 
+    hasValidTargets, 
+    effectiveTargets 
+  });
   
   // Safely calculate macro percentages with error handling
   let macroPercentages = { protein: 0, fats: 0, carbs: 0 };
   try {
-    macroPercentages = calculateMacroPercentages(todaySummary, effectiveTargets);
+    const rawPercentages = calculateMacroPercentages(todaySummary, effectiveTargets);
+    
+    // Ensure percentages are valid numbers
+    macroPercentages = {
+      protein: isFinite(rawPercentages.protein) ? Math.max(0, rawPercentages.protein) : 0,
+      fats: isFinite(rawPercentages.fats) ? Math.max(0, rawPercentages.fats) : 0,
+      carbs: isFinite(rawPercentages.carbs) ? Math.max(0, rawPercentages.carbs) : 0,
+    };
+    
+    console.log('Macro percentages debug:', {
+      todaySummary,
+      effectiveTargets,
+      rawPercentages,
+      macroPercentages
+    });
   } catch (error) {
     console.error('Error calculating macro percentages:', error);
     // Use default empty percentages if calculation fails
@@ -169,7 +198,7 @@ export function NutritionChart() {
     datasets: [
       {
         label: 'Daily Calories',
-        data: calorieData.map(point => point.value || null),
+        data: calorieData.map(point => isFinite(point.value) ? point.value : null),
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         borderWidth: 1, // Low weight line
@@ -360,6 +389,11 @@ export function NutritionChart() {
             <p className="text-xl font-bold text-gray-800">
               {Math.round(todaySummary.totalCalories) || 0} calories
             </p>
+            {!hasValidTargets && (
+              <p className="text-xs text-amber-600 mt-2">
+                Using default macro targets. Set your personal targets in settings for better tracking.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
