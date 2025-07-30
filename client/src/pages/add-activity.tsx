@@ -242,9 +242,9 @@ export default function AddActivity() {
         title: "Success",
         description: "Activity added successfully!",
       });
-      // Return to home with the actual activity date (from datetime picker)
-      const dateParam = startDateTime.date; // Use the date from the datetime picker, not selectedDate
-      console.log('🏠 Navigation Debug - Returning to home with date:', dateParam, 'startDateTime.date:', startDateTime.date);
+      // Return to home with the activity end date
+      const dateParam = endDateTime.date; // Use the end date for navigation
+      console.log('🏠 Navigation Debug - Returning to home with date:', dateParam, 'endDateTime.date:', endDateTime.date);
       setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
@@ -274,8 +274,8 @@ export default function AddActivity() {
         title: "Success",
         description: "Activity updated successfully!",
       });
-      // Return to home with the actual activity date (from datetime picker)
-      const dateParam = startDateTime.date; // Use the date from the datetime picker, not selectedDate
+      // Return to home with the activity end date
+      const dateParam = endDateTime.date; // Use the end date for navigation
       setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
@@ -304,8 +304,8 @@ export default function AddActivity() {
         title: "Success",
         description: "Activity deleted successfully!",
       });
-      // Return to home with the actual activity date (from datetime picker)
-      const dateParam = startDateTime.date; // Use the date from the datetime picker, not selectedDate
+      // Return to home with the activity end date
+      const dateParam = endDateTime.date; // Use the end date for navigation
       setLocation(`/?date=${dateParam}`);
     },
     onError: (error: Error) => {
@@ -423,7 +423,7 @@ export default function AddActivity() {
           variant="ghost" 
           size="sm"
           onClick={() => {
-            const dateParam = startDateTime.date; // Use date from datetime picker
+            const dateParam = endDateTime.date; // Use end date for navigation
             setLocation(`/?date=${dateParam}`);
           }}
           className="p-2 text-white hover:bg-white/20"
@@ -433,7 +433,7 @@ export default function AddActivity() {
         <h1 className="text-xl font-bold text-white">{isEditMode ? 'EDIT ACTIVITY' : 'ADD ACTIVITY'}</h1>
         <div 
           onClick={() => {
-            const dateParam = startDateTime.date; // Use date from datetime picker
+            const dateParam = endDateTime.date; // Use end date for navigation
             setLocation(`/?date=${dateParam}`);
           }}
           className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
