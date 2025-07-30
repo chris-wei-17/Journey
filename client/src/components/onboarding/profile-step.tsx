@@ -122,9 +122,12 @@ export default function ProfileStep({ data, updateData, onNext }: ProfileStepPro
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ectomorph">Ectomorph</SelectItem>
-                    <SelectItem value="mesomorph">Mesomorph</SelectItem>
-                    <SelectItem value="endomorph">Endomorph</SelectItem>
+                    <SelectItem value="petite">Petite</SelectItem>
+                    <SelectItem value="lean">Lean</SelectItem>
+                    <SelectItem value="average">Average</SelectItem>
+                    <SelectItem value="athletic">Athletic</SelectItem>
+                    <SelectItem value="muscular">Muscular</SelectItem>
+                    <SelectItem value="pear">Pear</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
