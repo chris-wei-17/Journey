@@ -182,17 +182,15 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                   autoFocus
                 />
                 <span className="text-xs text-gray-500">lbs</span>
-                <Button
-                  size="sm"
+                <button
                   onClick={() => {
-                    console.log('Save button clicked!');
-                    handleFieldSave("weight");
+                    alert('BUTTON CLICKED!');
+                    console.log('BUTTON CLICKED!');
                   }}
-                  disabled={saveMetricsMutation.isPending}
-                  className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
+                  className="h-8 px-4 bg-red-500 text-white rounded"
                 >
-                  {saveMetricsMutation.isPending ? "Saving..." : "Save"}
-                </Button>
+                  TEST
+                </button>
               </div>
             ) : (
               <button
