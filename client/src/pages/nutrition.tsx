@@ -21,6 +21,7 @@ export default function Nutrition() {
       <Header 
         title="Nutrition"
         showBackButton={false}
+        showHomeButton={true}
         onBack={handleBack}
       />
       
