@@ -192,13 +192,15 @@ export function NutritionChart() {
     // Use default empty percentages if calculation fails
   }
 
-  // Line chart data
+  // Line chart data - use x/y format for time series
   const chartData = {
-    labels: calorieData.map(point => point.date),
     datasets: [
       {
         label: 'Daily Calories',
-        data: calorieData.map(point => isFinite(point.value) ? point.value : null),
+        data: calorieData.map(point => ({
+          x: point.date,
+          y: isFinite(point.value) ? point.value : null
+        })),
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         borderWidth: 1, // Low weight line
@@ -211,6 +213,7 @@ export function NutritionChart() {
     ],
   };
 
+  // Create dynamic chart options that respond to time range changes
   const lineOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -237,6 +240,8 @@ export function NutritionChart() {
             day: 'MMM d'
           }
         },
+        min: format(subDays(new Date(), getDaysForRange(timeRange) - 1), 'yyyy-MM-dd'),
+        max: format(new Date(), 'yyyy-MM-dd'),
         grid: {
           display: false,
         },
