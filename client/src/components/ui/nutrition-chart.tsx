@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
+import { createDateFromString } from "@/lib/date-utils";
 import {
   generateCalorieData,
   calculateDayMacros,
