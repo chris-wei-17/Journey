@@ -90,6 +90,9 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/metrics/date/${dateStr}`] });
+      // Exit editing mode after successful save
+      setEditingField(null);
+      setTempValue("");
     },
   });
 
@@ -111,8 +114,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
       };
       saveMetricsMutation.mutate({ weight, customFields });
     }
-    setEditingField(null);
-    setTempValue("");
+    // Don't reset editing state here - wait for mutation success
   };
 
   const addCustomField = () => {
@@ -162,9 +164,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <Button
                   size="sm"
                   onClick={() => handleFieldSave("weight")}
+                  disabled={saveMetricsMutation.isPending}
                   className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
                 >
-                  Save
+                  {saveMetricsMutation.isPending ? "Saving..." : "Save"}
                 </Button>
               </div>
             ) : (
@@ -205,9 +208,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                   <Button
                     size="sm"
                     onClick={() => handleFieldSave(field.fieldName)}
+                    disabled={saveMetricsMutation.isPending}
                     className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
                   >
-                    Save
+                    {saveMetricsMutation.isPending ? "Saving..." : "Save"}
                   </Button>
                 </div>
               ) : (
