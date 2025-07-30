@@ -19,14 +19,16 @@ export default function Sleep() {
 
   // Calculate sleep statistics
   const sleepStats = React.useMemo(() => {
-    if (!sleepData.length) return { avgSleep: 0, lastNight: 0, weekTotal: 0 };
+    if (!sleepData.length) return { avgSleep: 0, lastNight: 0, weekTotal: 0, daysWithData: 0 };
     
-    const values = sleepData.map((d: any) => d.value).filter((v: number) => v > 0);
+    // Since we now only get data points for days with actual sleep, all values are valid
+    const values = sleepData.map((d: any) => d.value);
     const avgSleep = values.length > 0 ? values.reduce((a: number, b: number) => a + b, 0) / values.length : 0;
     const lastNight = sleepData[sleepData.length - 1]?.value || 0;
     const weekTotal = values.reduce((a: number, b: number) => a + b, 0);
+    const daysWithData = values.length;
     
-    return { avgSleep, lastNight, weekTotal };
+    return { avgSleep, lastNight, weekTotal, daysWithData };
   }, [sleepData]);
 
   const handleBack = () => {
@@ -63,7 +65,7 @@ export default function Sleep() {
                 <i className="fas fa-clock text-blue-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Last Night</p>
                 <p className="text-xl font-bold text-gray-800">
-                  {sleepLoading ? "..." : sleepStats.lastNight > 0 ? `${sleepStats.lastNight.toFixed(1)}h` : "No data"}
+                  {sleepLoading ? "..." : sleepStats.lastNight > 0 ? `${sleepStats.lastNight.toFixed(1)}h` : "--"}
                 </p>
               </CardContent>
             </Card>
@@ -73,7 +75,7 @@ export default function Sleep() {
                 <i className="fas fa-chart-line text-green-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Weekly Avg</p>
                 <p className="text-xl font-bold text-gray-800">
-                  {sleepLoading ? "..." : sleepStats.avgSleep > 0 ? `${sleepStats.avgSleep.toFixed(1)}h` : "No data"}
+                  {sleepLoading ? "..." : sleepStats.avgSleep > 0 ? `${sleepStats.avgSleep.toFixed(1)}h` : "--"}
                 </p>
               </CardContent>
             </Card>
@@ -83,7 +85,7 @@ export default function Sleep() {
                 <i className="fas fa-calendar-week text-purple-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Week Total</p>
                 <p className="text-xl font-bold text-gray-800">
-                  {sleepLoading ? "..." : sleepStats.weekTotal > 0 ? `${sleepStats.weekTotal.toFixed(1)}h` : "No data"}
+                  {sleepLoading ? "..." : sleepStats.weekTotal > 0 ? `${sleepStats.weekTotal.toFixed(1)}h` : "--"}
                 </p>
               </CardContent>
             </Card>

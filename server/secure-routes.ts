@@ -849,16 +849,20 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         return acc;
       }, {});
       
-      // Convert to chart format
+      // Convert to chart format - only include days with actual sleep data
       const chartData = [];
       for (let i = 6; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         const dateStr = date.toISOString().split('T')[0];
-        chartData.push({
-          date: dateStr,
-          value: sleepByDate[dateStr] || 0
-        });
+        
+        // Only add data point if there's actual sleep logged for this day
+        if (sleepByDate[dateStr] && sleepByDate[dateStr] > 0) {
+          chartData.push({
+            date: dateStr,
+            value: sleepByDate[dateStr]
+          });
+        }
       }
       
       console.log('Sleep chart data:', chartData);
