@@ -109,15 +109,14 @@ export default function Home() {
         {/* My Day Block */}
         <MyDayBlock selectedDate={selectedDate} />
 
-        {/* Macros Block */}
-        <MacrosBlock selectedDate={selectedDate} />
-
         {/* Metrics Block */}
         <MetricsBlock selectedDate={selectedDate} />
 
         {/* Photos Block */}
         <PhotosBlock selectedDate={selectedDate} />
 
+        {/* Macros Block */}
+        <MacrosBlock selectedDate={selectedDate} />
         {/* Stats Overview */}
         </div>
 
