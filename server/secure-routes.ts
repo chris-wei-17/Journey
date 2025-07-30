@@ -1131,13 +1131,18 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       console.log('Creating macro for user:', userId);
       console.log('Request body:', JSON.stringify(req.body, null, 2));
       
+      // Parse date safely to avoid timezone issues
+      const dateStr = req.body.date; // "YYYY-MM-DD" format
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const macroDate = new Date(year, month - 1, day, 12, 0, 0, 0); // Use noon to avoid timezone edge cases
+      
       const macroData = {
         userId,
         description: req.body.description,
         protein: req.body.protein,
         fats: req.body.fats,
         carbs: req.body.carbs,
-        date: new Date(req.body.date),
+        date: macroDate,
       };
       
       console.log('Processed macro data:', JSON.stringify(macroData, null, 2));
