@@ -76,9 +76,6 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
       
       <CardContent className="pt-0">
         <div className="space-y-3 mb-4">
-          <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
-            <span>ACTIVITIES</span>
-          </div>
           
           {sortedActivities.length > 0 ? (
             sortedActivities.map((activity: Activity) => (
@@ -119,7 +116,7 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
               </div>
             ))
           ) : (
-            <div className="text-gray-500 text-center py-4">
+            <div className="text-gray-500 text-center py-2">
               No activities logged {isToday(selectedDate) ? 'today' : 'for this date'}
             </div>
           )}
