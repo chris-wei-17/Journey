@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,8 +55,13 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   // Get current metric entry for today
   const currentMetric = metrics.find(m => format(new Date(m.date), 'yyyy-MM-dd') === dateStr);
   
+  // Clear temp values when date changes
+  useEffect(() => {
+    setTempValues({});
+  }, [dateStr]);
+
   // Debug logging
-  console.log('Metrics Debug:', { tempValues });
+  console.log('Metrics Debug:', { tempValues, dateStr, currentMetric });
 
   const createCustomFieldMutation = useMutation({
     mutationFn: async (data: { fieldName: string; unit: string }) => {
@@ -112,19 +117,27 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
 
   const handleFieldSave = (fieldName: string) => {
-    const value = tempValues[fieldName] || "";
-    console.log('Saving field:', fieldName, 'value:', value);
+    // Get the current value from input (tempValues) or use empty string
+    const inputValue = tempValues[fieldName] || "";
+    console.log('Saving field:', fieldName, 'input value:', inputValue);
+    
+    if (!inputValue.trim()) {
+      console.log('No value to save');
+      return;
+    }
     
     if (fieldName === "weight") {
-      const weight = value ? parseFloat(value) : undefined;
+      const weight = parseFloat(inputValue);
       const customFields = currentMetric?.customFields || {};
+      console.log('Saving weight:', weight);
       saveMetricsMutation.mutate({ weight, customFields });
     } else {
-      const weight = currentMetric?.weight ? parseFloat(currentMetric.weight.toString()) : undefined;
+      const weight = currentMetric?.weight;
       const customFields = { 
         ...(currentMetric?.customFields || {}), 
-        [fieldName]: value ? parseFloat(value) : 0
+        [fieldName]: parseFloat(inputValue)
       };
+      console.log('Saving custom field:', fieldName, 'value:', parseFloat(inputValue));
       saveMetricsMutation.mutate({ weight, customFields });
     }
   };
@@ -166,27 +179,27 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
               )}
               <span className="text-sm font-medium text-gray-700">Weight</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                inputMode="decimal"
-                value={tempValues["weight"] || currentMetric?.weight?.toString() || ""}
-                onChange={(e) => setTempValues(prev => ({ ...prev, weight: e.target.value }))}
-                placeholder="Enter weight"
-                className="w-20 h-8"
-              />
-              <span className="text-xs text-gray-500">lbs</span>
-              <button
-                onClick={() => {
-                  console.log('Save weight clicked!');
-                  handleFieldSave("weight");
-                }}
-                disabled={saveMetricsMutation.isPending}
-                className="h-8 px-4 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded"
-              >
-                {saveMetricsMutation.isPending ? "Saving..." : "Save"}
-              </button>
-            </div>
+                          <div className="flex items-center space-x-2">
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  value={tempValues["weight"] ?? currentMetric?.weight?.toString() ?? ""}
+                  onChange={(e) => setTempValues(prev => ({ ...prev, weight: e.target.value }))}
+                  placeholder="Enter weight"
+                  className="w-20 h-8"
+                />
+                <span className="text-xs text-gray-500">lbs</span>
+                <button
+                  onClick={() => {
+                    console.log('Save weight clicked!');
+                    handleFieldSave("weight");
+                  }}
+                  disabled={saveMetricsMutation.isPending}
+                  className="h-8 px-4 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded"
+                >
+                  {saveMetricsMutation.isPending ? "Saving..." : "Save"}
+                </button>
+              </div>
           </div>
 
           {/* Custom fields */}
@@ -207,7 +220,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <Input
                   type="number"
                   inputMode="decimal"
-                  value={tempValues[field.fieldName] || currentMetric?.customFields?.[field.fieldName]?.toString() || ""}
+                  value={tempValues[field.fieldName] ?? currentMetric?.customFields?.[field.fieldName]?.toString() ?? ""}
                   onChange={(e) => setTempValues(prev => ({ ...prev, [field.fieldName]: e.target.value }))}
                   placeholder={`Enter ${field.fieldName.toLowerCase()}`}
                   className="w-20 h-8"
