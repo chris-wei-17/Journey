@@ -117,6 +117,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
 
   const handleFieldSave = (fieldName: string) => {
+    alert(`handleFieldSave called for: ${fieldName}`);
     // Get the current value from input (tempValues) or use empty string
     const inputValue = tempValues[fieldName] || "";
     console.log('Saving field:', fieldName, 'input value:', inputValue);
