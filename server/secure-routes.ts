@@ -1507,7 +1507,10 @@ app.get('/api/debug/routes', (req, res) => {
   });
 });
 
-// Goals API endpoints
+// Goals API endpoints - TEMPORARILY COMMENTED OUT TO FIX ROUTE REGISTRATION
+// TODO: Uncomment after fixing import issues
+
+/*
 // Simple test endpoint without authentication
 app.get('/api/goals/test', (req, res) => {
   console.log('🧪 Goals test endpoint hit');
@@ -1599,6 +1602,7 @@ app.delete('/api/goals/:id', authenticateToken, async (req: AuthenticatedRequest
     res.status(500).json({ message: 'Failed to delete goal' });
   }
 });
+*/
 
   const httpServer = createServer(app);
   return httpServer;
