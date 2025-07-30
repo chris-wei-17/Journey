@@ -213,7 +213,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 text-center py-2">
+            <div className="text-gray-500 text-center pt-0 py-2">
               No photos uploaded {isToday(selectedDate) ? 'today' : 'for this date'}
             </div>
           )}
