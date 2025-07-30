@@ -115,7 +115,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
   return (
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">Nutrition</CardTitle>
           <div className="flex items-center justify-end">
@@ -232,7 +232,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="space-y-3 mb-2">
+        <div className="space-y-4 mb-2">
           <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
             {macros.length > 0 && (
               <span className="text-xs text-right">
@@ -260,7 +260,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
               </div>
             ))
           ) : (
-            <div className="text-gray-500 text-center py-4">
+            <div className="text-gray-500 text-center py-2">
               No macros logged {isToday(selectedDate) ? 'today' : 'for this date'}
             </div>
           )}
