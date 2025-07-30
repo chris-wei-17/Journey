@@ -113,8 +113,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const handleFieldEdit = (fieldName: string, currentValue: string) => {
     console.log('Edit field:', fieldName);
+    alert(`Setting editingField to: ${fieldName}`);
     setEditingField(fieldName);
     setTempValue(currentValue);
+    console.log('Should now be editing:', fieldName);
   };
 
   const handleFieldSave = (fieldName: string) => {
