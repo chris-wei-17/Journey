@@ -191,7 +191,7 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
         <CardContent className="pt-0">
           {photos.length > 0 ? (
             <div 
-              className="grid gap-2 mb-2 overflow-y-auto"
+              className="grid gap-2 overflow-y-auto"
               style={{
                 gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
                 maxHeight: "calc(70vh - 200px)"
