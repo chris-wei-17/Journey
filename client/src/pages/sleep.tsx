@@ -44,6 +44,7 @@ export default function Sleep() {
       <Header 
         title="Sleep"
         showBackButton={false}
+        showHomeButton={true}
         onBack={handleBack}
       />
       
