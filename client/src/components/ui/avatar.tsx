@@ -163,7 +163,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="md"
               onClick={() => document.getElementById('avatar-photo-upload')?.click()}
               className="text-sm text-center"
             >
