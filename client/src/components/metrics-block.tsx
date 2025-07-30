@@ -173,7 +173,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
               )}
               <span className="text-sm font-medium text-gray-700">Weight</span>
             </div>
-            {editingField === "weight" ? (
+            {true ? (
               <div className="flex items-center space-x-2">
                 <Input
                   type="number"
