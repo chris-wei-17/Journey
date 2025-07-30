@@ -66,11 +66,37 @@ app.use((req, res, next) => {
 // Initialize routes without Vite dependencies
 let routesInitialized = false;
 async function initializeRoutes() {
-  if (routesInitialized) return;
+  if (routesInitialized) {
+    console.log('🔄 Routes already initialized');
+    return;
+  }
   
-  const { registerSecureRoutes } = await import("../server/secure-routes.js");
-  await registerSecureRoutes(app);
-  routesInitialized = true;
+  try {
+    console.log('📥 Importing secure-routes...');
+    const { registerSecureRoutes } = await import("../server/secure-routes.js");
+    console.log('✅ Secure-routes imported successfully');
+    
+    console.log('🔧 Registering routes...');
+    await registerSecureRoutes(app);
+    console.log('✅ Routes registered successfully');
+    
+    // Debug: Log registered routes
+    console.log('📋 Total registered routes:', app._router ? app._router.stack.length : 'No router');
+    if (app._router && app._router.stack.length > 0) {
+      console.log('🛤️  First few routes:');
+      app._router.stack.slice(0, 5).forEach((layer: any, index: number) => {
+        if (layer.route) {
+          console.log(`  ${index + 1}. ${Object.keys(layer.route.methods)[0]?.toUpperCase()} ${layer.route.path}`);
+        }
+      });
+    }
+    
+    routesInitialized = true;
+  } catch (error) {
+    console.error('❌ Route initialization failed:', error);
+    console.error('Error details:', error instanceof Error ? error.stack : 'No stack trace');
+    throw error; // Re-throw to prevent silent failures
+  }
 }
 
 // Error handling middleware

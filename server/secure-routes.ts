@@ -66,6 +66,12 @@ const upload = multer({
 });
 
 export async function registerSecureRoutes(app: Express): Promise<Server> {
+  // FIRST ROUTE - Test if function is executing at all
+  app.get('/api/test-first', (req, res) => {
+    console.log('🚀 FIRST ROUTE HIT - registerSecureRoutes is executing');
+    res.json({ message: 'Function is executing', timestamp: new Date() });
+  });
+
   // Health check endpoint for debugging
   app.get('/api/health', (req, res) => {
     res.json({ 
@@ -1505,6 +1511,25 @@ app.get('/api/debug/routes', (req, res) => {
     timestamp: new Date(),
     totalRoutes: app._router ? app._router.stack.length : 'unknown'
   });
+});
+
+// Test if the issue is with storage import
+app.get('/api/debug/storage', (req, res) => {
+  try {
+    console.log('🧪 Testing storage import');
+    console.log('Storage object exists:', !!storage);
+    console.log('Storage methods:', Object.getOwnPropertyNames(storage.__proto__));
+    console.log('getUserGoalTargets exists:', typeof storage.getUserGoalTargets);
+    
+    res.json({ 
+      message: 'Storage debug complete',
+      storageExists: !!storage,
+      hasGoalMethods: typeof storage.getUserGoalTargets === 'function'
+    });
+  } catch (error) {
+    console.error('❌ Storage debug error:', error);
+    res.status(500).json({ message: 'Storage error', error: error instanceof Error ? error.message : 'Unknown' });
+  }
 });
 
 // Goals API endpoints - TEMPORARILY COMMENTED OUT TO FIX ROUTE REGISTRATION
