@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- Basic App Info -->
+    <title>Journey - Fitness Tracker</title>
+    <meta name="description" content="Your personal fitness tracking companion - track progress, photos, and achieve your goals" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Theme Colors - Updated to match new indigo theme -->
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    <meta name="msapplication-navbutton-color" content="#6366f1" />
+    
+    <!-- iOS Specific Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Journey" />
+    <link rel="apple-touch-icon" href="/pwa-icon-journey.png" />
+    
+    <!-- Prevent iOS zoom on form inputs -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/pwa-icon-192.svg" />
+    
+    <!-- FontAwesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Preload important resources -->
+    <link rel="preload" href="data:application/octet-stream;base64,aW1wb3J0IHsgY3JlYXRlUm9vdCB9IGZyb20gInJlYWN0LWRvbS9jbGllbnQiOwppbXBvcnQgQXBwIGZyb20gIi4vQXBwIjsKaW1wb3J0ICIuL2luZGV4LmNzcyI7CgpjcmVhdGVSb290KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJyb290IikhKS5yZW5kZXIoPEFwcCAvPik7Cg==" as="script" crossorigin />
+    
+    <!-- Prevent layout shifts from dropdown menus -->
+    <style>
+      /* Prevent viewport shifts when dropdown opens */
+      html {
+        overflow-anchor: none;
+        scroll-behavior: auto;
+      }
+      
+      body {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Ensure dropdown portals don't affect layout */
+      [data-radix-popper-content-wrapper] {
+        z-index: 9999 !important;
+        position: fixed !important;
+        transform-origin: var(--radix-popper-transform-origin) !important;
+      }
+      
+      /* Prevent layout shift when dropdown opens */
+      [data-radix-dropdown-menu-content] {
+        position: fixed !important;
+        z-index: 9999 !important;
+        will-change: auto !important;
+        transform: translateZ(0);
+      }
+      
+      /* Lock the main content transform when dropdown is open */
+      .dropdown-open {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+      }
+      
+      /* Prevent iOS Safari from adjusting viewport on dropdown */
+      @supports (-webkit-touch-callout: none) {
+        body {
+          position: relative;
+          min-height: 100vh;
+          min-height: -webkit-fill-available;
+        }
+        
+        /* More aggressive iOS fix */
+        .ios-dropdown-fix {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-Bk8_NJwl.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BhmC1kR3.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    
+    <!-- Main App Script -->
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js', {
+              scope: '/'
+            });
+            console.log('✅ Service Worker registered successfully:', registration.scope);
+            
+            // Listen for updates
+            registration.addEventListener('updatefound', () => {
+              console.log('🔄 Service Worker update found');
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('🎉 New service worker available');
+                    
+                                          // Update available but no automatic prompt
+                  }
+                });
+              }
+            });
+            
+          } catch (error) {
+            console.error('❌ Service Worker registration failed:', error);
+          }
+        });
+        
+        // Listen for messages from service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          console.log('📨 Message from Service Worker:', event.data);
+        });
+      } else {
+        console.log('⚠️ Service Worker not supported in this browser');
+      }
+      
+      // PWA Install Prompt (handled by React component)
+      // Removed - now handled by PWAInstallPrompt component
+      
+      // Track PWA install
+      window.addEventListener('appinstalled', () => {
+        console.log('🎉 PWA was installed successfully');
+        deferredPrompt = null;
+        
+        // Analytics: track PWA installation
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'pwa_install', {
+            event_category: 'PWA',
+            event_label: 'User installed PWA'
+          });
+        }
+      });
+      
+      // Handle PWA standalone mode
+      function detectPWAMode() {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        const isAppleStandalone = ('standalone' in window.navigator) && window.navigator.standalone;
+        
+        if (isStandalone || isAppleStandalone) {
+          console.log('🚀 Running as PWA');
+          document.body.classList.add('pwa-mode');
+          
+          // Add any PWA-specific styling or behavior
+          if (isAppleStandalone) {
+            document.body.classList.add('ios-pwa');
+          }
+        } else {
+          console.log('🌐 Running in browser');
+        }
+      }
+      
+      // Check PWA mode on load
+      detectPWAMode();
+      
+      // Dynamic status bar color based on gradient position at top of viewport
+      function updateStatusBarColor() {
+        // Calculate gradient position based on viewport top position
+        // The gradient flows from top (0%) to bottom (100%) of the document
+        const documentHeight = Math.max(
+          document.documentElement.scrollHeight,
+          document.documentElement.offsetHeight,
+          document.body.scrollHeight,
+          document.body.offsetHeight
+        );
+        
+        // Position of the top of the viewport within the total document
+        const viewportTopPosition = window.scrollY / documentHeight;
+        const clampedPosition = Math.max(0, Math.min(1, viewportTopPosition));
+        
+        // Interpolate between gradient colors based on position
+        let color;
+        if (clampedPosition < 0.5) {
+          // Interpolate between indigo (#6366f1) and sky blue (#0ea5e9)
+          const ratio = clampedPosition * 2;
+          const r = Math.round(99 + (14 - 99) * ratio);
+          const g = Math.round(102 + (165 - 102) * ratio);
+          const b = Math.round(241 + (233 - 241) * ratio);
+          color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        } else {
+          // Interpolate between sky blue (#0ea5e9) and amber (#f59e0b)
+          const ratio = (clampedPosition - 0.5) * 2;
+          const r = Math.round(14 + (245 - 14) * ratio);
+          const g = Math.round(165 + (158 - 165) * ratio);
+          const b = Math.round(233 + (11 - 233) * ratio);
+          color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+        
+        // Update theme color meta tag
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', color);
+        }
+      }
+      
+      // Update status bar color on scroll and load
+      window.addEventListener('scroll', updateStatusBarColor);
+      window.addEventListener('load', updateStatusBarColor);
+      
+      // Prevent zoom on iOS
+      document.addEventListener('gesturestart', function (e) {
+        e.preventDefault();
+      });
+    </script>
+    
+    <!-- Optional: Add PWA-specific CSS -->
+    <style>
+      /* Full-screen gradient background that extends into status bar */
+      html, body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, 
+          #6366f1 0%,     /* Bold indigo */
+          #0ea5e9 50%,    /* Bold sky blue */
+          #f59e0b 100%    /* Bold amber */
+        );
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+      
+      #root {
+        min-height: 100vh;
+        background: transparent;
+      }
+      
+      /* Extend gradient into status bar area */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: env(safe-area-inset-top, 0px);
+        background: linear-gradient(135deg, 
+          #6366f1 0%,     /* Bold indigo */
+          #0ea5e9 50%,    /* Bold sky blue */
+          #f59e0b 100%    /* Bold amber */
+        );
+        z-index: 9999;
+        pointer-events: none;
+      }
+      
+      /* PWA-specific styles */
+      .pwa-mode {
+        /* Add any styling for when app runs as PWA */
+      }
+      
+      .ios-pwa {
+        /* iOS-specific PWA styling with safe areas */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      
+      /* Handle status bar area on mobile */
+      @supports (padding-top: env(safe-area-inset-top)) {
+        body {
+          padding-top: env(safe-area-inset-top);
+        }
+      }
+      
+      /* Prevent text selection for app-like feel */
+      .pwa-mode * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+      
+      /* But allow text selection in input fields */
+      .pwa-mode input,
+      .pwa-mode textarea {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        user-select: text;
+      }
+      
+      /* Loading spinner for service worker */
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </body>
+</html>

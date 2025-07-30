@@ -56,15 +56,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   const currentMetric = metrics.find(m => format(new Date(m.date), 'yyyy-MM-dd') === dateStr);
   
   // Debug logging
-  console.log('Metrics Block Debug:', {
-    dateStr,
-    metricsCount: metrics.length,
-    currentMetric,
-    customFieldsCount: customFields.length,
-    editingField,
-    tempValue,
-    saveMetricsPending: saveMetricsMutation.isPending
-  });
+  console.log('Metrics Debug:', { editingField, tempValue });
 
   const createCustomFieldMutation = useMutation({
     mutationFn: async (data: { fieldName: string; unit: string }) => {
@@ -120,32 +112,26 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   });
 
   const handleFieldEdit = (fieldName: string, currentValue: string) => {
-    console.log('🖊️ handleFieldEdit called:', { fieldName, currentValue });
+    console.log('Edit field:', fieldName);
     setEditingField(fieldName);
     setTempValue(currentValue);
-    console.log('🖊️ State updated - editingField set to:', fieldName);
   };
 
   const handleFieldSave = (fieldName: string) => {
-    console.log('handleFieldSave called:', { fieldName, tempValue, currentMetric });
+    console.log('Saving field:', fieldName, 'value:', tempValue);
     
     if (fieldName === "weight") {
       const weight = tempValue ? parseFloat(tempValue) : undefined;
       const customFields = currentMetric?.customFields || {};
-      const saveData = { weight, customFields };
-      console.log('Saving weight data:', saveData);
-      saveMetricsMutation.mutate(saveData);
+      saveMetricsMutation.mutate({ weight, customFields });
     } else {
       const weight = currentMetric?.weight ? parseFloat(currentMetric.weight.toString()) : undefined;
       const customFields = { 
         ...(currentMetric?.customFields || {}), 
         [fieldName]: tempValue ? parseFloat(tempValue) : 0
       };
-      const saveData = { weight, customFields };
-      console.log('Saving custom field data:', saveData);
-      saveMetricsMutation.mutate(saveData);
+      saveMetricsMutation.mutate({ weight, customFields });
     }
-    // Don't reset editing state here - wait for mutation success
   };
 
   const addCustomField = () => {
@@ -199,14 +185,11 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 <Button
                   size="sm"
                   onClick={() => {
-                    console.log('💾 Weight Save Button Clicked!');
+                    console.log('Save button clicked!');
                     handleFieldSave("weight");
                   }}
-                  onMouseDown={() => console.log('🖱️ Button mouse down')}
-                  onMouseUp={() => console.log('🖱️ Button mouse up')}
                   disabled={saveMetricsMutation.isPending}
-                  className="h-8 bg-purple-500 hover:bg-purple-600 text-white relative z-10"
-                  style={{ pointerEvents: 'auto' }}
+                  className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
                 >
                   {saveMetricsMutation.isPending ? "Saving..." : "Save"}
                 </Button>
@@ -214,7 +197,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
             ) : (
               <button
                 onClick={() => {
-                  console.log('📝 Tap to add clicked for weight');
+                  console.log('Tap to add weight');
                   handleFieldEdit("weight", currentMetric?.weight?.toString() || "");
                 }}
                 className="px-3 py-1 bg-gray-200 rounded text-sm text-gray-700 hover:bg-gray-300 transition-colors"
