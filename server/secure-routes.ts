@@ -36,9 +36,13 @@ import {
   insertMacroTargetSchema,
   insertMetricsSchema,
   insertCustomMetricFieldSchema,
+  insertGoalTargetSchema,
+  insertGoalProgressSchema,
   type MetricEntry,
   type CustomMetricField,
-  type CustomActivity
+  type CustomActivity,
+  type GoalTarget,
+  type InsertGoalTarget
 } from "../shared/schema.js";
 import multer from "multer";
 import sharp from "sharp";
@@ -1496,7 +1500,9 @@ app.post('/api/auth/reset-password', async (req, res) => {
 // Goals API endpoints
 app.get('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
+    console.log('Fetching goals for user:', req.userId);
     const goals = await storage.getUserGoalTargets(req.userId!);
+    console.log('Found goals:', goals.length);
     res.json(goals);
   } catch (error) {
     console.error('Get goals error:', error);
@@ -1506,16 +1512,41 @@ app.get('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) 
 
 app.post('/api/goals', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
+    console.log('Creating goal with data:', req.body);
+    console.log('User ID:', req.userId);
+    
+    // Basic validation
+    const { goalType, goalName, targetValuePrimary, targetUnitPrimary } = req.body;
+    
+    if (!goalType || !goalName || !targetValuePrimary || !targetUnitPrimary) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: goalType, goalName, targetValuePrimary, targetUnitPrimary' 
+      });
+    }
+
     const goalData = {
-      ...req.body,
       userId: req.userId!,
+      goalType,
+      goalName,
+      targetValuePrimary: Number(targetValuePrimary),
+      targetUnitPrimary,
+      targetValueSecondary: req.body.targetValueSecondary ? Number(req.body.targetValueSecondary) : null,
+      targetUnitSecondary: req.body.targetUnitSecondary || null,
+      isActive: true,
     };
 
+    console.log('Processed goal data:', goalData);
+
     const newGoal = await storage.createGoalTarget(goalData);
+    console.log('Goal created successfully:', newGoal);
     res.status(201).json(newGoal);
   } catch (error) {
     console.error('Create goal error:', error);
-    res.status(500).json({ message: 'Failed to create goal' });
+    if (error instanceof Error) {
+      res.status(400).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'Failed to create goal' });
+    }
   }
 });
 
