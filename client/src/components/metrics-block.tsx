@@ -36,7 +36,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   const [isAddingField, setIsAddingField] = useState(false);
   const [newFieldName, setNewFieldName] = useState("");
   const [newFieldUnit, setNewFieldUnit] = useState("length");
-  const [editingField, setEditingField] = useState<string | null>(null);
+
   const [tempValues, setTempValues] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
 
@@ -56,7 +56,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   const currentMetric = metrics.find(m => format(new Date(m.date), 'yyyy-MM-dd') === dateStr);
   
   // Debug logging
-  console.log('Metrics Debug:', { editingField, tempValues });
+  console.log('Metrics Debug:', { tempValues });
 
   const createCustomFieldMutation = useMutation({
     mutationFn: async (data: { fieldName: string; unit: string }) => {
@@ -101,8 +101,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     onSuccess: (data) => {
       console.log('Metric saved successfully:', data);
       queryClient.invalidateQueries({ queryKey: [`/api/metrics/date/${dateStr}`] });
-      // Exit editing mode after successful save
-      setEditingField(null);
+      // Clear temp values after successful save
       setTempValues({});
     },
     onError: (error) => {
@@ -110,11 +109,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     },
   });
 
-  const handleFieldEdit = (fieldName: string, currentValue: string) => {
-    console.log('Edit field:', fieldName);
-    setEditingField(fieldName);
-    setTempValues(prev => ({ ...prev, [fieldName]: currentValue }));
-  };
+
 
   const handleFieldSave = (fieldName: string) => {
     const value = tempValues[fieldName] || "";
@@ -171,40 +166,27 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
               )}
               <span className="text-sm font-medium text-gray-700">Weight</span>
             </div>
-            {editingField === "weight" ? (
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  value={tempValues["weight"] || ""}
-                  onChange={(e) => setTempValues(prev => ({ ...prev, weight: e.target.value }))}
-                  className="w-20 h-8"
-                  autoFocus
-                />
-                <span className="text-xs text-gray-500">lbs</span>
-                <button
-                  onClick={() => {
-                    console.log('Save button clicked!');
-                    handleFieldSave("weight");
-                  }}
-                  disabled={saveMetricsMutation.isPending}
-                  className="h-8 px-4 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded"
-                >
-                  {saveMetricsMutation.isPending ? "Saving..." : "Save"}
-                </button>
-              </div>
-            ) : (
+            <div className="flex items-center space-x-2">
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={tempValues["weight"] || currentMetric?.weight?.toString() || ""}
+                onChange={(e) => setTempValues(prev => ({ ...prev, weight: e.target.value }))}
+                placeholder="Enter weight"
+                className="w-20 h-8"
+              />
+              <span className="text-xs text-gray-500">lbs</span>
               <button
                 onClick={() => {
-                  alert('Tap to add clicked!');
-                  console.log('Tap to add weight');
-                  handleFieldEdit("weight", currentMetric?.weight?.toString() || "");
+                  console.log('Save weight clicked!');
+                  handleFieldSave("weight");
                 }}
-                className="px-3 py-1 bg-gray-200 rounded text-sm text-gray-700 hover:bg-gray-300 transition-colors"
+                disabled={saveMetricsMutation.isPending}
+                className="h-8 px-4 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded"
               >
-                {currentMetric?.weight ? `${currentMetric.weight} lbs` : "Tap to add"} (editing: {editingField || 'none'})
+                {saveMetricsMutation.isPending ? "Saving..." : "Save"}
               </button>
-            )}
+            </div>
           </div>
 
           {/* Custom fields */}
@@ -221,37 +203,27 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                 )}
                 <span className="text-sm font-medium text-gray-700">{field.fieldName}</span>
               </div>
-              {editingField === field.fieldName ? (
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    value={tempValues[field.fieldName] || ""}
-                    onChange={(e) => setTempValues(prev => ({ ...prev, [field.fieldName]: e.target.value }))}
-                    className="w-20 h-8"
-                    autoFocus
-                  />
-                  <span className="text-xs text-gray-500">{field.unit}</span>
-                  <Button
-                    size="sm"
-                    onClick={() => handleFieldSave(field.fieldName)}
-                    disabled={saveMetricsMutation.isPending}
-                    className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
-                  >
-                    {saveMetricsMutation.isPending ? "Saving..." : "Save"}
-                  </Button>
-                </div>
-              ) : (
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  value={tempValues[field.fieldName] || currentMetric?.customFields?.[field.fieldName]?.toString() || ""}
+                  onChange={(e) => setTempValues(prev => ({ ...prev, [field.fieldName]: e.target.value }))}
+                  placeholder={`Enter ${field.fieldName.toLowerCase()}`}
+                  className="w-20 h-8"
+                />
+                <span className="text-xs text-gray-500">{field.unit}</span>
                 <button
-                  onClick={() => handleFieldEdit(field.fieldName, currentMetric?.customFields?.[field.fieldName]?.toString() || "")}
-                  className="px-3 py-1 bg-gray-200 rounded text-sm text-gray-700 hover:bg-gray-300 transition-colors"
+                  onClick={() => {
+                    console.log('Save', field.fieldName, 'clicked!');
+                    handleFieldSave(field.fieldName);
+                  }}
+                  disabled={saveMetricsMutation.isPending}
+                  className="h-8 px-4 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded"
                 >
-                  {currentMetric?.customFields?.[field.fieldName] 
-                    ? `${currentMetric.customFields[field.fieldName]} ${field.unit}` 
-                    : "Tap to add"
-                  }
+                  {saveMetricsMutation.isPending ? "Saving..." : "Save"}
                 </button>
-              )}
+              </div>
             </div>
           ))}
 
