@@ -133,16 +133,8 @@
         console.log('⚠️ Service Worker not supported in this browser');
       }
       
-      // PWA Install Prompt
-      let deferredPrompt;
-      window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('💾 PWA install prompt available');
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Show custom install button/banner if you want
-        // You can add UI here to prompt user to install
-      });
+      // PWA Install Prompt (handled by React component)
+      // Removed - now handled by PWAInstallPrompt component
       
       // Track PWA install
       window.addEventListener('appinstalled', () => {

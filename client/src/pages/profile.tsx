@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { PinProtection } from "@/components/ui/pin-protection";
+import { PWAInstallButton } from "@/components/ui/pwa-install-button";
 import { useState } from "react";
 
 export default function Profile() {
@@ -148,6 +149,11 @@ export default function Profile() {
                 <i className="fas fa-lock mr-3"></i>
                 {user?.photosPinEnabled ? 'Update' : 'Set'} Photos PIN
               </Button>
+
+              <PWAInstallButton 
+                variant="outline"
+                className="w-full shadow-md hover:shadow-lg transition-shadow mb-4"
+              />
 
               <Button 
                 onClick={handleLogout}
