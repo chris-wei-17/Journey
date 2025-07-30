@@ -61,7 +61,9 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     metricsCount: metrics.length,
     currentMetric,
     customFieldsCount: customFields.length,
-    editingField
+    editingField,
+    tempValue,
+    saveMetricsPending: saveMetricsMutation.isPending
   });
 
   const createCustomFieldMutation = useMutation({
@@ -118,8 +120,10 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   });
 
   const handleFieldEdit = (fieldName: string, currentValue: string) => {
+    console.log('🖊️ handleFieldEdit called:', { fieldName, currentValue });
     setEditingField(fieldName);
     setTempValue(currentValue);
+    console.log('🖊️ State updated - editingField set to:', fieldName);
   };
 
   const handleFieldSave = (fieldName: string) => {
@@ -198,15 +202,21 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
                     console.log('💾 Weight Save Button Clicked!');
                     handleFieldSave("weight");
                   }}
+                  onMouseDown={() => console.log('🖱️ Button mouse down')}
+                  onMouseUp={() => console.log('🖱️ Button mouse up')}
                   disabled={saveMetricsMutation.isPending}
-                  className="h-8 bg-purple-500 hover:bg-purple-600 text-white"
+                  className="h-8 bg-purple-500 hover:bg-purple-600 text-white relative z-10"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   {saveMetricsMutation.isPending ? "Saving..." : "Save"}
                 </Button>
               </div>
             ) : (
               <button
-                onClick={() => handleFieldEdit("weight", currentMetric?.weight?.toString() || "")}
+                onClick={() => {
+                  console.log('📝 Tap to add clicked for weight');
+                  handleFieldEdit("weight", currentMetric?.weight?.toString() || "");
+                }}
                 className="px-3 py-1 bg-gray-200 rounded text-sm text-gray-700 hover:bg-gray-300 transition-colors"
               >
                 {currentMetric?.weight ? `${currentMetric.weight} lbs` : "Tap to add"}
