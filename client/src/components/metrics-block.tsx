@@ -118,18 +118,24 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
   const handleFieldSave = (fieldName: string) => {
     alert(`handleFieldSave called for: ${fieldName}`);
+    
     // Get the current value from input (tempValues) or use empty string
     const inputValue = tempValues[fieldName] || "";
+    alert(`Input value: "${inputValue}"`);
     console.log('Saving field:', fieldName, 'input value:', inputValue);
     
     if (!inputValue.trim()) {
+      alert('No value to save - empty input');
       console.log('No value to save');
       return;
     }
     
+    alert('Value found, proceeding to save...');
+    
     if (fieldName === "weight") {
       const weight = parseFloat(inputValue);
       const customFields = currentMetric?.customFields || {};
+      alert(`About to save weight: ${weight}`);
       console.log('Saving weight:', weight);
       saveMetricsMutation.mutate({ weight, customFields });
     } else {
@@ -138,6 +144,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
         ...(currentMetric?.customFields || {}), 
         [fieldName]: parseFloat(inputValue)
       };
+      alert(`About to save custom field: ${fieldName} = ${parseFloat(inputValue)}`);
       console.log('Saving custom field:', fieldName, 'value:', parseFloat(inputValue));
       saveMetricsMutation.mutate({ weight, customFields });
     }
