@@ -357,15 +357,23 @@ export default function AddActivity() {
     // Handle overnight activities (like sleep)
     endDateTimeObj = handleOvernightActivity(startDateTimeObj, endDateTimeObj, activityType);
 
-    // Use the start date as the primary date for the activity
-    const cleanDate = createDateFromString(startDateTime.date);
+    // For sleep activities, use the end date. For other activities, use the start date
+    let activityDate;
+    if (activityType === 'sleep') {
+      // Sleep activities are logged for the day they ended
+      activityDate = new Date(endDateTimeObj);
+      activityDate.setHours(0, 0, 0, 0); // Set to start of end date
+    } else {
+      // Other activities use the start date
+      activityDate = createDateFromString(startDateTime.date);
+    }
 
     const activityData = {
       activityType: activityType,
       startTime: startDateTimeObj.toISOString(),
       endTime: endDateTimeObj.toISOString(),
       durationMinutes: duration.hours * 60 + duration.minutes,
-      date: cleanDate.toISOString(), // Use the start date as the activity date
+      date: activityDate.toISOString(),
     };
 
     console.log('🚀🚀🚀 DETAILED Activity Creation Debug:');
@@ -378,9 +386,9 @@ export default function AddActivity() {
     console.log('7. Created endDateTimeObj:', endDateTimeObj);
     console.log('8. Created endDateTimeObj toString():', endDateTimeObj.toString());
     console.log('9. Created endDateTimeObj toISOString():', endDateTimeObj.toISOString());
-    console.log('10. Clean Date Object:', cleanDate);
-    console.log('11. Clean Date toString():', cleanDate.toString());
-    console.log('12. Clean Date toISOString():', cleanDate.toISOString());
+    console.log('10. Activity Date Object:', activityDate);
+    console.log('11. Activity Date toString():', activityDate.toString());
+    console.log('12. Activity Date toISOString():', activityDate.toISOString());
     console.log('13. Duration:', duration);
     console.log('14. Final Activity Data:', activityData);
 

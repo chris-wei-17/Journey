@@ -1,12 +1,33 @@
+import React from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuickAccess } from "@/components/ui/quick-access";
 import { DataChart } from "@/components/ui/data-chart";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Sleep() {
   const [, setLocation] = useLocation();
+
+  // Fetch sleep chart data
+  const { data: sleepData = [], isLoading: sleepLoading, error: sleepError } = useQuery({
+    queryKey: ["/api/activities/sleep/chart"],
+    queryFn: () => apiRequest("GET", "/api/activities/sleep/chart"),
+  });
+
+  // Calculate sleep statistics
+  const sleepStats = React.useMemo(() => {
+    if (!sleepData.length) return { avgSleep: 0, lastNight: 0, weekTotal: 0 };
+    
+    const values = sleepData.map((d: any) => d.value).filter((v: number) => v > 0);
+    const avgSleep = values.length > 0 ? values.reduce((a: number, b: number) => a + b, 0) / values.length : 0;
+    const lastNight = sleepData[sleepData.length - 1]?.value || 0;
+    const weekTotal = values.reduce((a: number, b: number) => a + b, 0);
+    
+    return { avgSleep, lastNight, weekTotal };
+  }, [sleepData]);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -29,15 +50,7 @@ export default function Sleep() {
           {/* Sleep Chart */}
           <DataChart 
             title="Sleep Hours"
-            data={[
-              { date: '2024-01-01', value: 7.5 },
-              { date: '2024-01-02', value: 8.2 },
-              { date: '2024-01-03', value: 6.8 },
-              { date: '2024-01-04', value: 7.9 },
-              { date: '2024-01-05', value: 8.1 },
-              { date: '2024-01-06', value: 7.3 },
-              { date: '2024-01-07', value: 8.5 },
-            ]}
+            data={sleepLoading ? [] : sleepData}
             lineColor="#6366f1"
             backgroundColor="rgba(99, 102, 241, 0.1)"
             yAxisLabel="Hours"
@@ -48,32 +61,38 @@ export default function Sleep() {
             <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
                 <i className="fas fa-clock text-blue-500 text-2xl mb-2"></i>
-                <p className="text-sm text-gray-600">Duration</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                <p className="text-sm text-gray-600">Last Night</p>
+                <p className="text-xl font-bold text-gray-800">
+                  {sleepLoading ? "..." : sleepStats.lastNight > 0 ? `${sleepStats.lastNight.toFixed(1)}h` : "No data"}
+                </p>
               </CardContent>
             </Card>
             
             <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
-                <i className="fas fa-star text-yellow-500 text-2xl mb-2"></i>
-                <p className="text-sm text-gray-600">Quality</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                <i className="fas fa-chart-line text-green-500 text-2xl mb-2"></i>
+                <p className="text-sm text-gray-600">Weekly Avg</p>
+                <p className="text-xl font-bold text-gray-800">
+                  {sleepLoading ? "..." : sleepStats.avgSleep > 0 ? `${sleepStats.avgSleep.toFixed(1)}h` : "No data"}
+                </p>
               </CardContent>
             </Card>
             
             <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
-                <i className="fas fa-bed text-purple-500 text-2xl mb-2"></i>
-                <p className="text-sm text-gray-600">Bedtime</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                <i className="fas fa-calendar-week text-purple-500 text-2xl mb-2"></i>
+                <p className="text-sm text-gray-600">Week Total</p>
+                <p className="text-xl font-bold text-gray-800">
+                  {sleepLoading ? "..." : sleepStats.weekTotal > 0 ? `${sleepStats.weekTotal.toFixed(1)}h` : "No data"}
+                </p>
               </CardContent>
             </Card>
             
             <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
               <CardContent className="p-4 text-center">
-                <i className="fas fa-sun text-orange-500 text-2xl mb-2"></i>
-                <p className="text-sm text-gray-600">Wake Time</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                <i className="fas fa-target text-orange-500 text-2xl mb-2"></i>
+                <p className="text-sm text-gray-600">Sleep Goal</p>
+                <p className="text-xl font-bold text-gray-800">8.0h</p>
               </CardContent>
             </Card>
           </div>

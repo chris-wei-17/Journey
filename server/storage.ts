@@ -356,6 +356,25 @@ export class DatabaseStorage implements IStorage {
       .orderBy(activities.startTime);
   }
 
+  async getSleepActivitiesForRange(userId: number, startDate: string, endDate: string): Promise<Activity[]> {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999); // Include full end date
+    
+    return await db
+      .select()
+      .from(activities)
+      .where(
+        and(
+          eq(activities.userId, userId),
+          eq(activities.activityType, 'sleep'),
+          sql`${activities.date} >= ${start}`,
+          sql`${activities.date} <= ${end}`
+        )
+      )
+      .orderBy(activities.date);
+  }
+
   async createActivity(activity: InsertActivity): Promise<Activity> {
     console.log('Storage createActivity called with:', activity);
     const [newActivity] = await db
