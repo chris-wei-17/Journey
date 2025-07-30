@@ -53,7 +53,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
                 firstName={user?.firstName || undefined}
                 lastName={user?.lastName || undefined}
                 profileImageUrl={user?.profileImageUrl || undefined}
-                size="sm"
+                size="md"
               />
             </div>
           </Link>
