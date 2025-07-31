@@ -38,8 +38,9 @@ export default function Template() {
             </CardHeader>
               <CardContent>
                 <div>
-                  <input type="text" placeholder="Enter text here..."
-                          style="background-color: transparent"/>
+                  <textarea style="background-color: transparent; border: 2px solid black; width: 100%; height: 100px; resize: vertical;" 
+                        placeholder="Enter text here...">
+                  </textarea>
                 </div>
               </CardContent>
           </Card>
