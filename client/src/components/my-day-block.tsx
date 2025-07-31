@@ -132,6 +132,7 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
             <i className="fas fa-plus mr-2"></i>
             ADD ACTIVITY
           </Button>
+        </Link>
         <Link href={`/journal-entry?date=${format(selectedDate, 'yyyy-MM-dd')}`} onClick={() => {
           const dateParam = format(selectedDate, 'yyyy-MM-dd');
         }}>
