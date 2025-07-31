@@ -1,3 +1,4 @@
+
 import { useLocation } from "wouter";
 import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,9 +36,11 @@ export default function Template() {
                 </CardTitle>
               </div>
             </CardHeader>
-            <CardContent>
-
-
+              <CardContent>
+                <div>
+                  <input type="text" style="background-color: transparent; border: 2px solid black;" placeholder="Enter text here...">
+                </div>
+              </CardContent>
           </Card>
 
           {/* Metrics Grid */}
