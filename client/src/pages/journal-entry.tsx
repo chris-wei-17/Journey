@@ -32,6 +32,7 @@ export default function Template() {
               <CardTitle className="text-lg font-semibold text-gray-800">
                 Entry
               </CardTitle>
+            </div>
           </CardHeader>
         </Card>
 
