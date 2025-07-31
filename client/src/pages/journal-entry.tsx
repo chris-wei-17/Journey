@@ -26,15 +26,16 @@ export default function Template() {
       />
       
       <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
-        <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-gray-800">
-                Entry
-              </CardTitle>
-            </div>
-          </CardHeader>
-        </Card>
+        <div className="space-y-6">
+          <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-gray-800">
+                  Entry
+                </CardTitle>
+              </div>
+            </CardHeader>
+          </Card>
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-2 gap-4">
