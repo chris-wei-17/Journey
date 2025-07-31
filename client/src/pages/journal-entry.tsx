@@ -40,7 +40,7 @@ export default function Template() {
               <CardContent>
                 <div>
                   <textarea 
-                    style={{border: "2px solid black", width: "100%", height: "80vh", resize: "vertical", backgroundColor: "transparent"}} 
+                    style={{border: "2px solid black", width: "100%", height: "50vh", resize: "vertical", backgroundColor: "transparent"}} 
                     placeholder="Enter text here..."
                   />
                 </div>
