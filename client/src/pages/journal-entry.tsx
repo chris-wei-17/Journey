@@ -44,18 +44,10 @@ export default function Template() {
                     placeholder="Enter text here..."
                   />
                   {/* Save Button */}
-                  <Button 
-                    disabled={
-                      isEditMode 
-                        ? !hasChanges || updateActivityMutation.isPending 
-                        : createActivityMutation.isPending
-                    }
+                  <Button
                     className="w-full bg-gray-600 hover:bg-gray-500 text-white py-3 rounded-lg transition-all duration-200 mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isEditMode 
-                      ? (updateActivityMutation.isPending ? 'UPDATING...' : 'UPDATE') 
-                      : (createActivityMutation.isPending ? 'SAVING...' : 'SAVE')
-                    }
+
                   </Button>
                 </div>
               </CardContent>
