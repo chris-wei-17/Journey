@@ -1547,6 +1547,193 @@ console.log('✅ debug/storage route registered');
 
 // OLD GOALS ROUTES REMOVED - MOVED TO SAFE POSITION AFTER HEALTH CHECK
 
+    // ===== JOURNAL ENTRIES ROUTES =====
+    
+    // Get journal entry for a specific date
+    app.get('/api/journal-entries/date/:date', authenticateToken, async (req: any, res) => {
+      try {
+        const userId = req.userId!;
+        const { date } = req.params;
+        
+        console.log(`🔍 Fetching journal entry for userId: ${userId}, date: ${date}`);
+        
+        // Parse the date and set to start of day
+        const queryDate = new Date(date);
+        queryDate.setHours(0, 0, 0, 0);
+        
+        const nextDay = new Date(queryDate.getTime() + 24 * 60 * 60 * 1000);
+        
+        const { data, error } = await supabase
+          .from('journal_entries')
+          .select('*')
+          .eq('user_id', userId)
+          .gte('date', queryDate.toISOString())
+          .lt('date', nextDay.toISOString())
+          .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+          console.error('Error fetching journal entry:', error);
+          throw error;
+        }
+
+        console.log(`📖 Found journal entry:`, data);
+        res.json(data || null);
+      } catch (error) {
+        console.error('Error fetching journal entry:', error);
+        res.status(500).json({ error: 'Failed to fetch journal entry' });
+      }
+    });
+
+    // Create or update journal entry
+    app.post('/api/journal-entries', authenticateToken, async (req: any, res) => {
+      try {
+        const userId = req.userId!;
+        const { content, date } = req.body;
+
+        console.log(`📝 Saving journal entry for userId: ${userId}, date: ${date}`);
+        console.log(`Content length: ${content?.length || 0} characters`);
+
+        if (!content || !date) {
+          return res.status(400).json({ error: 'Content and date are required' });
+        }
+
+        // Parse the date and set to start of day
+        const entryDate = new Date(date);
+        entryDate.setHours(0, 0, 0, 0);
+        
+        const nextDay = new Date(entryDate.getTime() + 24 * 60 * 60 * 1000);
+
+        // Check if entry already exists for this date
+        const { data: existingEntry } = await supabase
+          .from('journal_entries')
+          .select('id')
+          .eq('user_id', userId)
+          .gte('date', entryDate.toISOString())
+          .lt('date', nextDay.toISOString())
+          .single();
+
+        let result;
+        if (existingEntry) {
+          // Update existing entry
+          console.log(`📝 Updating existing journal entry with id: ${existingEntry.id}`);
+          const { data, error } = await supabase
+            .from('journal_entries')
+            .update({ 
+              content,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingEntry.id)
+            .eq('user_id', userId)
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Error updating journal entry:', error);
+            throw error;
+          }
+          result = data;
+        } else {
+          // Create new entry
+          console.log(`📝 Creating new journal entry`);
+          const { data, error } = await supabase
+            .from('journal_entries')
+            .insert({
+              user_id: userId,
+              content,
+              date: entryDate.toISOString()
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Error creating journal entry:', error);
+            throw error;
+          }
+          result = data;
+        }
+
+        console.log(`✅ Journal entry saved successfully:`, result);
+        res.json(result);
+      } catch (error) {
+        console.error('Error saving journal entry:', error);
+        res.status(500).json({ error: 'Failed to save journal entry' });
+      }
+    });
+
+    // Update journal entry
+    app.put('/api/journal-entries/:id', authenticateToken, async (req: any, res) => {
+      try {
+        const userId = req.userId!;
+        const { id } = req.params;
+        const { content } = req.body;
+
+        console.log(`📝 Updating journal entry ${id} for userId: ${userId}`);
+
+        if (!content) {
+          return res.status(400).json({ error: 'Content is required' });
+        }
+
+        const { data, error } = await supabase
+          .from('journal_entries')
+          .update({ 
+            content,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id)
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error updating journal entry:', error);
+          throw error;
+        }
+
+        if (!data) {
+          return res.status(404).json({ error: 'Journal entry not found' });
+        }
+
+        console.log(`✅ Journal entry updated successfully:`, data);
+        res.json(data);
+      } catch (error) {
+        console.error('Error updating journal entry:', error);
+        res.status(500).json({ error: 'Failed to update journal entry' });
+      }
+    });
+
+    // Delete journal entry
+    app.delete('/api/journal-entries/:id', authenticateToken, async (req: any, res) => {
+      try {
+        const userId = req.userId!;
+        const { id } = req.params;
+
+        console.log(`🗑️ Deleting journal entry ${id} for userId: ${userId}`);
+
+        const { data, error } = await supabase
+          .from('journal_entries')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error deleting journal entry:', error);
+          throw error;
+        }
+
+        if (!data) {
+          return res.status(404).json({ error: 'Journal entry not found' });
+        }
+
+        console.log(`✅ Journal entry deleted successfully`);
+        res.json({ message: 'Journal entry deleted successfully' });
+      } catch (error) {
+        console.error('Error deleting journal entry:', error);
+        res.status(500).json({ error: 'Failed to delete journal entry' });
+      }
+    });
+
     console.log('🎉 ALL ROUTES REGISTERED SUCCESSFULLY');
     const httpServer = createServer(app);
     return httpServer;
