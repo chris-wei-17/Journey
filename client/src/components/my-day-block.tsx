@@ -132,6 +132,9 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
             <i className="fas fa-plus mr-2"></i>
             ADD ACTIVITY
           </Button>
+        <Link href={`/journal-entry?date=${format(selectedDate, 'yyyy-MM-dd')}`} onClick={() => {
+          const dateParam = format(selectedDate, 'yyyy-MM-dd');
+        }}>
           <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 mt-2 rounded-lg transition-all duration-200">
             <i className="fas fa-plus mr-2"></i>
             JOURNAL
