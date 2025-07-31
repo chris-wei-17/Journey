@@ -43,12 +43,7 @@ export default function Template() {
                     style={{border: "2px solid black", width: "100%", height: "50vh", resize: "vertical", backgroundColor: "transparent"}} 
                     placeholder="Enter text here..."
                   />
-                  {/* Save Button */}
-                  <Button
-                    className="w-full bg-gray-600 hover:bg-gray-500 text-white py-3 rounded-lg transition-all duration-200 mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-
-                  </Button>
+  
                 </div>
               </CardContent>
           </Card>
