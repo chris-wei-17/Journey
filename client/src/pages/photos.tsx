@@ -381,7 +381,7 @@ export default function Photos() {
           )}
 
           {/* Quick Access */}
-          <QuickAccess mt-4 />
+          <QuickAccess/>
         </div>
       </div>
 
