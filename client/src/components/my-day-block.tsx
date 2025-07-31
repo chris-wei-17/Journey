@@ -132,6 +132,10 @@ export function MyDayBlock({ selectedDate }: MyDayBlockProps) {
             <i className="fas fa-plus mr-2"></i>
             ADD ACTIVITY
           </Button>
+          <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
+            <i className="fas fa-plus mr-2"></i>
+            JOURNAL
+          </Button>
         </Link>
       </CardContent>
     </Card>
