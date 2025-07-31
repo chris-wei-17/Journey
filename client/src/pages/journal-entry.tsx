@@ -1,4 +1,5 @@
 
+import React from "react";
 import { useLocation } from "wouter";
 import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
