@@ -5,12 +5,12 @@ import { SimpleDropdown } from "@/components/ui/simple-dropdown";
 
 const navigationItems = [
   { label: "Dashboard", path: "/", icon: "fas fa-home" },
-  { label: "Progress", path: "/progress", icon: "fas fa-chart-line" },
   { label: "Goals", path: "/goals", icon: "fas fa-target" },
-  { label: "Photos", path: "/photos", icon: "fas fa-camera" },
-  { label: "Workouts", path: "/workouts", icon: "fas fa-dumbbell" },
   { label: "Nutrition", path: "/nutrition", icon: "fas fa-apple-alt" },
+  { label: "Workouts", path: "/workouts", icon: "fas fa-dumbbell" },
   { label: "Sleep", path: "/sleep", icon: "fas fa-calculator" },
+  { label: "Photos", path: "/photos", icon: "fas fa-camera" },
+  { label: "Progress", path: "/progress", icon: "fas fa-chart-line" },
   { label: "Feedback", path: "/feedback", icon: "fas fa-comment" },
 ];
 
