@@ -47,36 +47,6 @@ export default function Template() {
               </CardContent>
           </Card>
 
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
-              <CardContent className="p-4 text-center">
-                <i className="fas fa-chart-line text-blue-500 text-2xl mb-2"></i> {/* Change icon and color */}
-                <p className="text-sm text-gray-600">Metric 1</p> {/* Change metric name */}
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p> {/* Replace with actual data */}
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
-              <CardContent className="p-4 text-center">
-                <i className="fas fa-trophy text-yellow-500 text-2xl mb-2"></i> {/* Change icon and color */}
-                <p className="text-sm text-gray-600">Metric 2</p> {/* Change metric name */}
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p> {/* Replace with actual data */}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Optional: Additional Content Section */}
-          {/* 
-          <Card className="bg-white/75 backdrop-blur-sm shadow-lg border-0">
-            <CardHeader>
-              <CardTitle>Additional Content</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Add any additional content here...</p>
-            </CardContent>
-          </Card>
-          */}
 
           {/* Quick Access - Keep this at the bottom */}
           <QuickAccess />
