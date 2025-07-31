@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { DataChart } from "@/components/ui/data-chart";
 
 export default function Template() {
   const [, setLocation] = useLocation();
+  const [journalText, setJournalText] = useState("");
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -16,6 +17,13 @@ export default function Template() {
     } else {
       setLocation("/");
     }
+  };
+
+  const handleSave = () => {
+    // TODO: Implement save functionality
+    console.log("Saving journal entry:", journalText);
+    // For now, just show an alert
+    alert("Journal entry saved!");
   };
 
   return (
@@ -38,12 +46,22 @@ export default function Template() {
               </div>
             </CardHeader>
               <CardContent>
-                <div>
+                <div className="space-y-4">
                   <textarea 
+                    value={journalText}
+                    onChange={(e) => setJournalText(e.target.value)}
                     style={{border: "2px solid black", width: "100%", height: "50vh", resize: "vertical", backgroundColor: "transparent"}} 
                     placeholder="Enter text here..."
                   />
-  
+                  
+                  {/* Save Button */}
+                  <Button 
+                    onClick={handleSave}
+                    disabled={!journalText.trim()}
+                    className="w-full bg-gray-600 hover:bg-gray-500 text-white py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    SAVE
+                  </Button>
                 </div>
               </CardContent>
           </Card>
