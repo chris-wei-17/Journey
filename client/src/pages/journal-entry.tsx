@@ -8,6 +8,13 @@ import { QuickAccess } from "@/components/ui/quick-access";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  getCurrentLocalDate, 
+  getCurrentLocalDateTime, 
+  initializeTimezone,
+  formatInUserTimezone,
+  getDateRangeForQuery 
+} from "@/lib/timezone-utils";
 
 interface JournalEntry {
   id: number;
@@ -25,11 +32,16 @@ export default function JournalEntry() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Get date for journal entry - from URL param or current date
+  // Initialize timezone on component mount
+  useEffect(() => {
+    initializeTimezone();
+  }, []);
+
+  // Get date for journal entry - from URL param or current local date
   const urlParams = new URLSearchParams(window.location.search);
   const dateParam = urlParams.get('date');
-  const today = dateParam ? new Date(dateParam + 'T00:00:00') : new Date();
-  const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+  const dateString = dateParam || getCurrentLocalDate(); // YYYY-MM-DD format
+  const today = getCurrentLocalDateTime();
 
   // Local storage key for caching
   const CACHE_KEY = `journal_entry_${dateString}`;
@@ -187,7 +199,7 @@ export default function JournalEntry() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-gray-800">
-                  Entry - {today.toLocaleDateString()}
+                  Entry - {formatInUserTimezone(dateString + 'T00:00:00', 'EEEE, MMMM d, yyyy')}
                 </CardTitle>
                 <div className="flex items-center space-x-2">
                   {hasChanges && (

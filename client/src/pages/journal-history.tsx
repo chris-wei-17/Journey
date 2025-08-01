@@ -6,6 +6,7 @@ import { format, parseISO } from "date-fns";
 import { useLocation } from "wouter";
 import { QuickAccess } from "@/components/ui/quick-access";
 import { apiRequest } from "@/lib/queryClient";
+import { initializeTimezone, formatInUserTimezone, utcToLocalDate } from "@/lib/timezone-utils";
 
 interface JournalEntry {
   id: number;
@@ -23,6 +24,11 @@ interface JournalEntriesByDate {
 export default function JournalHistory() {
   const [, setLocation] = useLocation();
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+
+  // Initialize timezone on component mount
+  useEffect(() => {
+    initializeTimezone();
+  }, []);
 
   // Local storage key for caching previews
   const CACHE_KEY = 'journal_previews_cache';
@@ -99,8 +105,7 @@ export default function JournalHistory() {
 
   const formatDisplayDate = (dateStr: string): string => {
     try {
-      const date = parseISO(dateStr);
-      return format(date, 'EEEE, MMMM d, yyyy');
+      return formatInUserTimezone(dateStr + 'T00:00:00', 'EEEE, MMMM d, yyyy');
     } catch {
       return dateStr;
     }
@@ -198,16 +203,16 @@ export default function JournalHistory() {
                           <p className="text-base">{entry.preview}</p>
                         </div>
 
-                        {/* Entry Metadata */}
+                                                {/* Entry Metadata */}
                         <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-200">
                           <div className="flex items-center space-x-4">
                             <span>
                               <i className="fas fa-clock mr-1"></i>
-                              {format(parseISO(entry.updated_at), 'h:mm a')}
+                              {formatInUserTimezone(entry.updated_at, 'h:mm a')}
                             </span>
                             <span>
                               <i className="fas fa-edit mr-1"></i>
-                              Last edited {format(parseISO(entry.updated_at), 'MMM d')}
+                              Last edited {formatInUserTimezone(entry.updated_at, 'MMM d')}
                             </span>
                           </div>
                           <div className="flex items-center text-blue-600">

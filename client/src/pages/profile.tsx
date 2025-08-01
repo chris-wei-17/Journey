@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { PinProtection } from "@/components/ui/pin-protection";
 import { PWAInstallButton } from "@/components/ui/pwa-install-button";
+import { TimezoneSettings } from "@/components/ui/timezone-settings";
 import { useState } from "react";
 
 export default function Profile() {
@@ -107,6 +108,11 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Timezone Settings */}
+        <TimezoneSettings className="bg-white/75 backdrop-blur-sm shadow-xl mb-8 border-0" style={{
+          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+        }} />
 
         {/* Settings Section */}
         <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0" style={{
