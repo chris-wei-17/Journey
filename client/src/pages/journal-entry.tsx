@@ -25,8 +25,10 @@ export default function JournalEntry() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Get current date for journal entry
-  const today = new Date();
+  // Get date for journal entry - from URL param or current date
+  const urlParams = new URLSearchParams(window.location.search);
+  const dateParam = urlParams.get('date');
+  const today = dateParam ? new Date(dateParam + 'T00:00:00') : new Date();
   const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
 
   // Local storage key for caching
@@ -185,7 +187,7 @@ export default function JournalEntry() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-gray-800">
-                  Entry - {new Date().toLocaleDateString()}
+                  Entry - {today.toLocaleDateString()}
                 </CardTitle>
                 <div className="flex items-center space-x-2">
                   {hasChanges && (

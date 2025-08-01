@@ -27,6 +27,7 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import ResetPasswordToken from "@/pages/reset-password-token";
 import JournalEntry from "@/pages/journal-entry";
+import JournalHistory from "@/pages/journal-history";
 // import Template from "@/pages/template"; // Uncomment when creating new pages
 // import YourNewPage from "@/pages/your-new-page"; // Example: replace with actual page name
 
@@ -71,6 +72,7 @@ function Router() {
                 <Route path="/add-macros" component={AddMacros} />
                 <Route path="/change-password" component={ResetPassword} />
                 <Route path="/journal-entry" component={JournalEntry} />
+                <Route path="/journal-history" component={JournalHistory} />
                 {/* <Route path="/template" component={Template} /> */} {/* Uncomment when using template */}
                 {/* <Route path="/your-route" component={YourNewPage} /> */} {/* Example: replace with actual route and component */}
               </>

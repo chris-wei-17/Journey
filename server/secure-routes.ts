@@ -276,6 +276,39 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to delete journal entry' });
     }
   });
+
+  // Get all journal entries for a user (with previews)
+  app.get('/api/journal-entries', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      
+      console.log(`📚 Fetching all journal entries for userId: ${userId}`);
+      
+      const { data, error } = await supabase
+        .from('journal_entries')
+        .select('id, date, content, created_at, updated_at')
+        .eq('user_id', userId)
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching journal entries:', error);
+        throw error;
+      }
+
+      // Create previews (first 20 words) for each entry
+      const entriesWithPreviews = data.map(entry => ({
+        ...entry,
+        preview: entry.content.split(' ').slice(0, 20).join(' ') + (entry.content.split(' ').length > 20 ? '...' : '')
+      }));
+
+      console.log(`📚 Found ${entriesWithPreviews.length} journal entries`);
+      res.json(entriesWithPreviews);
+    } catch (error) {
+      console.error('Error fetching journal entries:', error);
+      res.status(500).json({ error: 'Failed to fetch journal entries' });
+    }
+  });
+
   console.log('✅ Journal entry routes registered successfully');
 
   // Goals API endpoints - MOVED TO SAFE POSITION
