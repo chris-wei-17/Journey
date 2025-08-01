@@ -131,9 +131,9 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   app.post('/api/journal-entries', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;
-      const { content, date } = req.body;
+      const { content, date, timezone } = req.body;
 
-      console.log(`📝 Saving journal entry for userId: ${userId}, date: ${date}`);
+      console.log(`📝 Saving journal entry for userId: ${userId}, date: ${date}, timezone: ${timezone}`);
       console.log(`Content length: ${content?.length || 0} characters`);
 
       if (!content || !date) {
@@ -159,11 +159,34 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       if (existingEntry) {
         // Update existing entry
         console.log(`📝 Updating existing journal entry with id: ${existingEntry.id}`);
+        // Create timestamp in user's timezone
+        const now = new Date();
+        const userTimestamp = timezone ? 
+          new Intl.DateTimeFormat('en-CA', {
+            timeZone: timezone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          }).formatToParts(now).reduce((acc, part) => {
+            acc[part.type] = part.value;
+            return acc;
+          }, {}) : null;
+
+        const userTimestampString = userTimestamp ? 
+          `${userTimestamp.year}-${userTimestamp.month}-${userTimestamp.day}T${userTimestamp.hour}:${userTimestamp.minute}:${userTimestamp.second}` : 
+          now.toISOString();
+
+        console.log(`📝 Setting updated_at to user local time: ${userTimestampString}`);
+
         const { data, error } = await supabase
           .from('journal_entries')
           .update({ 
-            content
-            // Let the database trigger handle updated_at automatically
+            content,
+            updated_at: userTimestampString
           })
           .eq('id', existingEntry.id)
           .eq('user_id', userId)
@@ -178,12 +201,38 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       } else {
         // Create new entry
         console.log(`📝 Creating new journal entry`);
+        
+        // Create timestamp in user's timezone for new entries too
+        const now = new Date();
+        const userTimestamp = timezone ? 
+          new Intl.DateTimeFormat('en-CA', {
+            timeZone: timezone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          }).formatToParts(now).reduce((acc, part) => {
+            acc[part.type] = part.value;
+            return acc;
+          }, {}) : null;
+
+        const userTimestampString = userTimestamp ? 
+          `${userTimestamp.year}-${userTimestamp.month}-${userTimestamp.day}T${userTimestamp.hour}:${userTimestamp.minute}:${userTimestamp.second}` : 
+          now.toISOString();
+
+        console.log(`📝 Setting created_at and updated_at to user local time: ${userTimestampString}`);
+
         const { data, error } = await supabase
           .from('journal_entries')
           .insert({
             user_id: userId,
             content,
-            date: entryDate.toISOString()
+            date: entryDate.toISOString(),
+            created_at: userTimestampString,
+            updated_at: userTimestampString
           })
           .select()
           .single();

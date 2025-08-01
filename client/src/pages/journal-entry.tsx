@@ -14,7 +14,8 @@ import {
   initializeTimezone,
   formatInUserTimezone,
   getDateRangeForQuery,
-  localDateToUtc
+  localDateToUtc,
+  getUserTimezone
 } from "@/lib/timezone-utils";
 
 interface JournalEntry {
@@ -125,7 +126,8 @@ export default function JournalEntry() {
       const localDate = localDateToUtc(dateString);
       return await apiRequest('POST', '/api/journal-entries', {
         content,
-        date: localDate.toISOString()
+        date: localDate.toISOString(),
+        timezone: getUserTimezone()
       });
     },
     onSuccess: (data) => {
