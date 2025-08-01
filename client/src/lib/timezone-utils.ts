@@ -1,5 +1,5 @@
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
-import { zonedTimeToUtc, utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { toZonedTime, fromZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 /**
  * Get the user's detected timezone
@@ -49,7 +49,7 @@ export function getCurrentLocalDate(): string {
 export function getCurrentLocalDateTime(): Date {
   const timezone = getUserTimezone();
   const now = new Date();
-  return utcToZonedTime(now, timezone);
+  return toZonedTime(now, timezone);
 }
 
 /**
@@ -59,7 +59,7 @@ export function localDateToUtc(dateString: string): Date {
   const timezone = getUserTimezone();
   // Create date at start of day in user's timezone
   const localDate = new Date(dateString + 'T00:00:00');
-  return zonedTimeToUtc(localDate, timezone);
+  return fromZonedTime(localDate, timezone);
 }
 
 /**
@@ -68,7 +68,7 @@ export function localDateToUtc(dateString: string): Date {
 export function utcToLocalDate(utcDate: string | Date): Date {
   const timezone = getUserTimezone();
   const date = typeof utcDate === 'string' ? parseISO(utcDate) : utcDate;
-  return utcToZonedTime(date, timezone);
+  return toZonedTime(date, timezone);
 }
 
 /**
@@ -91,8 +91,8 @@ export function getDateRangeForQuery(localDateString: string): { start: Date; en
   const endOfDayLocal = endOfDay(new Date(localDateString + 'T00:00:00'));
   
   // Convert to UTC for database queries
-  const startUtc = zonedTimeToUtc(startOfDayLocal, timezone);
-  const endUtc = zonedTimeToUtc(endOfDayLocal, timezone);
+  const startUtc = fromZonedTime(startOfDayLocal, timezone);
+  const endUtc = fromZonedTime(endOfDayLocal, timezone);
   
   return { start: startUtc, end: endUtc };
 }
