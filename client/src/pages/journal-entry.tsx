@@ -130,8 +130,26 @@ export default function JournalEntry() {
       // Update cache with saved data
       localStorage.setItem(CACHE_KEY, JSON.stringify(data));
       
-      // Invalidate and refetch
+      // Update journal history cache with the new/updated entry
+      const historyCache = localStorage.getItem('journal_previews_cache');
+      if (historyCache) {
+        try {
+          const parsedCache = JSON.parse(historyCache);
+          const preview = journalText.split(' ').slice(0, 20).join(' ') + (journalText.split(' ').length > 20 ? '...' : '');
+          parsedCache[dateString] = {
+            preview,
+            updated_at: data.updated_at
+          };
+          localStorage.setItem('journal_previews_cache', JSON.stringify(parsedCache));
+          console.log("📱 Updated journal history cache");
+        } catch (e) {
+          console.error("Error updating journal history cache:", e);
+        }
+      }
+      
+      // Invalidate and refetch - invalidate both individual entry and journal history
       queryClient.invalidateQueries({ queryKey: ['/api/journal-entries/date', dateString] });
+      queryClient.invalidateQueries({ queryKey: ['/api/journal-entries'] });
       
       toast({
         title: "Success",

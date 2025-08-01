@@ -39,8 +39,9 @@ export default function JournalHistory() {
     queryFn: async () => {
       return await apiRequest('GET', '/api/journal-entries');
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute (shorter for more responsive updates)
     cacheTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: true, // Refetch when user returns to page
   });
 
   // Cache previews locally
