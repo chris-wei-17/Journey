@@ -270,7 +270,7 @@ export default function JournalEntry() {
                 <div className="text-xs text-gray-500 text-center space-y-1">
                   {journalEntry && (
                     <div>
-                      Last updated: {new Date(journalEntry.updated_at).toLocaleString()}
+                      Last updated: {formatInUserTimezone(journalEntry.updated_at, 'PPP p')}
                     </div>
                   )}
                   {error && (

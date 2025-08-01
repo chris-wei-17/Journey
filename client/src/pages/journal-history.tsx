@@ -6,7 +6,7 @@ import { format, parseISO } from "date-fns";
 import { useLocation } from "wouter";
 import { QuickAccess } from "@/components/ui/quick-access";
 import { apiRequest } from "@/lib/queryClient";
-import { initializeTimezone, formatInUserTimezone, utcToLocalDate } from "@/lib/timezone-utils";
+import { initializeTimezone, formatInUserTimezone, utcToLocalDate, getUserTimezone } from "@/lib/timezone-utils";
 
 interface JournalEntry {
   id: number;
@@ -178,6 +178,15 @@ export default function JournalHistory() {
                 const entry = entriesByDate[dateStr];
                 const wordCount = getWordCount(entry.content);
                 const charCount = getCharacterCount(entry.content);
+                
+                // Debug logging for timezone issues
+                console.log('🕐 Debug timezone for entry:', {
+                  dateStr,
+                  updated_at: entry.updated_at,
+                  formatted_time: formatInUserTimezone(entry.updated_at, 'h:mm a'),
+                  user_timezone: getUserTimezone(),
+                  raw_date: new Date(entry.updated_at).toString()
+                });
 
                 return (
                   <div key={dateStr} className="space-y-3">

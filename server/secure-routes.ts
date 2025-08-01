@@ -162,8 +162,8 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         const { data, error } = await supabase
           .from('journal_entries')
           .update({ 
-            content,
-            updated_at: new Date().toISOString()
+            content
+            // Let the database trigger handle updated_at automatically
           })
           .eq('id', existingEntry.id)
           .eq('user_id', userId)
