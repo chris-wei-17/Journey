@@ -10,6 +10,7 @@ const navigationItems = [
   { label: "Workouts", path: "/workouts", icon: "fas fa-dumbbell" },
   { label: "Sleep", path: "/sleep", icon: "fas fa-calculator" },
   { label: "Photos", path: "/photos", icon: "fas fa-camera" },
+  { label: "Journal", path: "/journal-history", icon: "fas fa-book-open" },
   { label: "Progress", path: "/progress", icon: "fas fa-chart-line" },
   { label: "Feedback", path: "/feedback", icon: "fas fa-comment" },
 ];
