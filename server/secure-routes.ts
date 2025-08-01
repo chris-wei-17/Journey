@@ -100,10 +100,10 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       
       console.log(`🔍 Fetching journal entry for userId: ${userId}, date: ${date}`);
       
-      // Parse the date and set to start of day
+      // Parse the date (now comes as full ISO timestamp from client)
       const queryDate = new Date(date);
-      queryDate.setHours(0, 0, 0, 0);
       
+      // Create date range for the same day (24 hours from query date)
       const nextDay = new Date(queryDate.getTime() + 24 * 60 * 60 * 1000);
       
       const { data, error } = await supabase
@@ -140,10 +140,10 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Content and date are required' });
       }
 
-      // Parse the date and set to start of day
+      // Parse the date (now comes as full ISO timestamp from client)
       const entryDate = new Date(date);
-      entryDate.setHours(0, 0, 0, 0);
       
+      // Create date range for the same day (24 hours from entry date)
       const nextDay = new Date(entryDate.getTime() + 24 * 60 * 60 * 1000);
 
       // Check if entry already exists for this date

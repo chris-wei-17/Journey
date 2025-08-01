@@ -13,7 +13,8 @@ import {
   getCurrentLocalDateTime, 
   initializeTimezone,
   formatInUserTimezone,
-  getDateRangeForQuery 
+  getDateRangeForQuery,
+  localDateToUtc
 } from "@/lib/timezone-utils";
 
 interface JournalEntry {
@@ -51,7 +52,9 @@ export default function JournalEntry() {
     queryKey: ['/api/journal-entries/date', dateString],
     queryFn: async () => {
       try {
-        const response = await apiRequest('GET', `/api/journal-entries/date/${dateString}`);
+        // Convert local date to UTC for server query
+        const localDate = localDateToUtc(dateString);
+        const response = await apiRequest('GET', `/api/journal-entries/date/${localDate.toISOString()}`);
         return response;
       } catch (error: any) {
         // If no entry exists, return null
@@ -118,9 +121,11 @@ export default function JournalEntry() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (content: string) => {
+      // Convert local date to UTC for proper server storage
+      const localDate = localDateToUtc(dateString);
       return await apiRequest('POST', '/api/journal-entries', {
         content,
-        date: dateString
+        date: localDate.toISOString()
       });
     },
     onSuccess: (data) => {
