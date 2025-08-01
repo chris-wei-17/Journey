@@ -204,9 +204,14 @@ export default function JournalHistory() {
 
                     {/* Journal Entry Card */}
                     <div 
-                      className="bg-white/75 backdrop-blur-sm rounded-xl p-6 shadow-xl cursor-pointer hover:bg-white/85 transition-all duration-200 hover:scale-[1.02] hover:shadow-2xl"
+                      className="bg-white/75 backdrop-blur-sm rounded-xl p-6 shadow-xl cursor-pointer hover:bg-white/85 transition-all duration-200 hover:scale-[1.02] hover:shadow-2xl relative"
                       onClick={() => openJournalEntry(entry.date)}
                     >
+                      {/* Camera Icon - Top Right */}
+                      <div className="absolute top-4 right-4 bg-blue-500 text-white rounded-full p-2 shadow-lg">
+                        <i className="fas fa-camera text-sm"></i>
+                      </div>
+                      
                       <div className="space-y-4">
                         {/* Preview Text */}
                         <div className="text-gray-800 leading-relaxed">
