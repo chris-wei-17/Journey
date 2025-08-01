@@ -207,10 +207,16 @@ export default function JournalHistory() {
                       className="bg-white/75 backdrop-blur-sm rounded-xl p-6 shadow-xl cursor-pointer hover:bg-white/85 transition-all duration-200 hover:scale-[1.02] hover:shadow-2xl relative"
                       onClick={() => openJournalEntry(entry.date)}
                     >
-                      {/* Photos Icon - Top Right */}
-                      <div className="absolute top-4 right-4 bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg">
+                      {/* Photos Button - Top Right */}
+                      <button 
+                        className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-colors duration-200"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent card click
+                          alert('Button clicked');
+                        }}
+                      >
                         <i className="fas fa-images text-xs"></i>
-                      </div>
+                      </button>
                       
                       <div className="space-y-4">
                         {/* Preview Text */}
