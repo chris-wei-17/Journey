@@ -207,9 +207,9 @@ export default function JournalHistory() {
                       className="bg-white/75 backdrop-blur-sm rounded-xl p-6 shadow-xl cursor-pointer hover:bg-white/85 transition-all duration-200 hover:scale-[1.02] hover:shadow-2xl relative"
                       onClick={() => openJournalEntry(entry.date)}
                     >
-                      {/* Camera Icon - Top Right */}
-                      <div className="absolute top-4 right-4 bg-blue-500 text-white rounded-full p-2 shadow-lg">
-                        <i className="fas fa-camera text-sm"></i>
+                      {/* Photos Icon - Top Right */}
+                      <div className="absolute top-4 right-4 bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg">
+                        <i className="fas fa-images text-xs"></i>
                       </div>
                       
                       <div className="space-y-4">
