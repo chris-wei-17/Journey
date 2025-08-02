@@ -7,6 +7,7 @@ import { useLocation } from "wouter";
 import { QuickAccess } from "@/components/ui/quick-access";
 import { apiRequest } from "@/lib/queryClient";
 import { initializeTimezone, formatInUserTimezone, utcToLocalDate, getUserTimezone } from "@/lib/timezone-utils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface JournalEntry {
   id: number;
@@ -17,6 +18,12 @@ interface JournalEntry {
   updated_at: string;
 }
 
+interface PhotoDate {
+  id: number;
+  date: string;
+  filename: string;
+}
+
 interface JournalEntriesByDate {
   [date: string]: JournalEntry;
 }
@@ -24,6 +31,7 @@ interface JournalEntriesByDate {
 export default function JournalHistory() {
   const [, setLocation] = useLocation();
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const { user } = useAuth();
 
   // Initialize timezone on component mount
   useEffect(() => {
@@ -42,6 +50,17 @@ export default function JournalHistory() {
     staleTime: 1 * 60 * 1000, // 1 minute (shorter for more responsive updates)
     cacheTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: true, // Refetch when user returns to page
+  });
+
+  // Fetch photo dates to check which dates have photos
+  const { data: photoDates = [] } = useQuery<PhotoDate[]>({
+    queryKey: ['/api/photos/dates'],
+    queryFn: async () => {
+      return await apiRequest('GET', '/api/photos/dates');
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
   });
 
   // Cache previews locally
@@ -179,6 +198,18 @@ export default function JournalHistory() {
                 const wordCount = getWordCount(entry.content);
                 const charCount = getCharacterCount(entry.content);
                 
+                // Initialize show button var to false
+                let showButton = false;
+                
+                // Check if dateStr is in photoDates
+                for (const photoDate of photoDates) {
+                  const photoDateStr = format(new Date(photoDate.date), 'yyyy-MM-dd');
+                  if (dateStr === photoDateStr) {
+                    showButton = true;
+                    break;
+                  }
+                }
+                
                 // Debug logging for timezone issues
                 console.log('🕐 Debug timezone for entry:', {
                   dateStr,
@@ -207,16 +238,18 @@ export default function JournalHistory() {
                       className="bg-white/75 backdrop-blur-sm rounded-xl p-6 shadow-xl cursor-pointer hover:bg-white/85 transition-all duration-200 hover:scale-[1.02] hover:shadow-2xl relative"
                       onClick={() => openJournalEntry(entry.date)}
                     >
-                      {/* Photos Button - Top Right */}
-                      <button 
-                        className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-colors duration-200"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent card click
-                          alert('Button clicked');
-                        }}
-                      >
-                        <i className="fas fa-images text-xs"></i>
-                      </button>
+                      {/* Photos Button - Top Right (conditional) */}
+                      {showButton && (
+                        <button 
+                          className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent card click
+                            alert('Button clicked');
+                          }}
+                        >
+                          <i className="fas fa-images text-xs"></i>
+                        </button>
+                      )}
                       
                       <div className="space-y-4">
                         {/* Preview Text */}
