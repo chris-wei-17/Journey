@@ -941,6 +941,27 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get photo dates only (lightweight endpoint for journal history icons)
+  app.get('/api/photos/dates', authenticateToken, async (req: any, res) => {
+    try {
+      const photos = await storage.getUserPhotos(req.userId!);
+      console.log(`📅 Found ${photos.length} photos for user ${req.userId}, extracting dates`);
+      
+      // Return only essential date information, no signed URLs needed
+      const photoDates = photos.map(photo => ({
+        id: photo.id,
+        date: photo.date,
+        filename: photo.filename
+      }));
+      
+      console.log(`📅 Returning ${photoDates.length} photo dates`);
+      res.json(photoDates);
+    } catch (error) {
+      console.error("Error fetching photo dates:", error);
+      res.status(500).json({ message: "Failed to fetch photo dates" });
+    }
+  });
+
   // Get photos by date with signed URLs for secure access
   app.get('/api/photos/date/:date', authenticateToken, async (req: any, res) => {
     try {
