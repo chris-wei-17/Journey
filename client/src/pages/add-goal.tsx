@@ -168,7 +168,7 @@ export default function AddGoal() {
         <div className="space-y-6">
           {/* Goal Type Selection */}
           {!selectedGoalType && (
-            <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">
+            <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0 p-4">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-800">
                   Choose Goal Type
