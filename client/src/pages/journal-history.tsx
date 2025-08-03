@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, parseISO } from "date-fns";
 import { useLocation } from "wouter";
 import { QuickAccess } from "@/components/ui/quick-access";
@@ -24,6 +25,19 @@ interface PhotoDate {
   filename: string;
 }
 
+interface Photo {
+  id: number;
+  userId: number;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  date: string;
+  createdAt: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+}
+
 interface JournalEntriesByDate {
   [date: string]: JournalEntry;
 }
@@ -32,6 +46,13 @@ export default function JournalHistory() {
   const [, setLocation] = useLocation();
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const { user } = useAuth();
+  
+  // Slideshow state
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [currentPhoto, setCurrentPhoto] = useState<Photo | null>(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [currentDatePhotos, setCurrentDatePhotos] = useState<Photo[]>([]);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Initialize timezone on component mount
   useEffect(() => {
@@ -137,6 +158,56 @@ export default function JournalHistory() {
 
   const getCharacterCount = (content: string): number => {
     return content.length;
+  };
+
+  // Slideshow functions
+  const fetchPhotosForDate = async (dateStr: string): Promise<Photo[]> => {
+    try {
+      return await apiRequest('GET', `/api/photos/date/${dateStr}`);
+    } catch (error) {
+      console.error('Error fetching photos for date:', error);
+      return [];
+    }
+  };
+
+  const openPhotosSlideshow = async (dateStr: string) => {
+    const photos = await fetchPhotosForDate(dateStr);
+    if (photos.length > 0) {
+      setCurrentDatePhotos(photos);
+      setCurrentPhoto(photos[0]); // Start with first photo
+      setCurrentPhotoIndex(0);
+      setImageLoaded(false);
+      setIsPreviewOpen(true);
+    }
+  };
+
+  const navigatePhoto = (direction: 'prev' | 'next') => {
+    if (currentDatePhotos.length === 0) return;
+    
+    let newIndex;
+    if (direction === 'prev') {
+      newIndex = currentPhotoIndex > 0 ? currentPhotoIndex - 1 : currentDatePhotos.length - 1;
+    } else {
+      newIndex = currentPhotoIndex < currentDatePhotos.length - 1 ? currentPhotoIndex + 1 : 0;
+    }
+    
+    setCurrentPhotoIndex(newIndex);
+    setCurrentPhoto(currentDatePhotos[newIndex]);
+    setImageLoaded(false);
+  };
+
+  const getPhotoUrl = (photo: Photo): string => {
+    if (photo.imageUrl) return photo.imageUrl;
+    // Fallback to legacy API route with authentication
+    const token = localStorage.getItem('authToken');
+    return token ? `/api/photos/${photo.filename}?token=${token}` : '/placeholder-image.jpg';
+  };
+
+  const getThumbnailUrl = (photo: Photo): string => {
+    if (photo.thumbnailUrl) return photo.thumbnailUrl;
+    // Fallback to legacy API route with authentication
+    const token = localStorage.getItem('authToken');
+    return token ? `/api/photos/${photo.filename}?thumbnail=true&token=${token}` : '/placeholder-image.jpg';
   };
 
   if (isLoading) {
@@ -251,7 +322,7 @@ export default function JournalHistory() {
                           className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-colors duration-200"
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent card click
-                            alert('Button clicked');
+                            openPhotosSlideshow(dateStr);
                           }}
                         >
                           <i className="fas fa-images text-xs"></i>
@@ -320,6 +391,68 @@ export default function JournalHistory() {
           <QuickAccess />
         </div>
       </div>
+
+      {/* Photos Slideshow Modal */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-[98vw] max-h-[98vh] w-auto h-auto p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="p-4 pb-2 flex-shrink-0 border-b">
+            <DialogTitle className="text-center text-lg font-semibold">
+              {currentPhoto && (
+                <>
+                  Photo {currentPhotoIndex + 1} of {currentDatePhotos.length}
+                  <span className="block text-sm text-gray-600 font-normal">
+                    {formatDisplayDate(currentPhoto.date.split('T')[0])}
+                  </span>
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {currentPhoto && (
+            <div className="relative flex items-center justify-center min-h-0 flex-1">
+              {/* Left Arrow */}
+              {currentDatePhotos.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigatePhoto('prev')}
+                  className="absolute left-4 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-10 h-10"
+                >
+                  <i className="fas fa-chevron-left"></i>
+                </Button>
+              )}
+
+              {/* Image Container */}
+              <div className="flex items-center justify-center p-4 min-w-0 min-h-0 max-w-[calc(98vw-2rem)] max-h-[calc(98vh-10rem)]">
+                {!imageLoaded && (
+                  <div className="flex items-center justify-center w-32 h-32">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  </div>
+                )}
+                <img
+                  src={getPhotoUrl(currentPhoto)}
+                  alt={currentPhoto.originalName}
+                  className={`max-w-full max-h-full object-contain ${!imageLoaded ? 'hidden' : ''}`}
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
+                />
+              </div>
+
+              {/* Right Arrow */}
+              {currentDatePhotos.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigatePhoto('next')}
+                  className="absolute right-4 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-10 h-10"
+                >
+                  <i className="fas fa-chevron-right"></i>
+                </Button>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
