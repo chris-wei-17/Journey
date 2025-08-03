@@ -203,7 +203,14 @@ export default function JournalHistory() {
                 
                 // Check if dateStr is in photoDates
                 for (const photoDate of photoDates) {
-                  const photoDateStr = format(new Date(photoDate.date), 'yyyy-MM-dd');
+                  // Use same method as journal entries: split at 'T' to get YYYY-MM-DD
+                  const photoDateStr = photoDate.date.split('T')[0];
+                  console.log('📅 Date comparison:', {
+                    journalDateStr: dateStr,
+                    photoDateRaw: photoDate.date,
+                    photoDateFormatted: photoDateStr,
+                    match: dateStr === photoDateStr
+                  });
                   if (dateStr === photoDateStr) {
                     showButton = true;
                     break;
