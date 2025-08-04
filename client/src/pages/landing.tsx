@@ -23,6 +23,17 @@ export default function Landing() {
         showBackButton={false}
         onBack={handleBack}
       />
+      <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl font-bold text-gray-800">Blog Post Title Here</CardTitle>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="pt-0">
+        <div className="space-y-3 mb-4"/>
+      </CardContent>
+    </Card>
       
           {/* Optional: Additional Content Section */}
           {/* 
