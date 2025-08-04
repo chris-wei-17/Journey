@@ -6,9 +6,11 @@ import { QuickAccess } from "@/components/ui/quick-access";
 import { DataChart } from "@/components/ui/data-chart";
 import { useState, useEffect } from "react";
 import { loadBlogPosts, BlogPost } from "@/lib/blog-utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,10 +30,14 @@ export default function Landing() {
   }, []);
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
+    if (isAuthenticated) {
       setLocation("/");
+    } else {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        setLocation("/");
+      }
     }
   };
 
@@ -44,7 +50,7 @@ export default function Landing() {
       <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
         <Header 
           title="JOURNEY BLOG" 
-          showBackButton={false}
+          showBackButton={isAuthenticated}
           onBack={handleBack}
         />
         

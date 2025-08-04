@@ -3,9 +3,11 @@ import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { BlogPost, loadBlogPosts } from "@/lib/blog-utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function BlogPostView() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
   const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,11 @@ export default function BlogPostView() {
   }, []);
 
   const handleBack = () => {
-    setLocation("/");
+    if (isAuthenticated) {
+      setLocation("/landing");
+    } else {
+      setLocation("/");
+    }
   };
 
   const renderMarkdown = (content: string) => {

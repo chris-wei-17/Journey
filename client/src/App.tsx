@@ -67,6 +67,7 @@ function Router() {
             ) : (
               <>
                 <Route path="/" component={Home} />
+                <Route path="/landing" component={Landing} />
                 <Route path="/profile" component={Profile} />
                 <Route path="/edit-profile" component={EditProfile} />
                 <Route path="/feedback" component={Feedback} />

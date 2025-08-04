@@ -42,6 +42,18 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "Blog",
+      "short_name": "Blog",
+      "description": "Read fitness and wellness articles",
+      "url": "/landing",
+      "icons": [
+        {
+          "src": "/pwa-icon-192.svg",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
