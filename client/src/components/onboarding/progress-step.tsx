@@ -141,7 +141,7 @@ export default function ProgressStep({ data, updateData }: ProgressStepProps) {
         {/* Photo Upload Section */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Progress Photos (Optional)</h3>
-          <p className="text-sm text-gray-600 mb-4">Upload up to 5 photos to track your visual progress</p>
+          <p className="text-sm text-gray-600 mb-4">Upload up to 5 photos to track your progress (optional) </p>
           
           <PhotoUpload
             photos={photos}
