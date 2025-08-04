@@ -35,6 +35,10 @@ export default function Landing() {
     }
   };
 
+  const handleBlogPostClick = (filename: string) => {
+    setLocation(`/blog-post?post=${encodeURIComponent(filename)}`);
+  };
+
   return (
     <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
       <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
@@ -66,7 +70,11 @@ export default function Landing() {
         ) : (
           <div className="space-y-4">
             {blogPosts.map((post, index) => (
-              <Card key={index} className="bg-white/75 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1">
+              <Card 
+                key={index} 
+                className="bg-white/75 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1"
+                onClick={() => handleBlogPostClick(post.filename)}
+              >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl font-bold text-gray-800 line-clamp-2 leading-tight">

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Auth from "@/pages/auth";
 import Landing from "@/pages/landing";
+import BlogPostView from "@/pages/blog-post";
 import Home from "@/pages/home";
 import Onboarding from "@/pages/onboarding";
 import Profile from "@/pages/profile";
@@ -56,6 +57,7 @@ function Router() {
       <Switch>
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPasswordToken} />
+        <Route path="/blog-post" component={BlogPostView} />
         {!isAuthenticated ? (
           <Route path="/" component={isPWAMode() ? Auth : Landing} />
         ) : (
