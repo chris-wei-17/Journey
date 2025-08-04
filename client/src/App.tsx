@@ -8,6 +8,7 @@ import { PWAInstallPrompt } from "@/components/ui/pwa-install-prompt";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Auth from "@/pages/auth";
+import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Onboarding from "@/pages/onboarding";
 import Profile from "@/pages/profile";
@@ -31,6 +32,13 @@ import JournalHistory from "@/pages/journal-history";
 // import Template from "@/pages/template"; // Uncomment when creating new pages
 // import YourNewPage from "@/pages/your-new-page"; // Example: replace with actual page name
 
+// Utility function to detect PWA mode
+function isPWAMode(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+         (window.navigator as any).standalone === true;
+}
+
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
 
@@ -49,7 +57,7 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPasswordToken} />
         {!isAuthenticated ? (
-          <Route path="/" component={Auth} />
+          <Route path="/" component={isPWAMode() ? Auth : Landing} />
         ) : (
           <>
             {!user?.onboardingCompleted ? (
