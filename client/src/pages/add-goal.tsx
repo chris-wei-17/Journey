@@ -176,22 +176,23 @@ export default function AddGoal() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Predefined Goals */}
-                <div className="grid gap-3">
+                <div className="space-y-3">
                   {DEFAULT_GOAL_TYPES.map((goalType) => (
-                    <Button
-                      key={goalType.id}
-                      variant="outline"
-                      className="w-full justify-start h-auto p-4 text-left"
-                      onClick={() => handleGoalTypeSelect(goalType.id)}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <i className={`fas ${goalType.icon} ${goalType.color} text-xl`}></i>
-                        <div>
-                          <div className="font-medium text-gray-900">{goalType.label}</div>
-                          <div className="text-sm text-gray-500">{goalType.description}</div>
+                    <div key={goalType.id}>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-auto p-4 text-left"
+                        onClick={() => handleGoalTypeSelect(goalType.id)}
+                      >
+                        <div className="flex items-center space-x-4">
+                          <i className={`fas ${goalType.icon} ${goalType.color} text-xl`}></i>
+                          <div>
+                            <div className="font-medium text-gray-900">{goalType.label}</div>
+                            <div className="text-sm text-gray-500">{goalType.description}</div>
+                          </div>
                         </div>
-                      </div>
-                    </Button>
+                      </Button>
+                    </div>
                   ))}
                 </div>
 
