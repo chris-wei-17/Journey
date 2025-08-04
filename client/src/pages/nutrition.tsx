@@ -17,7 +17,7 @@ export default function Nutrition() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
+    <div className="app-gradient-bg">
       <Header 
         title="Nutrition"
         showBackButton={false}
@@ -25,7 +25,7 @@ export default function Nutrition() {
         onBack={handleBack}
       />
       
-              <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
         <div className="space-y-6">
           {/* Enhanced Nutrition Chart */}
           <NutritionChart />
@@ -68,7 +68,7 @@ export default function Nutrition() {
           {/* Quick Access */}
           <QuickAccess />
         </div>
-      </div>
+      </main>
     </div>
   );
 }

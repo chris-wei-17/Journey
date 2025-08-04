@@ -209,181 +209,179 @@ export default function Photos() {
 
   if (isLoading || !isUnlocked) {
     return (
-      <>
-        <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
-          <Header 
-            title="Photos"
-            showBackButton={false}
-            showHomeButton={true}
-            onBack={handleBack}
-        />
-          <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+6rem)]">
-            {isLoading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>}
-          </div>
-        </div>
-        <PinProtection 
-          isOpen={isPinDialogOpen}
-          onClose={() => setIsPinDialogOpen(false)}
-          mode={pinMode}
-          onSuccess={handlePinSuccess}
-        />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
+      <div className="app-gradient-bg">
         <Header 
           title="Photos"
           showBackButton={false}
           showHomeButton={true}
           onBack={handleBack}
         />
-        
-        <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
-          {/* Compare and Sort Controls */}
-          <div className="flex justify-between items-center mb-6">
-            {/* Compare Button */}
-            <div className="bg-white/75 backdrop-blur-sm rounded-lg shadow-lg">
-              <Button
-                onClick={isCompareMode ? handleExitCompare : handleCompareClick}
-                variant={isCompareMode ? 'destructive' : 'default'}
-                size="sm"
-                className={`${isCompareMode ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'}`}
-              >
-                {isCompareMode ? 'EXIT' : 'COMPARE'}
-              </Button>
-            </div>
+        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+          <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+6rem)]">
+            {isLoading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>}
+          </div>
+        </main>
+        <PinProtection 
+          isOpen={isPinDialogOpen}
+          onClose={() => setIsPinDialogOpen(false)}
+          mode={pinMode}
+          onSuccess={handlePinSuccess}
+        />
+      </div>
+    );
+  }
 
-            {/* Sort Control */}
-            <div className="bg-white/75 backdrop-blur-sm rounded-lg shadow-lg">
+  return (
+    <div className="app-gradient-bg">
+      <Header 
+        title="Photos"
+        showBackButton={false}
+        showHomeButton={true}
+        onBack={handleBack}
+      />
+      
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+        {/* Compare and Sort Controls */}
+        <div className="flex justify-between items-center mb-6">
+          {/* Compare Button */}
+          <div className="bg-white/75 backdrop-blur-sm rounded-lg shadow-lg">
+            <Button
+              onClick={isCompareMode ? handleExitCompare : handleCompareClick}
+              variant={isCompareMode ? 'destructive' : 'default'}
+              size="sm"
+              className={`${isCompareMode ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'}`}
+            >
+              {isCompareMode ? 'EXIT' : 'COMPARE'}
+            </Button>
+          </div>
+
+          {/* Sort Control */}
+          <div className="bg-white/75 backdrop-blur-sm rounded-lg shadow-lg">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              <i className={`fas ${sortOrder === 'newest' ? 'fa-arrow-up' : 'fa-arrow-down'} mr-2`}></i>
+              Sort
+            </Button>
+          </div>
+        </div>
+
+        {/* Photos by Date */}
+        {sortedDates.length > 0 ? (
+          <div className="space-y-8">
+            {sortedDates.map(dateStr => {
+              const datePhotos = photosByDate[dateStr];
+              const displayPhotos = datePhotos.slice(0, 5); // Show up to 5 thumbnails
+              const hasMore = datePhotos.length > 5;
+
+              return (
+                <div 
+                  key={dateStr} 
+                  className={`space-y-3 relative ${isCompareMode ? 'cursor-pointer' : ''}`}
+                  onClick={isCompareMode ? () => handleDateSelect(dateStr) : undefined}
+                >
+                  {/* Date Header - Right Aligned */}
+                  <div className="flex justify-end items-center">
+                    {isCompareMode && (
+                      <div className="mr-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedDates.includes(dateStr)}
+                          onChange={() => handleDateSelect(dateStr)}
+                          className="w-5 h-5 text-blue-600 rounded"
+                          disabled={!selectedDates.includes(dateStr) && selectedDates.length >= 2}
+                        />
+                      </div>
+                    )}
+                    <div className="bg-white/75 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+                      <h2 className="text-lg font-semibold text-gray-800">
+                        {formatDisplayDate(dateStr)}
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        {datePhotos.length} photo{datePhotos.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Photo Thumbnails */}
+                  <div className={`bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl relative ${isCompareMode && !selectedDates.includes(dateStr) ? 'opacity-50' : ''}`}>
+                    {isCompareMode && !selectedDates.includes(dateStr) && (
+                      <div className="absolute inset-0 bg-gray-600/50 rounded-xl z-10 pointer-events-none"></div>
+                    )}
+                    <div 
+                      className="grid gap-3"
+                      style={{
+                        gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+                        maxWidth: "100%"
+                      }}
+                    >
+                      {displayPhotos.map((photo, index) => (
+                        <div
+                          key={photo.id}
+                          className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                          onClick={() => openPreview(photo, datePhotos)}
+                        >
+                          <img
+                            src={getThumbnailUrl(photo)}
+                            alt={`Photo ${index + 1} from ${formatDisplayDate(dateStr)}`}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          
+                          {/* Photo overlay with index */}
+                          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                            {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Show more indicator if there are additional photos */}
+                      {hasMore && (
+                        <div 
+                          className="relative aspect-square bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
+                          onClick={() => openPreview(datePhotos[5], datePhotos)}
+                        >
+                          <div className="text-center text-gray-600">
+                            <i className="fas fa-plus text-2xl mb-2"></i>
+                            <p className="text-sm font-medium">
+                              +{datePhotos.length - 5} more
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="bg-white/75 backdrop-blur-sm rounded-xl p-8 shadow-xl max-w-md mx-auto">
+              <i className="fas fa-camera text-4xl text-gray-400 mb-4"></i>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                No Photos Yet
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Start your fitness journey by adding progress photos from the dashboard.
+              </p>
               <Button
-                variant="default"
-                size="sm"
-                onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
-                className="bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => setLocation('/')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                <i className={`fas ${sortOrder === 'newest' ? 'fa-arrow-up' : 'fa-arrow-down'} mr-2`}></i>
-                Sort
+                <i className="fas fa-home mr-2"></i>
+                Go to Dashboard
               </Button>
             </div>
           </div>
+        )}
 
-          {/* Photos by Date */}
-          {sortedDates.length > 0 ? (
-            <div className="space-y-8">
-              {sortedDates.map(dateStr => {
-                const datePhotos = photosByDate[dateStr];
-                const displayPhotos = datePhotos.slice(0, 5); // Show up to 5 thumbnails
-                const hasMore = datePhotos.length > 5;
-
-                return (
-                  <div 
-                    key={dateStr} 
-                    className={`space-y-3 relative ${isCompareMode ? 'cursor-pointer' : ''}`}
-                    onClick={isCompareMode ? () => handleDateSelect(dateStr) : undefined}
-                  >
-                    {/* Date Header - Right Aligned */}
-                    <div className="flex justify-end items-center">
-                      {isCompareMode && (
-                        <div className="mr-4">
-                          <input
-                            type="checkbox"
-                            checked={selectedDates.includes(dateStr)}
-                            onChange={() => handleDateSelect(dateStr)}
-                            className="w-5 h-5 text-blue-600 rounded"
-                            disabled={!selectedDates.includes(dateStr) && selectedDates.length >= 2}
-                          />
-                        </div>
-                      )}
-                      <div className="bg-white/75 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
-                        <h2 className="text-lg font-semibold text-gray-800">
-                          {formatDisplayDate(dateStr)}
-                        </h2>
-                        <p className="text-sm text-gray-600">
-                          {datePhotos.length} photo{datePhotos.length !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Photo Thumbnails */}
-                    <div className={`bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl relative ${isCompareMode && !selectedDates.includes(dateStr) ? 'opacity-50' : ''}`}>
-                      {isCompareMode && !selectedDates.includes(dateStr) && (
-                        <div className="absolute inset-0 bg-gray-600/50 rounded-xl z-10 pointer-events-none"></div>
-                      )}
-                      <div 
-                        className="grid gap-3"
-                        style={{
-                          gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-                          maxWidth: "100%"
-                        }}
-                      >
-                        {displayPhotos.map((photo, index) => (
-                          <div
-                            key={photo.id}
-                            className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 hover:shadow-lg"
-                            onClick={() => openPreview(photo, datePhotos)}
-                          >
-                            <img
-                              src={getThumbnailUrl(photo)}
-                              alt={`Photo ${index + 1} from ${formatDisplayDate(dateStr)}`}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                            
-                            {/* Photo overlay with index */}
-                            <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                              {index + 1}
-                            </div>
-                          </div>
-                        ))}
-                        
-                        {/* Show more indicator if there are additional photos */}
-                        {hasMore && (
-                          <div 
-                            className="relative aspect-square bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
-                            onClick={() => openPreview(datePhotos[5], datePhotos)}
-                          >
-                            <div className="text-center text-gray-600">
-                              <i className="fas fa-plus text-2xl mb-2"></i>
-                              <p className="text-sm font-medium">
-                                +{datePhotos.length - 5} more
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="bg-white/75 backdrop-blur-sm rounded-xl p-8 shadow-xl max-w-md mx-auto">
-                <i className="fas fa-camera text-4xl text-gray-400 mb-4"></i>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  No Photos Yet
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Start your fitness journey by adding progress photos from the dashboard.
-                </p>
-                <Button
-                  onClick={() => setLocation('/')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <i className="fas fa-home mr-2"></i>
-                  Go to Dashboard
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Quick Access */}
-          <QuickAccess/>
-        </div>
-      </div>
+        {/* Quick Access */}
+        <QuickAccess/>
+      </main>
 
       {/* Photo Preview Modal */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
@@ -475,6 +473,6 @@ export default function Photos() {
           onPhotoSelect={handlePhotoSelect}
         />
       )}
-    </>
+    </div>
   );
 }

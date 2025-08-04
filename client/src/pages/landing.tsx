@@ -46,14 +46,14 @@ export default function Landing() {
   };
 
   return (
-    <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
-      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
-        <Header 
-          title="JOURNEY BLOG" 
-          showBackButton={isAuthenticated}
-          onBack={handleBack}
-        />
-        
+    <div className="app-gradient-bg">
+      <Header 
+        title="JOURNEY BLOG" 
+        showBackButton={isAuthenticated}
+        onBack={handleBack}
+      />
+      
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-white mb-2">Latest Articles</h2>
           <p className="text-white/80 text-sm">Insights on fitness, nutrition, and wellness</p>
@@ -113,7 +113,7 @@ export default function Landing() {
         
         {/* Quick Access - Keep this at the bottom */}
         <QuickAccess />
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

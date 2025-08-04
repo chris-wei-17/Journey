@@ -167,13 +167,13 @@ export default function BlogPostView() {
 
   if (loading) {
     return (
-      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
-        <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
-          <Header 
-            title="Loading..." 
-            showBackButton={true}
-            onBack={handleBack}
-          />
+      <div className="app-gradient-bg">
+        <Header 
+          title="Loading..." 
+          showBackButton={true}
+          onBack={handleBack}
+        />
+        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
           <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="pt-6">
               <div className="animate-pulse">
@@ -184,20 +184,20 @@ export default function BlogPostView() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </main>
+        </main>
+      </div>
     );
   }
 
   if (error || !blogPost) {
     return (
-      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
-        <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
-          <Header 
-            title="Error" 
-            showBackButton={true}
-            onBack={handleBack}
-          />
+      <div className="app-gradient-bg">
+        <Header 
+          title="Error" 
+          showBackButton={true}
+          onBack={handleBack}
+        />
+        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
           <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="pt-6">
               <div className="text-center">
@@ -212,20 +212,20 @@ export default function BlogPostView() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </main>
+        </main>
+      </div>
     );
   }
 
   return (
-    <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
-      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-lavender-600">
-        <Header 
-          title={blogPost.title} 
-          showBackButton={true}
-          onBack={handleBack}
-        />
-        
+    <div className="app-gradient-bg">
+      <Header 
+        title={blogPost.title} 
+        showBackButton={true}
+        onBack={handleBack}
+      />
+      
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
         <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
@@ -244,7 +244,7 @@ export default function BlogPostView() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 } 

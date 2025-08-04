@@ -98,15 +98,13 @@
   --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
+  --ring: hsl(240, 5%, 84.9%);
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply font-sans antialiased text-foreground;
     background: transparent !important;
@@ -123,8 +121,9 @@
   }
 
   .app-gradient-bg {
-    /* Background now handled by HTML/body for full-screen coverage */
-    background: transparent;
+    background: linear-gradient(-45deg, hsl(var(--primary-600)), hsl(var(--lavender-600)), hsl(var(--primary-500)), hsl(var(--lavender-500)));
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     min-height: 100vh;
   }
 
@@ -137,6 +136,19 @@
   .photo-upload-area:hover {
     border-color: hsl(var(--primary-300));
     background: linear-gradient(145deg, #f0f4ff 0%, #f0f9ff 100%);
+  }
+
+  /* Moving gradient animation */
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   /* Custom color classes */
@@ -236,12 +248,12 @@
 }
 
 @keyframes slideIn {
-  from { 
-    transform: translateX(100%); 
-    opacity: 0; 
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  to { 
-    transform: translateX(0); 
-    opacity: 1; 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
