@@ -37,7 +37,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
           <h1 className="text-xl font-bold text-gray-800">
             {title || "Journey"}
           </h1>
-            <p className="text-xl font-bold text-gray-800">
+            <p className="text-sm text-gray-400">
                Your fitness journal for every step
             </p>
         </div>
