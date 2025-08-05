@@ -19,7 +19,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
       pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+4rem)]">
       <div className="flex items-center justify-between">
         {/* Left side - Back button or Navigation Menu */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
           {showBackButton ? (
             <Button
               variant="ghost"
