@@ -375,7 +375,7 @@ export default function JournalHistory() {
                 Start Writing
               </Button>
               <Button
-                onClick={() => setLocation('/')}
+                onClick={() => setLocation('/home')}
                 variant="outline"
                 className="bg-white/50 hover:bg-white/75"
               >

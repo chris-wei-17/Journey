@@ -369,7 +369,7 @@ export default function Photos() {
                 Start your fitness journey by adding progress photos from the dashboard.
               </p>
               <Button
-                onClick={() => setLocation('/')}
+                onClick={() => setLocation('/home')}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <i className="fas fa-home mr-2"></i>

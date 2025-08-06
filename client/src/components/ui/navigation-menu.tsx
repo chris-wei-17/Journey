@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { SimpleDropdown } from "@/components/ui/simple-dropdown";
 
 const navigationItems = [
-  { label: "Dashboard", path: "/", icon: "fas fa-home" },
+  { label: "Dashboard", path: "/home", icon: "fas fa-home" },
   { label: "Blog", path: "/landing", icon: "fas fa-newspaper" },
   { label: "Goals", path: "/goals", icon: "fas fa-target" },
   { label: "Nutrition", path: "/nutrition", icon: "fas fa-apple-alt" },

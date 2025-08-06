@@ -46,7 +46,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
         {/* Right side - Home button and Avatar */}
         <div className="flex items-center space-x-1">
           {showHomeButton && (
-            <Link href="/">
+            <Link href="/home">
               <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors">
                 <i className="fas fa-home text-sm" style={{ color: '#FFFFFF' }}></i>
               </div>
