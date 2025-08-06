@@ -218,7 +218,7 @@ export default function JournalEntry() {
         onBack={handleBack}
       />
       
-      <div className="pt-[calc(env(safe-area-inset-top)+5rem)] px-4 pb-6">
+      <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
         <div className="space-y-2">
           <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader className="pb-4">
