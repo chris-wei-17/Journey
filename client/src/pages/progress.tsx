@@ -17,15 +17,15 @@ export default function Progress() {
   };
 
     return (
-    <>
+    <div className="app-gradient-bg">
       <Header 
         title="Progress" 
         showBackButton={false}
         onBack={handleBack}
         showHomeButton={true}
       />
-      <div className="app-gradient-bg">
-        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+      
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
         <div className="space-y-6">
           {/* Progress Chart */}
           <DataChart 
@@ -66,8 +66,7 @@ export default function Progress() {
           {/* Quick Access */}
           <QuickAccess />
         </div>
-        </main>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

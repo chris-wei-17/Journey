@@ -214,14 +214,14 @@
       
       .ios-pwa {
         /* iOS-specific PWA styling with safe areas */
-        /* padding-top: env(safe-area-inset-top); */
-        /* padding-bottom: env(safe-area-inset-bottom); */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
       }
       
       /* Handle status bar area on mobile */
       @supports (padding-top: env(safe-area-inset-top)) {
         body {
-          padding-top: 0; /* Remove body padding since header handles safe area */
+          padding-top: env(safe-area-inset-top);
         }
       }
       
