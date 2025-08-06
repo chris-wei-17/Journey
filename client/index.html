@@ -11,14 +11,14 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- Theme Colors - Updated to match new indigo theme -->
-    <meta name="theme-color" content="#6366f1" />
-    <meta name="msapplication-TileColor" content="#6366f1" />
-    <meta name="msapplication-navbutton-color" content="#6366f1" />
+    <!-- Theme Colors - Updated to match header (white) -->
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-navbutton-color" content="#ffffff" />
     
     <!-- iOS Specific Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Journey" />
     <link rel="apple-touch-icon" href="/pwa-icon-journey.png" />
     
@@ -98,43 +98,25 @@
     <!-- Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async () => {
-          try {
-            const registration = await navigator.serviceWorker.register('/sw.js', {
-              scope: '/'
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('❌ SW registration failed: ', registrationError);
             });
-            console.log('✅ Service Worker registered successfully:', registration.scope);
-            
-            // Listen for updates
-            registration.addEventListener('updatefound', () => {
-              console.log('🔄 Service Worker update found');
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('🎉 New service worker available');
-                    
-                                          // Update available but no automatic prompt
-                  }
-                });
-              }
-            });
-            
-          } catch (error) {
-            console.error('❌ Service Worker registration failed:', error);
-          }
         });
-        
-        // Listen for messages from service worker
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          console.log('📨 Message from Service Worker:', event.data);
-        });
-      } else {
-        console.log('⚠️ Service Worker not supported in this browser');
       }
+
+      // PWA Install Prompt
+      let deferredPrompt;
       
-      // PWA Install Prompt (handled by React component)
-      // Removed - now handled by PWAInstallPrompt component
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('📱 PWA install prompt available');
+        e.preventDefault();
+        deferredPrompt = e;
+      });
       
       // Track PWA install
       window.addEventListener('appinstalled', () => {
@@ -171,49 +153,17 @@
       // Check PWA mode on load
       detectPWAMode();
       
-      // Dynamic status bar color based on gradient position at top of viewport
-      function updateStatusBarColor() {
-        // Calculate gradient position based on viewport top position
-        // The gradient flows from top (0%) to bottom (100%) of the document
-        const documentHeight = Math.max(
-          document.documentElement.scrollHeight,
-          document.documentElement.offsetHeight,
-          document.body.scrollHeight,
-          document.body.offsetHeight
-        );
-        
-        // Position of the top of the viewport within the total document
-        const viewportTopPosition = window.scrollY / documentHeight;
-        const clampedPosition = Math.max(0, Math.min(1, viewportTopPosition));
-        
-        // Interpolate between gradient colors based on position
-        let color;
-        if (clampedPosition < 0.5) {
-          // Interpolate between indigo (#6366f1) and sky blue (#0ea5e9)
-          const ratio = clampedPosition * 2;
-          const r = Math.round(99 + (14 - 99) * ratio);
-          const g = Math.round(102 + (165 - 102) * ratio);
-          const b = Math.round(241 + (233 - 241) * ratio);
-          color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        } else {
-          // Interpolate between sky blue (#0ea5e9) and amber (#f59e0b)
-          const ratio = (clampedPosition - 0.5) * 2;
-          const r = Math.round(14 + (245 - 14) * ratio);
-          const g = Math.round(165 + (158 - 165) * ratio);
-          const b = Math.round(233 + (11 - 233) * ratio);
-          color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        }
-        
-        // Update theme color meta tag
+      // Static status bar color - matches header (white)
+      function setStaticStatusBarColor() {
+        // Update theme color meta tag to white
         const themeColorMeta = document.querySelector('meta[name="theme-color"]');
         if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', color);
+          themeColorMeta.setAttribute('content', '#ffffff');
         }
       }
       
-      // Update status bar color on scroll and load
-      window.addEventListener('scroll', updateStatusBarColor);
-      window.addEventListener('load', updateStatusBarColor);
+      // Set static status bar color on load
+      window.addEventListener('load', setStaticStatusBarColor);
       
       // Prevent zoom on iOS
       document.addEventListener('gesturestart', function (e) {
@@ -251,11 +201,7 @@
         left: 0;
         right: 0;
         height: env(safe-area-inset-top, 0px);
-        background: linear-gradient(135deg, 
-          #6366f1 0%,     /* Bold indigo */
-          #0ea5e9 50%,    /* Bold sky blue */
-          #f59e0b 100%    /* Bold amber */
-        );
+        background: #ffffff; /* Static white color matching header */
         z-index: 9999;
         pointer-events: none;
       }
@@ -288,19 +234,48 @@
         user-select: none;
       }
       
-      /* But allow text selection in input fields */
+      /* Allow text selection in input fields and content areas */
       .pwa-mode input,
-      .pwa-mode textarea {
+      .pwa-mode textarea,
+      .pwa-mode [contenteditable="true"],
+      .pwa-mode .selectable {
+        -webkit-touch-callout: default;
         -webkit-user-select: text;
+        -khtml-user-select: text;
         -moz-user-select: text;
         -ms-user-select: text;
         user-select: text;
       }
       
-      /* Loading spinner for service worker */
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+      /* Smooth scrolling for PWA */
+      .pwa-mode {
+        scroll-behavior: smooth;
+      }
+      
+      /* Hide scrollbars in PWA mode for cleaner look */
+      .pwa-mode ::-webkit-scrollbar {
+        display: none;
+      }
+      
+      .pwa-mode {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      
+      /* Ensure proper touch targets in PWA */
+      .pwa-mode button,
+      .pwa-mode [role="button"],
+      .pwa-mode a {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      
+      /* Optimize for mobile performance */
+      .pwa-mode * {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
       }
     </style>
   </body>
