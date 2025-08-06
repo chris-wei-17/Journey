@@ -219,7 +219,7 @@ export default function JournalHistory() {
           showHomeButton={true}
           onBack={handleBack}
         />
-        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+        <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-6xl mx-auto">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
         </main>
       </div>
@@ -235,7 +235,7 @@ export default function JournalHistory() {
         onBack={handleBack}
       />
       
-      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+      <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-6xl mx-auto">
         {/* Sort Controls */}
         <div className="flex justify-end items-center mb-6">
           <div className="bg-white/75 backdrop-blur-sm rounded-lg shadow-lg">

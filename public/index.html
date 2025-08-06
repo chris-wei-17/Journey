@@ -193,18 +193,7 @@
         background: transparent;
       }
       
-      /* Extend gradient into status bar area */
-      body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: env(safe-area-inset-top, 0px);
-        background: #ffffff; /* Static white color matching header */
-        z-index: 9999;
-        pointer-events: none;
-      }
+      /* Status bar area is now handled by the header component */
       
       /* PWA-specific styles */
       .pwa-mode {
@@ -220,7 +209,7 @@
       /* Handle status bar area on mobile */
       @supports (padding-top: env(safe-area-inset-top)) {
         body {
-          padding-top: env(safe-area-inset-top);
+          padding-top: 0; /* Remove body padding since header handles safe area */
         }
       }
       
