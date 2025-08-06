@@ -92,7 +92,7 @@ export default function AddMacros() {
   return (
     <div className="app-gradient-bg min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 mb-6">
+      <div className="flex items-center justify-between p-4 mt-8 mb-6">
         <Button 
           variant="ghost" 
           size="sm"
