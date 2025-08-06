@@ -53,7 +53,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
             </Link>
           )}
           <Link href="/profile">
-            <div className="w-8 h-8 flex items-center justify-center cursor-pointer">
+            <div className="flex items-center justify-center cursor-pointer">
               <Avatar
                 firstName={user?.firstName || undefined}
                 lastName={user?.lastName || undefined}
