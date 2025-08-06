@@ -15,7 +15,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
   const { user } = useAuth();
 
   return (
-    <header className="bg-white shadow-lg border-0 px-4 fixed top-0 left-0 right-0 z-50 
+    <header className="bg-white/95 backdrop-blur-sm shadow-lg border-0 px-4 fixed top-0 left-0 right-0 z-[9999] 
       pt-[calc(env(safe-area-inset-top)+0.25rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+3.5rem)]">
       <div className="flex items-center justify-between">
         {/* Left side - Back button or Navigation Menu */}

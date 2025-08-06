@@ -193,7 +193,19 @@
         background: transparent;
       }
       
-      /* Status bar area is now handled by the header component */
+      /* Status bar area - create backdrop for content to scroll behind */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: env(safe-area-inset-top, 0px);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 9998;
+        pointer-events: none;
+      }
       
       /* PWA-specific styles */
       .pwa-mode {
