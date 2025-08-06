@@ -418,7 +418,7 @@ export default function AddActivity() {
   return (
     <div className="app-gradient-bg min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 mb-6">
+      <div className="flex items-center justify-between p-4 mt-12 mb-6">
         <Button 
           variant="ghost" 
           size="sm"
