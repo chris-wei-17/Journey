@@ -76,9 +76,12 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
 
   return (
     <header 
-      className={`bg-white shadow-lg border-0 px-4 fixed top-0 left-0 right-0 z-50 
+      className={`bg-white shadow-lg border-0 px-4 
         pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+4rem)]
-        ${isPWA ? 'pwa-header-pinned pwa-header-forced' : ''}`}
+        ${isPWA 
+          ? 'pwa-header-pinned pwa-header-forced' 
+          : 'fixed top-0 left-0 right-0 z-50'
+        }`}
       style={pwaHeaderStyles}
     >
       <div className="flex items-center justify-between">
