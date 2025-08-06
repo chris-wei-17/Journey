@@ -48,7 +48,7 @@ export default function Sleep() {
         onBack={handleBack}
       />
       
-      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+      <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-6xl mx-auto">
         <div className="space-y-6">
           {/* Sleep Chart */}
           <DataChart 

@@ -68,7 +68,7 @@ export default function Goals() {
         showHomeButton={true}
       />
       
-      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+      <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-6xl mx-auto">
         <div className="space-y-6">
           {/* Add Goal Button */}
           <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">

@@ -173,7 +173,7 @@ export default function BlogPostView() {
           showBackButton={true}
           onBack={handleBack}
         />
-        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
+        <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-2xl mx-auto">
           <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="pt-6">
               <div className="animate-pulse">
@@ -197,7 +197,7 @@ export default function BlogPostView() {
           showBackButton={true}
           onBack={handleBack}
         />
-        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
+        <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-2xl mx-auto">
           <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="pt-6">
               <div className="text-center">
@@ -225,7 +225,7 @@ export default function BlogPostView() {
         onBack={handleBack}
       />
       
-      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-2xl mx-auto">
+      <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-2xl mx-auto">
         <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
