@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@/components/ui/avatar";
 import { NavigationMenu } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   title?: string;
@@ -11,12 +12,25 @@ interface HeaderProps {
   showHomeButton?: boolean;
 }
 
+// Utility function to detect PWA mode
+function isPWAMode(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+         (window.navigator as any).standalone === true;
+}
+
 export function Header({ title, showBackButton = false, onBack, showHomeButton = false }: HeaderProps = {}) {
   const { user } = useAuth();
+  const [isPWA, setIsPWA] = useState(false);
+
+  useEffect(() => {
+    setIsPWA(isPWAMode());
+  }, []);
 
   return (
-    <header className="bg-white shadow-lg border-0 px-4 fixed top-0 left-0 right-0 z-50 
-      pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+4rem)]">
+    <header className={`bg-white shadow-lg border-0 px-4 fixed top-0 left-0 right-0 z-50 
+      pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+4rem)]
+      ${isPWA ? 'pwa-header-pinned' : ''}`}>
       <div className="flex items-center justify-between">
         {/* Left side - Back button or Navigation Menu */}
         <div className="flex items-center space-x-2">
