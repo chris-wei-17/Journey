@@ -151,7 +151,8 @@ export default function PWATest() {
           padding: '10px', 
           zIndex: 999999,
           fontSize: '12px',
-          transform: 'translateZ(0)'
+          backfaceVisibility: 'visible',
+          WebkitBackfaceVisibility: 'visible'
         }}>
           🧪 RED TEST HEADER - PWA: {diagnostics.isPWA ? 'YES' : 'NO'} | iOS: {diagnostics.isIOS ? 'YES' : 'NO'}
         </div>

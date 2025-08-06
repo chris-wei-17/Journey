@@ -24,7 +24,8 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
         left: 0,
         right: 0,
         zIndex: 999999,
-        transform: 'translateZ(0)',
+        backfaceVisibility: 'visible',
+        WebkitBackfaceVisibility: 'visible',
       }}
     >
       <div className="flex items-center justify-between">
