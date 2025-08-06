@@ -127,6 +127,19 @@
     min-height: 100vh;
   }
 
+  /* Moving gradient animation */
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
   .photo-upload-area {
     background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
     border: 2px dashed hsl(var(--secondary-300));
