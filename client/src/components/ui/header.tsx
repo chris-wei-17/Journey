@@ -19,7 +19,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
       pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+4rem)]">
       <div className="flex items-center justify-between">
         {/* Left side - Back button or Navigation Menu */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           {showBackButton ? (
             <Button
               variant="ghost"
@@ -44,7 +44,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
         </div>
         
         {/* Right side - Home button and Avatar */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           {showHomeButton && (
             <Link href="/">
               <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors">
