@@ -243,7 +243,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
         {/* Action Buttons */}
         <div className="space-y-3 mt-4">
-          <Dialog open={isAddingField} onOpenChange={setIsAddingField}>
+          <Dialog open={isAddingField} onOpenChange={setIsAddingField} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
             <DialogTrigger asChild>
               <Button 
                 className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200"
