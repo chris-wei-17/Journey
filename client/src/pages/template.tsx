@@ -24,7 +24,7 @@ export default function Template() {
         onBack={handleBack}
       />
       
-      <div className="pt-[calc(env(safe-area-inset-top)+6rem)] px-4 pb-6">
+      <div className="pt-[calc(env(safe-area-inset-top)+5rem)] px-4 pb-6">
         <div className="space-y-6">
           {/* Main Chart */}
           <DataChart 
