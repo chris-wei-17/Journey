@@ -123,9 +123,23 @@
   }
 
   .app-gradient-bg {
-    /* Background now handled by HTML/body for full-screen coverage */
-    background: transparent;
+    background: linear-gradient(-45deg, hsl(var(--primary-600)), hsl(var(--lavender-600)), hsl(var(--primary-500)), hsl(var(--lavender-500)));
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     min-height: 100vh;
+  }
+
+  /* Moving gradient animation */
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   .photo-upload-area {
