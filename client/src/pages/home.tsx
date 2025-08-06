@@ -85,10 +85,9 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div className="app-gradient-bg">
       <Header />
-      <div className="app-gradient-bg">
-        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
         {/* Welcome Section */}
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
@@ -211,7 +210,6 @@ export default function Home() {
           </Card>
         )}
         </main>
-      </div>
-    </>
+    </div>
   );
 }

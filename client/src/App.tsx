@@ -30,6 +30,7 @@ import ResetPassword from "@/pages/reset-password";
 import ResetPasswordToken from "@/pages/reset-password-token";
 import JournalEntry from "@/pages/journal-entry";
 import JournalHistory from "@/pages/journal-history";
+import PWATest from "@/pages/pwa-test";
 // import Template from "@/pages/template"; // Uncomment when creating new pages
 // import YourNewPage from "@/pages/your-new-page"; // Example: replace with actual page name
 
@@ -58,6 +59,7 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPasswordToken} />
         <Route path="/blog-post" component={BlogPostView} />
+        <Route path="/pwa-test" component={PWATest} />
         {!isAuthenticated ? (
           <Route path="/" component={isPWAMode() ? Auth : Landing} />
         ) : (
@@ -84,6 +86,7 @@ function Router() {
                 <Route path="/change-password" component={ResetPassword} />
                 <Route path="/journal-entry" component={JournalEntry} />
                 <Route path="/journal-history" component={JournalHistory} />
+                <Route path="/pwa-test" component={PWATest} />
                 {/* <Route path="/template" component={Template} /> */} {/* Uncomment when using template */}
                 {/* <Route path="/your-route" component={YourNewPage} /> */} {/* Example: replace with actual route and component */}
               </>

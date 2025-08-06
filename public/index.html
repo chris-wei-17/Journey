@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <!-- Preload important resources -->
-    <link rel="preload" href="/src/main.tsx" as="script" crossorigin />
+    <link rel="preload" href="data:application/octet-stream;base64,aW1wb3J0IHsgY3JlYXRlUm9vdCB9IGZyb20gInJlYWN0LWRvbS9jbGllbnQiOwppbXBvcnQgQXBwIGZyb20gIi4vQXBwIjsKaW1wb3J0ICIuL2luZGV4LmNzcyI7CgpjcmVhdGVSb290KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJyb290IikhKS5yZW5kZXIoPEFwcCAvPik7Cg==" as="script" crossorigin />
     
     <!-- Prevent layout shifts from dropdown menus -->
     <style>
@@ -88,12 +88,13 @@
         }
       }
     </style>
+    <script type="module" crossorigin src="/assets/index-IuCaC3jO.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CA74pjTR.css">
   </head>
   <body>
     <div id="root"></div>
     
     <!-- Main App Script -->
-    <script type="module" src="/src/main.tsx"></script>
     
     <!-- Service Worker Registration -->
     <script>
@@ -202,7 +203,8 @@
         right: 0;
         height: env(safe-area-inset-top, 0px);
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
         z-index: 9998;
         pointer-events: none;
       }
@@ -214,8 +216,8 @@
       
       .ios-pwa {
         /* iOS-specific PWA styling with safe areas 
-        padding-top: env(safe-area-inset-top); 
-        padding-bottom: env(safe-area-inset-bottom); */
+          padding-top: env(safe-area-inset-top);
+          padding-bottom: env(safe-area-inset-bottom);*/
       }
       
       /* Handle status bar area on mobile */
@@ -229,9 +231,7 @@
       .pwa-mode * {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
-        -khtml-user-select: none;
         -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
       }
       
@@ -242,9 +242,7 @@
       .pwa-mode .selectable {
         -webkit-touch-callout: default;
         -webkit-user-select: text;
-        -khtml-user-select: text;
         -moz-user-select: text;
-        -ms-user-select: text;
         user-select: text;
       }
       
@@ -273,7 +271,6 @@
       
       /* Optimize for mobile performance */
       .pwa-mode * {
-        -webkit-transform: translateZ(0);
         transform: translateZ(0);
         backface-visibility: hidden;
         perspective: 1000px;

@@ -3,6 +3,14 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { SimpleDropdown } from "@/components/ui/simple-dropdown";
 
+// Utility function to detect PWA mode
+function isPWAMode(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+         window.matchMedia('(display-mode: minimal-ui)').matches ||
+         (window.navigator as any).standalone === true;
+}
+
 const navigationItems = [
   { label: "Dashboard", path: "/", icon: "fas fa-home" },
   { label: "Blog", path: "/landing", icon: "fas fa-newspaper" },
@@ -18,6 +26,27 @@ const navigationItems = [
 
 export function NavigationMenu() {
   const [location] = useLocation();
+  const [isPWA, setIsPWA] = useState(false);
+
+  useEffect(() => {
+    const checkPWA = () => {
+      setIsPWA(isPWAMode());
+    };
+    
+    checkPWA();
+    
+    // Listen for media query changes
+    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+    const minimalUIQuery = window.matchMedia('(display-mode: minimal-ui)');
+    
+    standaloneQuery.addListener(checkPWA);
+    minimalUIQuery.addListener(checkPWA);
+    
+    return () => {
+      standaloneQuery.removeListener(checkPWA);
+      minimalUIQuery.removeListener(checkPWA);
+    };
+  }, []);
 
   const triggerButton = (
     <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
@@ -44,6 +73,22 @@ export function NavigationMenu() {
             <span>{item.label}</span>
           </Link>
         ))}
+        
+        {/* PWA-only diagnostic link */}
+        {isPWA && (
+          <>
+            <div className="border-t border-gray-200 my-1"></div>
+            <Link 
+              href="/pwa-test" 
+              className={`flex items-center space-x-3 px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 transition-colors ${
+                location === '/pwa-test' ? 'bg-primary-50 text-primary-600' : 'text-gray-700'
+              }`}
+            >
+              <i className="fas fa-cog w-4 h-4"></i>
+              <span>🧪 PWA Test</span>
+            </Link>
+          </>
+        )}
       </div>
     </SimpleDropdown>
   );
