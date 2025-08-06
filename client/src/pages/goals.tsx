@@ -60,15 +60,15 @@ export default function Goals() {
   };
 
   return (
-    <div className="app-gradient-bg">
+    <>
       <Header 
         title="Goals"
         showBackButton={false}
         onBack={handleBack}
         showHomeButton={true}
       />
-      
-      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+      <div className="app-gradient-bg">
+        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
         <div className="space-y-6">
           {/* Add Goal Button */}
           <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">
@@ -150,7 +150,8 @@ export default function Goals() {
           {/* Quick Access */}
           <QuickAccess />
         </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }
