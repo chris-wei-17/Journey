@@ -216,8 +216,8 @@ export default function Photos() {
           showHomeButton={true}
           onBack={handleBack}
         />
-        <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-6xl mx-auto">
-          <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+5rem)]">
+        <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
+          <div className="flex items-center justify-center pt-[calc(env(safe-area-inset-top)+6rem)]">
             {isLoading && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>}
           </div>
         </main>
@@ -240,7 +240,7 @@ export default function Photos() {
         onBack={handleBack}
       />
       
-      <main className="pt-[calc(env(safe-area-inset-top)+5rem)] p-4 max-w-6xl mx-auto">
+      <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-6xl mx-auto">
         {/* Compare and Sort Controls */}
         <div className="flex justify-between items-center mb-6">
           {/* Compare Button */}
