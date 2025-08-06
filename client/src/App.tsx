@@ -56,11 +56,18 @@ function Router() {
     <>
       <ScrollToTop />
       <Switch>
+        {/* Public routes - accessible to everyone */}
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPasswordToken} />
         <Route path="/blog-post" component={BlogPostView} />
+        
         {!isAuthenticated ? (
-          <Route path="/" component={isPWAMode() ? Auth : Landing} />
+          <>
+            {/* Landing page for browser users, Auth for PWA */}
+            <Route path="/" component={isPWAMode() ? Auth : Landing} />
+            {/* Redirect all other routes to auth page for unauthenticated users */}
+            <Route path="/:path*" component={Auth} />
+          </>
         ) : (
           <>
             {!user?.onboardingCompleted ? (
