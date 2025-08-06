@@ -285,6 +285,31 @@
   -webkit-backface-visibility: hidden !important;
 }
 
+/* Even more aggressive PWA header styles */
+.pwa-header-forced {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  will-change: transform !important;
+}
+
+/* PWA mode body class enforcement */
+.pwa-mode header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+}
+
 /* Ensure PWA mode has proper stacking context */
 @media (display-mode: standalone) {
   header {
@@ -307,6 +332,26 @@
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
+  
+  /* Additional PWA header enforcement */
+  body header {
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+  }
+}
+
+/* Minimal UI mode support */
+@media (display-mode: minimal-ui) {
+  header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+  }
 }
 
 /* iOS standalone mode specific fixes */
@@ -323,5 +368,23 @@
       -webkit-backface-visibility: hidden !important;
       backface-visibility: hidden !important;
     }
+    
+    /* Force iOS PWA header pinning */
+    header {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 9999 !important;
+    }
+  }
+  
+  /* iOS PWA body class */
+  .ios-pwa header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
   }
 }

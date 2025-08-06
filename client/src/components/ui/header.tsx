@@ -12,11 +12,13 @@ interface HeaderProps {
   showHomeButton?: boolean;
 }
 
-// Utility function to detect PWA mode
+// Enhanced PWA mode detection
 function isPWAMode(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches ||
          window.matchMedia('(display-mode: window-controls-overlay)').matches ||
-         (window.navigator as any).standalone === true;
+         window.matchMedia('(display-mode: minimal-ui)').matches ||
+         (window.navigator as any).standalone === true ||
+         window.location.search.includes('pwa=true');
 }
 
 export function Header({ title, showBackButton = false, onBack, showHomeButton = false }: HeaderProps = {}) {
@@ -24,13 +26,61 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
   const [isPWA, setIsPWA] = useState(false);
 
   useEffect(() => {
-    setIsPWA(isPWAMode());
+    const checkPWA = () => {
+      const pwaMode = isPWAMode();
+      setIsPWA(pwaMode);
+      
+      // Add debug logging
+      console.log('🔍 PWA Detection Results:', {
+        standalone: window.matchMedia('(display-mode: standalone)').matches,
+        windowControls: window.matchMedia('(display-mode: window-controls-overlay)').matches,
+        minimalUI: window.matchMedia('(display-mode: minimal-ui)').matches,
+        navigatorStandalone: (window.navigator as any).standalone,
+        isPWAMode: pwaMode
+      });
+      
+      // Force add body class for PWA mode
+      if (pwaMode) {
+        document.body.classList.add('pwa-mode');
+        console.log('✅ Added pwa-mode class to body');
+      }
+    };
+    
+    // Check immediately and on media query changes
+    checkPWA();
+    
+    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+    const minimalUIQuery = window.matchMedia('(display-mode: minimal-ui)');
+    
+    standaloneQuery.addListener(checkPWA);
+    minimalUIQuery.addListener(checkPWA);
+    
+    return () => {
+      standaloneQuery.removeListener(checkPWA);
+      minimalUIQuery.removeListener(checkPWA);
+    };
   }, []);
 
+  // Aggressive inline styles for PWA mode
+  const pwaHeaderStyles = isPWA ? {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 9999,
+    transform: 'translateZ(0)',
+    backfaceVisibility: 'hidden' as const,
+    WebkitTransform: 'translateZ(0)',
+    WebkitBackfaceVisibility: 'hidden' as const,
+  } : {};
+
   return (
-    <header className={`bg-white shadow-lg border-0 px-4 fixed top-0 left-0 right-0 z-50 
-      pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+4rem)]
-      ${isPWA ? 'pwa-header-pinned' : ''}`}>
+    <header 
+      className={`bg-white shadow-lg border-0 px-4 fixed top-0 left-0 right-0 z-50 
+        pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 min-h-[calc(env(safe-area-inset-top)+4rem)]
+        ${isPWA ? 'pwa-header-pinned pwa-header-forced' : ''}`}
+      style={pwaHeaderStyles}
+    >
       <div className="flex items-center justify-between">
         {/* Left side - Back button or Navigation Menu */}
         <div className="flex items-center space-x-2">
