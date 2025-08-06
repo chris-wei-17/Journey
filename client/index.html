@@ -221,7 +221,7 @@
       /* Handle status bar area on mobile */
       @supports (padding-top: env(safe-area-inset-top)) {
         body {
-          padding-top: env(safe-area-inset-top);
+          padding-top: 0; /* Remove body padding since header handles safe area */
         }
       }
       
