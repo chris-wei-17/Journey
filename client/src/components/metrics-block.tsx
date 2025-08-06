@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import type { MetricEntry, CustomMetricField } from "@shared/schema";
@@ -14,28 +12,9 @@ interface MetricsBlockProps {
   selectedDate: Date;
 }
 
-const UNITS = {
-  weight: ["lbs", "kg"],
-  length: ["in", "cm"],
-  percentage: ["%"],
-  count: ["reps", "count"]
-};
-
-const COMMON_METRICS = [
-  { name: "Waist", unit: "length" },
-  { name: "Chest", unit: "length" },
-  { name: "Arms", unit: "length" },
-  { name: "Thighs", unit: "length" },
-  { name: "Hips", unit: "length" },
-  { name: "Body Fat %", unit: "percentage" },
-  { name: "Muscle Mass", unit: "percentage" }
-];
-
 export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isAddingField, setIsAddingField] = useState(false);
-  const [newFieldName, setNewFieldName] = useState("");
-  const [newFieldUnit, setNewFieldUnit] = useState("length");
+  const [, setLocation] = useLocation();
 
   const [tempValues, setTempValues] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
@@ -63,24 +42,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
   // Debug logging
   console.log('Metrics Debug:', { tempValues, dateStr, currentMetric });
 
-  const createCustomFieldMutation = useMutation({
-    mutationFn: async (data: { fieldName: string; unit: string }) => {
-      console.log('Creating custom metric field:', data);
-      const result = await apiRequest("POST", "/api/custom-metric-fields", data);
-      console.log('Custom metric field created:', result);
-      return result;
-    },
-    onSuccess: (data) => {
-      console.log('Custom field creation successful:', data);
-      queryClient.invalidateQueries({ queryKey: ["/api/custom-metric-fields"] });
-      setNewFieldName("");
-      setNewFieldUnit("length");
-      setIsAddingField(false);
-    },
-    onError: (error) => {
-      console.error('Error creating custom metric field:', error);
-    },
-  });
+
 
   const deleteCustomFieldMutation = useMutation({
     mutationFn: async (fieldId: number) => {
@@ -142,20 +104,7 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
     }
   };
 
-  const addCustomField = () => {
-    console.log('addCustomField called', { newFieldName, newFieldUnit });
-    if (newFieldName.trim()) {
-      const unitType = newFieldUnit;
-      const unit = UNITS[unitType as keyof typeof UNITS][0];
-      console.log('Creating field with:', { fieldName: newFieldName.trim(), unit });
-      createCustomFieldMutation.mutate({ 
-        fieldName: newFieldName.trim(),
-        unit: unit
-      });
-    } else {
-      console.log('Field name is empty, not creating');
-    }
-  };
+
 
   return (
     <Card className="bg-white/75 backdrop-blur-sm shadow-xl mb-2 border-0" style={{
@@ -243,73 +192,17 @@ export function MetricsBlock({ selectedDate }: MetricsBlockProps) {
 
         {/* Action Buttons */}
         <div className="space-y-3 mt-4">
-          <Dialog open={isAddingField} onOpenChange={setIsAddingField} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
-            <DialogTrigger asChild>
-              <Button 
-                className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200"
-                onClick={() => setIsEditMode(false)}
-              >
-                <i className="fas fa-plus mr-2"></i>
-                ADD CUSTOM METRIC
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
-              <DialogHeader>
-                <DialogTitle>Add Custom Metric</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Metric Name</Label>
-                  <Select value={newFieldName} onValueChange={setNewFieldName}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select or type custom metric" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COMMON_METRICS.map((metric) => (
-                        <SelectItem key={metric.name} value={metric.name}>
-                          {metric.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    placeholder="Or type custom metric name"
-                    value={newFieldName}
-                    onChange={(e) => setNewFieldName(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-                <div>
-                  <Label>Unit Type</Label>
-                  <Select value={newFieldUnit} onValueChange={setNewFieldUnit}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="length">Length (in/cm)</SelectItem>
-                      <SelectItem value="percentage">Percentage (%)</SelectItem>
-                      <SelectItem value="count">Count/Reps</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsAddingField(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      console.log('Add Metric button clicked');
-                      addCustomField();
-                    }}
-                    disabled={!newFieldName.trim() || createCustomFieldMutation.isPending}
-                    className="bg-purple-500 hover:bg-purple-600 text-white"
-                  >
-                    {createCustomFieldMutation.isPending ? "Adding..." : "Add Metric"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200"
+            onClick={() => {
+              setIsEditMode(false);
+              const dateParam = format(selectedDate, 'yyyy-MM-dd');
+              setLocation(`/add-metric?date=${dateParam}`);
+            }}
+          >
+            <i className="fas fa-plus mr-2"></i>
+            ADD CUSTOM METRIC
+          </Button>
 
           {customFields.length > 0 && (
             <Button 

@@ -18,6 +18,7 @@ import Feedback from "@/pages/feedback";
 import AddActivity from "@/pages/add-activity";
 import SelectActivity from "@/pages/select-activity";
 import AddMacros from "@/pages/add-macros";
+import AddMetric from "@/pages/add-metric";
 import Photos from "@/pages/photos";
 import Progress from "@/pages/progress";
 import Goals from "@/pages/goals";
@@ -81,6 +82,7 @@ function Router() {
                 <Route path="/add-activity" component={AddActivity} />
                 <Route path="/select-activity" component={SelectActivity} />
                 <Route path="/add-macros" component={AddMacros} />
+                <Route path="/add-metric" component={AddMetric} />
                 <Route path="/change-password" component={ResetPassword} />
                 <Route path="/journal-entry" component={JournalEntry} />
                 <Route path="/journal-history" component={JournalHistory} />
