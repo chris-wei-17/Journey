@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { membershipTiers, hasMembershipFeature, type MembershipTier } from "@shared/schema";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface MembershipCardProps {
   showUpgradeOptions?: boolean;
@@ -11,12 +15,36 @@ interface MembershipCardProps {
 
 export function MembershipCard({ showUpgradeOptions = false, className = "" }: MembershipCardProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isManagingSubscription, setIsManagingSubscription] = useState(false);
   
   if (!user?.membership) {
     return null;
   }
 
   const currentTier = membershipTiers[user.membership as MembershipTier];
+
+  const handleManageSubscription = async () => {
+    if (!user) return;
+
+    setIsManagingSubscription(true);
+    try {
+      const response = await apiRequest('POST', '/api/stripe/create-portal-session');
+      if (response.url) {
+        window.location.href = response.url;
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to open subscription management. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsManagingSubscription(false);
+    }
+  };
   
   return (
     <Card className={`bg-white/75 backdrop-blur-sm border-0 shadow-lg ${className}`}>
@@ -64,6 +92,7 @@ export function MembershipCard({ showUpgradeOptions = false, className = "" }: M
           </div>
         </div>
 
+        {/* Upgrade Options for Free Users */}
         {showUpgradeOptions && user.membership === 'Free' && (
           <div className="pt-4 border-t border-gray-200">
             <div className="space-y-2">
@@ -71,24 +100,43 @@ export function MembershipCard({ showUpgradeOptions = false, className = "" }: M
                 variant="outline" 
                 size="sm" 
                 className="w-full text-xs"
-                onClick={() => {
-                  // TODO: Implement upgrade flow
-                  alert('Upgrade functionality coming soon!');
-                }}
+                onClick={() => setShowUpgradeModal(true)}
               >
                 🚫 Upgrade to Ad-Free
               </Button>
               <Button 
                 size="sm" 
                 className="w-full text-xs bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                onClick={() => {
-                  // TODO: Implement upgrade flow
-                  alert('Upgrade functionality coming soon!');
-                }}
+                onClick={() => setShowUpgradeModal(true)}
               >
                 ⭐ Upgrade to Premium
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Subscription Management for Paid Users */}
+        {(user.membership === 'Ad-free' || user.membership === 'Premium') && (
+          <div className="pt-4 border-t border-gray-200">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-xs"
+              onClick={handleManageSubscription}
+              disabled={isManagingSubscription}
+            >
+              {isManagingSubscription ? (
+                <div className="flex items-center gap-2">
+                  <i className="fas fa-spinner fa-spin"></i>
+                  Loading...
+                </div>
+              ) : (
+                <>
+                  <i className="fas fa-cog mr-2"></i>
+                  Manage Subscription
+                </>
+              )}
+            </Button>
           </div>
         )}
 
@@ -106,6 +154,12 @@ export function MembershipCard({ showUpgradeOptions = false, className = "" }: M
           </div>
         )}
       </CardContent>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </Card>
   );
 }
