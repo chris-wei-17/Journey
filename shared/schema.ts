@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   isEmailVerified: boolean("is_email_verified").default(false),
   photosPin: varchar("photos_pin"),
   photosPinEnabled: boolean("photos_pin_enabled"),
+  membership: varchar("membership", { length: 20 }).notNull().default("Premium (beta)"), // Free, Ad-free, Premium, Premium (beta)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -366,3 +367,57 @@ export const onboardingSchema = z.object({
 export type LoginData = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
 export type OnboardingData = z.infer<typeof onboardingSchema>;
+
+// Membership system types
+export type MembershipTier = "Free" | "Ad-free" | "Premium" | "Premium (beta)";
+
+export const membershipTiers: Record<MembershipTier, {
+  name: string;
+  displayName: string;
+  description: string;
+  features: string[];
+  emoji: string;
+}> = {
+  "Free": {
+    name: "Free",
+    displayName: "🆓 Free",
+    description: "Basic fitness tracking with ads",
+    features: ["Basic activity tracking", "Photo uploads", "Progress charts", "Community support"],
+    emoji: "🆓"
+  },
+  "Ad-free": {
+    name: "Ad-free", 
+    displayName: "🚫 Ad-free",
+    description: "All free features without advertisements",
+    features: ["Everything in Free", "No advertisements", "Clean interface", "Priority support"],
+    emoji: "🚫"
+  },
+  "Premium": {
+    name: "Premium",
+    displayName: "⭐ Premium", 
+    description: "Full access to all features",
+    features: ["Everything in Ad-free", "Advanced analytics", "Custom goals", "Export data", "Premium support"],
+    emoji: "⭐"
+  },
+  "Premium (beta)": {
+    name: "Premium (beta)",
+    displayName: "🧪 Premium (Beta)",
+    description: "Early access to premium features", 
+    features: ["All Premium features", "Beta testing access", "Early feature previews", "Direct feedback channel"],
+    emoji: "🧪"
+  }
+};
+
+// Helper function to check membership permissions
+export function hasMembershipFeature(userMembership: MembershipTier, feature: 'ads-free' | 'premium-analytics' | 'beta-features'): boolean {
+  switch (feature) {
+    case 'ads-free':
+      return ['Ad-free', 'Premium', 'Premium (beta)'].includes(userMembership);
+    case 'premium-analytics':
+      return ['Premium', 'Premium (beta)'].includes(userMembership);
+    case 'beta-features':
+      return userMembership === 'Premium (beta)';
+    default:
+      return false;
+  }
+}

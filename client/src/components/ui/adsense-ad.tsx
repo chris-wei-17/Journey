@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { hasMembershipFeature, type MembershipTier } from '@shared/schema';
 
 interface AdSenseAdProps {
   adSlot: string;
@@ -22,6 +24,7 @@ export function AdSenseAd({
   responsive = true
 }: AdSenseAdProps) {
   const adRef = useRef<HTMLModElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     try {
@@ -35,6 +38,11 @@ export function AdSenseAd({
     }
   }, []);
 
+  // Don't show ads for users with ad-free memberships
+  if (user?.membership && hasMembershipFeature(user.membership as MembershipTier, 'ads-free')) {
+    return null; // No ad for ad-free users
+  }
+
   // Don't render ads in development mode to avoid issues
   if (process.env.NODE_ENV === 'development') {
     return (
@@ -43,6 +51,11 @@ export function AdSenseAd({
           <i className="fas fa-ad text-2xl mb-2 block"></i>
           AdSense Ad Placeholder
           <div className="text-xs mt-1">Slot: {adSlot}</div>
+          {user?.membership && (
+            <div className="text-xs mt-1 text-blue-600">
+              User: {user.membership} (Ads {hasMembershipFeature(user.membership as MembershipTier, 'ads-free') ? 'disabled' : 'enabled'})
+            </div>
+          )}
         </div>
       </div>
     );
