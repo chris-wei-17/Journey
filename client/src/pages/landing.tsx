@@ -7,6 +7,7 @@ import { DataChart } from "@/components/ui/data-chart";
 import { useState, useEffect } from "react";
 import { loadBlogPosts, BlogPost } from "@/lib/blog-utils";
 import { useAuth } from "@/hooks/useAuth";
+import { BlogDisplayAd } from "@/components/ui/adsense-ad";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
@@ -76,37 +77,43 @@ export default function Landing() {
         ) : (
           <div className="space-y-4">
             {blogPosts.map((post, index) => (
-              <Card 
-                key={index} 
-                className="bg-white/75 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1"
-                onClick={() => handleBlogPostClick(post.filename)}
-              >
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-bold text-gray-800 line-clamp-2 leading-tight">
-                      {post.title}
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  <div className="space-y-3 mb-4">
-                    {post.excerpt && (
-                      <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                        {post.excerpt}
-                      </p>
-                    )}
+              <div key={index}>
+                <Card 
+                  className="bg-white/75 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1"
+                  onClick={() => handleBlogPostClick(post.filename)}
+                >
+                  <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-                        {post.filename.replace('.md', '')}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        Read more →
+                      <CardTitle className="text-xl font-bold text-gray-800 line-clamp-2 leading-tight">
+                        {post.title}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="pt-0">
+                    <div className="space-y-3 mb-4">
+                      {post.excerpt && (
+                        <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                          {post.excerpt}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+                          {post.filename.replace('.md', '')}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          Read more →
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+                
+                {/* Add ad after every post except the last one */}
+                {index < blogPosts.length - 1 && (
+                  <BlogDisplayAd className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg" />
+                )}
+              </div>
             ))}
           </div>
         )}
