@@ -77,7 +77,7 @@ export default function Landing() {
         ) : (
           <div className="space-y-4">
             {blogPosts.map((post, index) => (
-              <div key={index}>
+              <div key={`post-${index}`}>
                 <Card 
                   className="bg-white/75 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1"
                   onClick={() => handleBlogPostClick(post.filename)}
@@ -109,12 +109,23 @@ export default function Landing() {
                   </CardContent>
                 </Card>
                 
-                {/* Add ad after every post except the last one */}
+                {/* Add ad after every post except the last one - this scales automatically */}
                 {index < blogPosts.length - 1 && (
-                  <BlogDisplayAd className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg" />
+                  <BlogDisplayAd 
+                    key={`ad-${index}`}
+                    className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg" 
+                  />
                 )}
               </div>
             ))}
+            
+            {/* Add a final ad at the bottom if there are multiple posts */}
+            {blogPosts.length > 2 && (
+              <BlogDisplayAd 
+                key="final-ad"
+                className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg mt-8" 
+              />
+            )}
           </div>
         )}
         

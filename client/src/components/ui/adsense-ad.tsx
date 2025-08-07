@@ -80,7 +80,7 @@ export function BlogAdBanner({ className = '' }: { className?: string }) {
 }
 
 // Responsive display ad for between posts
-export function BlogDisplayAd({ className = '' }: { className?: string }) {
+export function BlogDisplayAd({ className = '', adKey }: { className?: string; adKey?: string }) {
   return (
     <AdSenseAd
       adSlot={process.env.VITE_ADSENSE_DISPLAY_SLOT || "0987654321"}
@@ -92,5 +92,87 @@ export function BlogDisplayAd({ className = '' }: { className?: string }) {
       }}
       responsive={true}
     />
+  );
+}
+
+// Function to determine if an ad should be placed at a given position
+export function shouldShowAdAtIndex(index: number, totalPosts: number): boolean {
+  // Show ad after every post except the last one
+  // This automatically scales as more posts are added
+  return index < totalPosts - 1;
+}
+
+// Function to get ad placement strategy based on number of posts
+export function getAdPlacementStrategy(totalPosts: number) {
+  if (totalPosts <= 1) {
+    return { showBetweenPosts: false, showFinalAd: false };
+  } else if (totalPosts <= 3) {
+    return { showBetweenPosts: true, showFinalAd: false };
+  } else {
+    return { showBetweenPosts: true, showFinalAd: true };
+  }
+}
+
+// Enhanced blog list component with automatic ad placement
+export function BlogListWithAds({ 
+  posts, 
+  onPostClick, 
+  className = '' 
+}: { 
+  posts: any[];
+  onPostClick: (filename: string) => void;
+  className?: string;
+}) {
+  const strategy = getAdPlacementStrategy(posts.length);
+  
+  return (
+    <div className={`space-y-4 ${className}`}>
+      {posts.map((post, index) => (
+        <div key={`post-${index}`}>
+          {/* Blog Post Card */}
+          <div 
+            className="bg-white/75 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1 rounded-lg p-6"
+            onClick={() => onPostClick(post.filename)}
+          >
+            <div className="space-y-3">
+              <h3 className="text-xl font-bold text-gray-800 line-clamp-2 leading-tight">
+                {post.title}
+              </h3>
+              {post.excerpt && (
+                <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                  {post.excerpt}
+                </p>
+              )}
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+                  {post.filename.replace('.md', '')}
+                </div>
+                <div className="text-xs text-gray-400">
+                  Read more →
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Ad placement - automatically scales with more posts */}
+          {strategy.showBetweenPosts && shouldShowAdAtIndex(index, posts.length) && (
+            <BlogDisplayAd 
+              key={`ad-${index}`}
+              adKey={`between-${index}`}
+              className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg" 
+            />
+          )}
+        </div>
+      ))}
+      
+      {/* Final ad at bottom for longer lists */}
+      {strategy.showFinalAd && (
+        <BlogDisplayAd 
+          key="final-ad"
+          adKey="final"
+          className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg mt-8" 
+        />
+      )}
+    </div>
   );
 }
