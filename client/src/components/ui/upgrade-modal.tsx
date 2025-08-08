@@ -23,7 +23,7 @@ export function UpgradeModal({ isOpen, onClose, targetTier }: UpgradeModalProps)
   const [selectedInterval, setSelectedInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [isPWA, setIsPWA] = useState(false);
 
-  // Detect PWA mode
+  // Detect PWA mode for modal positioning
   useEffect(() => {
     const checkPWA = () => {
       const isPWAMode = window.matchMedia('(display-mode: standalone)').matches ||
