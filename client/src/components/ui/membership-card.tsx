@@ -116,7 +116,7 @@ export function MembershipCard({ showUpgradeOptions = false, className = "" }: M
         )}
 
         {/* Subscription Management for Paid Users */}
-        {(user.membership === 'Ad-free' || user.membership === 'Premium') && (
+        {(user.membership === 'Ad-free' || user.membership === 'Premium' || user.membership === 'Premium (beta)') && (
           <div className="pt-4 border-t border-gray-200">
             <Button
               variant="outline"
@@ -140,6 +140,7 @@ export function MembershipCard({ showUpgradeOptions = false, className = "" }: M
           </div>
         )}
 
+        {/* Beta Tester Message */}
         {user.membership === 'Premium (beta)' && (
           <div className="pt-3 border-t border-gray-200">
             <div className="bg-blue-50 rounded-lg p-3">
