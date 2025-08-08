@@ -1,4 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
 

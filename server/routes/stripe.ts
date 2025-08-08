@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '../auth.js';
+import { authenticateToken, type AuthenticatedRequest } from '../auth.js';
 import {
   stripe,
   createCheckoutSession,
@@ -25,7 +25,7 @@ function checkStripeAvailable(res: any) {
 }
 
 // Create checkout session for membership upgrade
-  router.post('/create-checkout-session', authenticateToken, async (req, res) => {
+  router.post('/create-checkout-session', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!checkStripeAvailable(res)) return;
     
@@ -83,7 +83,7 @@ function checkStripeAvailable(res: any) {
 });
 
 // Create customer portal session for subscription management
-  router.post('/create-portal-session', authenticateToken, async (req, res) => {
+  router.post('/create-portal-session', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     if (!checkStripeAvailable(res)) return;
     

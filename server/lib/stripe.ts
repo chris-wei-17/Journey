@@ -5,10 +5,10 @@ let stripe: Stripe | null = null;
 
 try {
   if (process.env.STRIPE_SECRET_KEY) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-12-18.acacia', // Use latest API version
-      typescript: true,
-    });
+      stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-07-30.basil', // Use latest API version
+    typescript: true,
+  });
   } else {
     console.warn('⚠️ STRIPE_SECRET_KEY not found - Stripe functionality will be disabled');
   }

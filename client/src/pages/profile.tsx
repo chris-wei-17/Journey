@@ -3,6 +3,7 @@ import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { PinProtection } from "@/components/ui/pin-protection";
 import { PWAInstallButton } from "@/components/ui/pwa-install-button";
 import { TimezoneSettings } from "@/components/ui/timezone-settings";
+import { MembershipCard, MembershipBadge } from "@/components/ui/membership-card";
 import { useState } from "react";
 
 export default function Profile() {
@@ -94,6 +96,11 @@ export default function Profile() {
                 </h3>
                 <p className="text-gray-600">{user?.email}</p>
                 <p className="text-sm text-gray-500">Username: {user?.username}</p>
+                {user?.membership && (
+                  <div className="mt-2">
+                    <MembershipBadge className="text-xs" />
+                  </div>
+                )}
               </div>
             </div>
             
@@ -109,10 +116,15 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        {/* Membership & Subscription Management */}
+        <MembershipCard showUpgradeOptions={true} className="mb-8" />
+
         {/* Timezone Settings */}
-        <TimezoneSettings className="bg-white/75 backdrop-blur-sm shadow-xl mb-8 border-0" style={{
+        <div className="bg-white/75 backdrop-blur-sm shadow-xl mb-8 border-0" style={{
           boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
-        }} />
+        }}>
+          <TimezoneSettings />
+        </div>
 
         {/* Settings Section */}
         <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0" style={{
