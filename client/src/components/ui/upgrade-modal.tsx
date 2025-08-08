@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,25 @@ export function UpgradeModal({ isOpen, onClose, targetTier }: UpgradeModalProps)
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTier, setSelectedTier] = useState<'Ad-free' | 'Premium'>(targetTier || 'Premium');
   const [selectedInterval, setSelectedInterval] = useState<'monthly' | 'yearly'>('monthly');
+  const [isPWA, setIsPWA] = useState(false);
+
+  // Detect PWA mode
+  useEffect(() => {
+    const checkPWA = () => {
+      const isPWAMode = window.matchMedia('(display-mode: standalone)').matches ||
+                       window.matchMedia('(display-mode: fullscreen)').matches ||
+                       (window.navigator as any).standalone === true ||
+                       document.referrer.includes('android-app://');
+      setIsPWA(isPWAMode);
+    };
+
+    checkPWA();
+    // Listen for display mode changes
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    mediaQuery.addEventListener('change', checkPWA);
+
+    return () => mediaQuery.removeEventListener('change', checkPWA);
+  }, []);
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -64,7 +83,11 @@ export function UpgradeModal({ isOpen, onClose, targetTier }: UpgradeModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className={`max-w-md max-h-[90vh] overflow-y-auto ${
+        isPWA 
+          ? 'fixed inset-4 top-[10vh] left-[50%] translate-x-[-50%] translate-y-0 w-[calc(100vw-2rem)] max-w-md mx-auto' 
+          : 'm-4 w-[calc(100vw-2rem)] sm:w-full'
+      }`}>
         <DialogHeader>
           <DialogTitle className="text-center">
             Upgrade to {currentTierInfo.displayName}
