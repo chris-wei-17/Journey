@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken } from '../auth.js';
 import {
   stripe,
   createCheckoutSession,
@@ -8,17 +8,29 @@ import {
   getMembershipFromPriceId,
   MEMBERSHIP_PRICES,
 } from '../lib/stripe.js';
-import { db } from '../db/index.js';
+import { db } from '../db.js';
 import { users } from '../../shared/schema.js';
 import { eq } from 'drizzle-orm';
 
 const router = Router();
 
+// Check if Stripe is available
+function checkStripeAvailable(res: any) {
+  if (!stripe) {
+    return res.status(503).json({ 
+      error: 'Payment processing is currently unavailable. Please try again later.' 
+    });
+  }
+  return true;
+}
+
 // Create checkout session for membership upgrade
-router.post('/create-checkout-session', authenticateToken, async (req, res) => {
+  router.post('/create-checkout-session', authenticateToken, async (req, res) => {
   try {
+    if (!checkStripeAvailable(res)) return;
+    
     const { tier, interval } = req.body; // tier: 'Ad-free' | 'Premium', interval: 'monthly' | 'yearly'
-    const userId = req.user?.id;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -71,9 +83,11 @@ router.post('/create-checkout-session', authenticateToken, async (req, res) => {
 });
 
 // Create customer portal session for subscription management
-router.post('/create-portal-session', authenticateToken, async (req, res) => {
+  router.post('/create-portal-session', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user?.id;
+    if (!checkStripeAvailable(res)) return;
+    
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -88,7 +102,7 @@ router.post('/create-portal-session', authenticateToken, async (req, res) => {
     const userData = user[0];
 
     // Get Stripe customer
-    const customers = await stripe.customers.list({
+    const customers = await stripe!.customers.list({
       email: userData.email,
       limit: 1,
     });
@@ -114,6 +128,8 @@ router.post('/create-portal-session', authenticateToken, async (req, res) => {
 
 // Stripe webhook endpoint
 router.post('/webhook', async (req, res) => {
+  if (!checkStripeAvailable(res)) return;
+  
   const sig = req.headers['stripe-signature'] as string;
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -125,7 +141,7 @@ router.post('/webhook', async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe!.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return res.status(400).send(`Webhook Error: ${err}`);
@@ -166,6 +182,11 @@ router.post('/webhook', async (req, res) => {
 
 // Webhook handler functions
 async function handleCheckoutCompleted(session: any) {
+  if (!stripe) {
+    console.error('Stripe not available for webhook processing');
+    return;
+  }
+  
   console.log('Checkout completed:', session.id);
   
   const userId = parseInt(session.metadata?.userId);
@@ -202,6 +223,11 @@ async function handleCheckoutCompleted(session: any) {
 }
 
 async function handleSubscriptionUpdated(subscription: any) {
+  if (!stripe) {
+    console.error('Stripe not available for webhook processing');
+    return;
+  }
+  
   console.log('Subscription updated:', subscription.id);
   
   const customerId = subscription.customer;
@@ -244,6 +270,11 @@ async function handleSubscriptionUpdated(subscription: any) {
 }
 
 async function handleSubscriptionDeleted(subscription: any) {
+  if (!stripe) {
+    console.error('Stripe not available for webhook processing');
+    return;
+  }
+  
   console.log('Subscription deleted:', subscription.id);
   
   const customerId = subscription.customer;

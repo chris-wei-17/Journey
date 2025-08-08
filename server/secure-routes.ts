@@ -91,9 +91,14 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
 
   // ===== STRIPE PAYMENT ROUTES =====
   console.log('🔧 Registering Stripe payment routes...');
-  const stripeRoutes = await import('./routes/stripe.js');
-  app.use('/api/stripe', stripeRoutes.default);
-  console.log('✅ Stripe routes registered');
+  try {
+    const stripeRoutes = await import('./routes/stripe.js');
+    app.use('/api/stripe', stripeRoutes.default);
+    console.log('✅ Stripe routes registered');
+  } catch (error) {
+    console.error('❌ Failed to register Stripe routes:', error);
+    console.log('⚠️ Continuing without Stripe functionality');
+  }
 
   // ===== JOURNAL ENTRIES ROUTES - SAFE EARLY POSITION =====
   console.log('🔧 Registering journal entry routes...');

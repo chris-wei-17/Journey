@@ -1,14 +1,23 @@
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required');
+// Initialize Stripe with your secret key - handle missing key gracefully
+let stripe: Stripe | null = null;
+
+try {
+  if (process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-12-18.acacia', // Use latest API version
+      typescript: true,
+    });
+  } else {
+    console.warn('⚠️ STRIPE_SECRET_KEY not found - Stripe functionality will be disabled');
+  }
+} catch (error) {
+  console.error('❌ Failed to initialize Stripe:', error);
+  stripe = null;
 }
 
-// Initialize Stripe with your secret key
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia', // Use latest API version
-  typescript: true,
-});
+export { stripe };
 
 // Membership tier pricing configuration
 export const MEMBERSHIP_PRICES = {
@@ -52,6 +61,9 @@ export async function createCheckoutSession({
   cancelUrl: string;
   metadata?: Record<string, string>;
 }) {
+  if (!stripe) {
+    throw new Error('Stripe not initialized. Cannot create checkout session.');
+  }
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     payment_method_types: ['card'],
@@ -86,6 +98,9 @@ export async function createCustomerPortalSession({
   customerId: string;
   returnUrl: string;
 }) {
+  if (!stripe) {
+    throw new Error('Stripe not initialized. Cannot create customer portal session.');
+  }
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -96,6 +111,9 @@ export async function createCustomerPortalSession({
 
 // Helper function to get subscription details
 export async function getSubscriptionDetails(subscriptionId: string) {
+  if (!stripe) {
+    throw new Error('Stripe not initialized. Cannot retrieve subscription details.');
+  }
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ['latest_invoice', 'customer', 'items.data.price'],
   });
@@ -105,6 +123,9 @@ export async function getSubscriptionDetails(subscriptionId: string) {
 
 // Helper function to cancel subscription
 export async function cancelSubscription(subscriptionId: string, cancelAtPeriodEnd = true) {
+  if (!stripe) {
+    throw new Error('Stripe not initialized. Cannot cancel subscription.');
+  }
   const subscription = await stripe.subscriptions.update(subscriptionId, {
     cancel_at_period_end: cancelAtPeriodEnd,
   });
@@ -122,6 +143,9 @@ export async function createOrRetrieveCustomer({
   userId: number;
   name?: string;
 }) {
+  if (!stripe) {
+    throw new Error('Stripe not initialized. Cannot create or retrieve customer.');
+  }
   // Try to find existing customer by email
   const customers = await stripe.customers.list({
     email,
@@ -146,6 +170,9 @@ export async function createOrRetrieveCustomer({
 
 // Helper function to determine membership tier from Stripe price ID
 export function getMembershipFromPriceId(priceId: string): 'Ad-free' | 'Premium' | null {
+  if (!stripe) {
+    return null;
+  }
   for (const [tier, prices] of Object.entries(MEMBERSHIP_PRICES)) {
     if (prices.monthly === priceId || prices.yearly === priceId) {
       return tier as 'Ad-free' | 'Premium';
@@ -156,6 +183,9 @@ export function getMembershipFromPriceId(priceId: string): 'Ad-free' | 'Premium'
 
 // Helper function to get price information
 export async function getPriceInfo(priceId: string) {
+  if (!stripe) {
+    throw new Error('Stripe not initialized. Cannot retrieve price information.');
+  }
   const price = await stripe.prices.retrieve(priceId, {
     expand: ['product'],
   });
