@@ -34,13 +34,23 @@ export function MembershipCard({ showUpgradeOptions = false, className = "" }: M
       if (response.url) {
         window.location.href = response.url;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error opening customer portal:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to open subscription management. Please try again.',
-        variant: 'destructive',
-      });
+      
+      // Handle specific error messages
+      if (error.message && error.message.includes('Beta users don\'t have active subscriptions')) {
+        toast({
+          title: 'Beta User',
+          description: 'You are on a beta tier. To manage subscriptions, you would need to upgrade to a paid plan first.',
+          variant: 'default',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to open subscription management. Please try again.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsManagingSubscription(false);
     }

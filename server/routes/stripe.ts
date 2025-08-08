@@ -101,6 +101,14 @@ function checkStripeAvailable(res: any) {
 
     const userData = user[0];
 
+    // Check if user is on a beta tier (no Stripe subscription)
+    if (userData.membership === 'Premium (beta)') {
+      return res.status(400).json({ 
+        error: 'Beta users don\'t have active subscriptions',
+        message: 'You are currently on a beta tier. To manage subscriptions, you would need to upgrade to a paid plan first.'
+      });
+    }
+
     // Get Stripe customer
     const customers = await stripe!.customers.list({
       email: userData.email,
@@ -108,7 +116,10 @@ function checkStripeAvailable(res: any) {
     });
 
     if (!customers.data.length) {
-      return res.status(404).json({ error: 'No subscription found' });
+      return res.status(404).json({ 
+        error: 'No subscription found',
+        message: 'No active Stripe subscription found for this account.'
+      });
     }
 
     const customer = customers.data[0];
