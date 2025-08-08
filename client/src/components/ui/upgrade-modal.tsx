@@ -83,9 +83,9 @@ export function UpgradeModal({ isOpen, onClose, targetTier }: UpgradeModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-md max-h-[90vh] overflow-y-auto ${
+      <DialogContent className={`max-w-md max-h-[85vh] overflow-y-auto ${
         isPWA 
-          ? 'fixed inset-4 top-[10vh] left-[50%] translate-x-[-50%] translate-y-0 w-[calc(100vw-2rem)] max-w-md mx-auto' 
+          ? 'fixed top-[5vh] left-[5vw] right-[5vw] bottom-auto w-[90vw] max-w-md mx-auto translate-x-0 translate-y-0' 
           : 'm-4 w-[calc(100vw-2rem)] sm:w-full'
       }`}>
         <DialogHeader>
