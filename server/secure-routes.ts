@@ -707,6 +707,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         profileImageUrl: user.profileImageUrl,
         photosPin: user.photosPin,
         photosPinEnabled: user.photosPinEnabled,
+        membership: user.membership,
         profile,
         goals: goals.map(g => g.goalType),
         onboardingCompleted: profile?.onboardingCompleted || false,
