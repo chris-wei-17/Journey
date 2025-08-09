@@ -22,12 +22,12 @@ export { stripe };
 // Membership tier pricing configuration
 export const MEMBERSHIP_PRICES = {
   'Ad-free': {
-    monthly: process.env.STRIPE_PRICE_ADFREE_MONTHLY || 'price_adfree_monthly',
-    yearly: process.env.STRIPE_PRICE_ADFREE_YEARLY || 'price_adfree_yearly',
+    monthly: process.env.STRIPE_PRICE_ADFREE_MONTHLY || 'price_1Q5K8n2eZvKYlo2C5QYQZvKY', // Test price
+    yearly: process.env.STRIPE_PRICE_ADFREE_YEARLY || 'price_1Q5K8n2eZvKYlo2C5QYQZvKY',   // Test price
   },
   'Premium': {
-    monthly: process.env.STRIPE_PRICE_PREMIUM_MONTHLY || 'price_premium_monthly', 
-    yearly: process.env.STRIPE_PRICE_PREMIUM_YEARLY || 'price_premium_yearly',
+    monthly: process.env.STRIPE_PRICE_PREMIUM_MONTHLY || 'price_1Q5K8n2eZvKYlo2C5QYQZvKY',  // Test price
+    yearly: process.env.STRIPE_PRICE_PREMIUM_YEARLY || 'price_1Q5K8n2eZvKYlo2C5QYQZvKY',    // Test price
   }
 } as const;
 

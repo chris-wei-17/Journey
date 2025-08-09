@@ -1,22 +1,29 @@
 import { loadStripe } from '@stripe/stripe-js';
 
-// Load Stripe with your publishable key
-const publishableKey = process.env.VITE_STRIPE_PUBLISHABLE_KEY;
+// Load Stripe with your publishable key - handle Vercel build-time vs runtime
+const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
 let stripePromise: Promise<any> | null = null;
 
-if (!publishableKey) {
-  console.error('❌ VITE_STRIPE_PUBLISHABLE_KEY environment variable is not set');
-  console.warn('⚠️ Stripe functionality will be disabled');
-  stripePromise = Promise.resolve(null);
-} else {
+// Initialize Stripe - handle both build-time and runtime scenarios
+function initializeStripe() {
+  if (!publishableKey) {
+    console.error('❌ VITE_STRIPE_PUBLISHABLE_KEY environment variable is not set');
+    console.warn('⚠️ Stripe functionality will be disabled');
+    console.info('💡 Environment variables available:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+    return Promise.resolve(null);
+  }
+  
   try {
-    stripePromise = loadStripe(publishableKey);
+    console.log('✅ Initializing Stripe with publishable key:', publishableKey.substring(0, 12) + '...');
+    return loadStripe(publishableKey);
   } catch (error) {
     console.error('❌ Failed to initialize Stripe:', error);
-    stripePromise = Promise.resolve(null);
+    return Promise.resolve(null);
   }
 }
+
+stripePromise = initializeStripe();
 
 export { stripePromise };
 

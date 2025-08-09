@@ -324,4 +324,14 @@ async function handlePaymentFailed(invoice: any) {
   // Could send payment failure notifications, attempt retry logic, etc.
 }
 
+// Debug endpoint to check current Stripe configuration
+router.get('/debug-config', (req, res) => {
+  res.json({
+    hasStripe: !!stripe,
+    secretKeySet: !!process.env.STRIPE_SECRET_KEY,
+    membershipPrices: MEMBERSHIP_PRICES,
+    environment: process.env.NODE_ENV,
+  });
+});
+
 export default router;
