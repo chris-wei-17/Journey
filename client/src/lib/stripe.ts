@@ -1,9 +1,14 @@
 import { loadStripe } from '@stripe/stripe-js';
 
 // Load Stripe with your publishable key
-const stripePromise = loadStripe(
-  process.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...'
-);
+const publishableKey = process.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!publishableKey) {
+  console.error('❌ VITE_STRIPE_PUBLISHABLE_KEY environment variable is not set');
+  throw new Error('Stripe publishable key is required');
+}
+
+const stripePromise = loadStripe(publishableKey);
 
 export { stripePromise };
 
@@ -12,15 +17,21 @@ export async function redirectToCheckout(sessionId: string) {
   const stripe = await stripePromise;
   
   if (!stripe) {
+    console.error('❌ Stripe failed to load - check your publishable key');
     throw new Error('Stripe failed to load');
   }
 
+  console.log('🔄 Redirecting to Stripe checkout with session:', sessionId);
+  
   const { error } = await stripe.redirectToCheckout({
     sessionId,
   });
 
   if (error) {
-    console.error('Stripe checkout error:', error);
+    console.error('❌ Stripe checkout error:', error);
+    if (error.message?.includes('key')) {
+      console.error('💡 This might be a key mismatch issue - check your environment variables');
+    }
     throw error;
   }
 }
