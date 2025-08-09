@@ -3,17 +3,29 @@ import { loadStripe } from '@stripe/stripe-js';
 // Load Stripe with your publishable key
 const publishableKey = process.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
+let stripePromise: Promise<any> | null = null;
+
 if (!publishableKey) {
   console.error('❌ VITE_STRIPE_PUBLISHABLE_KEY environment variable is not set');
-  throw new Error('Stripe publishable key is required');
+  console.warn('⚠️ Stripe functionality will be disabled');
+  stripePromise = Promise.resolve(null);
+} else {
+  try {
+    stripePromise = loadStripe(publishableKey);
+  } catch (error) {
+    console.error('❌ Failed to initialize Stripe:', error);
+    stripePromise = Promise.resolve(null);
+  }
 }
-
-const stripePromise = loadStripe(publishableKey);
 
 export { stripePromise };
 
 // Helper function to redirect to Stripe hosted checkout
 export async function redirectToCheckout(sessionId: string) {
+  if (!stripePromise) {
+    throw new Error('Stripe is not available - check your configuration');
+  }
+  
   const stripe = await stripePromise;
   
   if (!stripe) {
