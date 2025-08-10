@@ -70,7 +70,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
                 size="sm"
                 className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
-                Sign In / Sign Up
+                Sign In
               </Button>
             </Link>
           )}
