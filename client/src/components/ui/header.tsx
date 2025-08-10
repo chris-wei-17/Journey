@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 export function Header({ title, showBackButton = false, onBack, showHomeButton = false }: HeaderProps = {}) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <header className="bg-white shadow-lg border-0 px-2 fixed top-0 left-0 right-0 z-50 
@@ -43,7 +43,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
         </div>
         </div>
         
-        {/* Right side - Home button and Avatar */}
+        {/* Right side - Home button, Avatar, or Sign In/Sign Up */}
         <div className="flex items-center space-x-1">
           {showHomeButton && (
             <Link href="/home">
@@ -52,16 +52,28 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
               </div>
             </Link>
           )}
-          <Link href="/profile">
-            <div className="flex items-center justify-center cursor-pointer">
-              <Avatar
-                firstName={user?.firstName || undefined}
-                lastName={user?.lastName || undefined}
-                profileImageUrl={user?.profileImageUrl || undefined}
-                size="md"
-              />
-            </div>
-          </Link>
+          {isAuthenticated ? (
+            <Link href="/profile">
+              <div className="flex items-center justify-center cursor-pointer">
+                <Avatar
+                  firstName={user?.firstName || undefined}
+                  lastName={user?.lastName || undefined}
+                  profileImageUrl={user?.profileImageUrl || undefined}
+                  size="md"
+                />
+              </div>
+            </Link>
+          ) : (
+            <Link href="/">
+              <Button 
+                variant="default"
+                size="sm"
+                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                Sign In / Sign Up
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
