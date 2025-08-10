@@ -110,22 +110,22 @@ export default function Landing() {
                 </Card>
                 
                 {/* Add ad after every post except the last one - this scales automatically */}
-                {index < blogPosts.length - 1 && (
+                {/* {index < blogPosts.length - 1 && (
                   <BlogDisplayAd 
                     key={`ad-${index}`}
                     className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg" 
                   />
-                )}
+                )} */}
               </div>
             ))}
             
             {/* Add a final ad at the bottom if there are multiple posts */}
-            {blogPosts.length > 2 && (
+            {/* {blogPosts.length > 2 && (
               <BlogDisplayAd 
                 key="final-ad"
                 className="rounded-lg overflow-hidden bg-white/75 backdrop-blur-sm border-0 shadow-lg mt-8" 
               />
-            )}
+            )} */}
           </div>
         )}
         
