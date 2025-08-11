@@ -2,18 +2,20 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
 
-const DOMAIN = process.env.MAILGUN_DOMAIN!;
-const API_KEY = process.env.MAILGUN_API_KEY!;
+const DOMAIN = process.env.MAILGUN_DOMAIN;
+const API_KEY = process.env.MAILGUN_API_KEY;
 
-if (!DOMAIN || !API_KEY) {
-  throw new Error("MAILGUN_DOMAIN and MAILGUN_API_KEY must be set in env");
+let client: any = null;
+
+if (DOMAIN && API_KEY) {
+  const mailgun = new Mailgun(formData);
+  client = mailgun.client({
+    username: 'api',
+    key: API_KEY,
+  });
+} else {
+  console.warn('⚠️ MAILGUN_DOMAIN and MAILGUN_API_KEY not set - email functionality will be disabled');
 }
-
-const mailgun = new Mailgun(formData);
-const client = mailgun.client({
-  username: 'api',
-  key: API_KEY,
-});
 
 export async function sendEmail({
   to,
@@ -26,6 +28,14 @@ export async function sendEmail({
   html: string;
   from?: string;
 }): Promise<void> {
+  if (!client || !DOMAIN) {
+    console.log('📧 Email would be sent to:', to);
+    console.log('📧 Subject:', subject);
+    console.log('📧 Content:', html);
+    console.log('⚠️ Email not sent - Mailgun not configured');
+    return; // Return successfully without sending
+  }
+
   try {
     const messageData = {
       from,
