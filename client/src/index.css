@@ -273,5 +273,7 @@
 
 /* Ensure toast appears above all content */
 [data-radix-toast-viewport] {
-  z-index: 9999 !important;
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  isolation: isolate !important;
 }
