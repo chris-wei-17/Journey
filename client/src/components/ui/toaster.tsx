@@ -1,4 +1,6 @@
 import { useToast } from "@/hooks/use-toast"
+import { createPortal } from "react-dom"
+import { useEffect, useState } from "react"
 import {
   Toast,
   ToastClose,
@@ -10,8 +12,32 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const [container, setContainer] = useState<HTMLElement | null>(null)
 
-  return (
+  useEffect(() => {
+    // Create a container at the very end of body
+    const toastContainer = document.createElement('div')
+    toastContainer.id = 'toast-container'
+    toastContainer.style.position = 'fixed'
+    toastContainer.style.top = '0'
+    toastContainer.style.right = '0'
+    toastContainer.style.zIndex = '2147483647'
+    toastContainer.style.pointerEvents = 'none'
+    toastContainer.style.isolation = 'isolate'
+    
+    document.body.appendChild(toastContainer)
+    setContainer(toastContainer)
+
+    return () => {
+      if (document.body.contains(toastContainer)) {
+        document.body.removeChild(toastContainer)
+      }
+    }
+  }, [])
+
+  if (!container) return null
+
+  return createPortal(
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
@@ -28,6 +54,7 @@ export function Toaster() {
         )
       })}
       <ToastViewport />
-    </ToastProvider>
+    </ToastProvider>,
+    container
   )
 }
