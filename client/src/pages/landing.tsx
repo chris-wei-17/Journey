@@ -362,8 +362,22 @@ export default function Landing() {
               <h4 className="text-lg font-semibold text-white mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>Help Center</li>
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
+                <li>
+                  <button 
+                    onClick={() => setLocation("/privacy-policy")}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => setLocation("/terms-of-service")}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Terms of Service
+                  </button>
+                </li>
                 <li>Contact Us</li>
                 <li>Feedback</li>
               </ul>

@@ -33,6 +33,8 @@ import ResetPasswordToken from "@/pages/reset-password-token";
 import JournalEntry from "@/pages/journal-entry";
 import JournalHistory from "@/pages/journal-history";
 import SubscriptionSuccess from "@/pages/subscription-success";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
 // import Template from "@/pages/template"; // Uncomment when creating new pages
 // import YourNewPage from "@/pages/your-new-page"; // Example: replace with actual page name
 
@@ -62,6 +64,8 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPasswordToken} />
         <Route path="/blog-post" component={BlogPostView} />
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/terms-of-service" component={TermsOfService} />
         
         {!isAuthenticated ? (
           <>
