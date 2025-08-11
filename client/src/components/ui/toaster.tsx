@@ -19,11 +19,13 @@ export function Toaster() {
     const toastContainer = document.createElement('div')
     toastContainer.id = 'toast-container'
     toastContainer.style.position = 'fixed'
-    toastContainer.style.top = '0'
-    toastContainer.style.right = '0'
+    toastContainer.style.top = '1rem'
+    toastContainer.style.right = '1rem'
     toastContainer.style.zIndex = '2147483647'
     toastContainer.style.pointerEvents = 'none'
     toastContainer.style.isolation = 'isolate'
+    toastContainer.style.maxWidth = '420px'
+    toastContainer.style.width = 'auto'
     
     document.body.appendChild(toastContainer)
     setContainer(toastContainer)
