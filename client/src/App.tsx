@@ -37,6 +37,7 @@ import JournalHistory from "@/pages/journal-history";
 import SubscriptionSuccess from "@/pages/subscription-success";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
+import PublicFeedback from "@/pages/public-feedback";
 // import Template from "@/pages/template"; // Uncomment when creating new pages
 // import YourNewPage from "@/pages/your-new-page"; // Example: replace with actual page name
 
@@ -70,6 +71,7 @@ function Router() {
         <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
+        <Route path="/public-feedback" component={PublicFeedback} />
         
         {!isAuthenticated ? (
           <>

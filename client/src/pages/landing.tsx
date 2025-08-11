@@ -379,7 +379,14 @@ export default function Landing() {
                   </button>
                 </li>
                 <li>Contact Us</li>
-                <li>Feedback</li>
+                <li>
+                  <button 
+                    onClick={() => setLocation(isAuthenticated ? "/feedback" : "/public-feedback")}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Feedback
+                  </button>
+                </li>
               </ul>
             </div>
           </div>

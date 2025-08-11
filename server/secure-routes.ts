@@ -1728,6 +1728,76 @@ Submitted at: ${new Date().toISOString()}
     }
   });
 
+  // Public: Submit feedback (no authentication required)
+  app.post('/api/public-feedback', async (req: any, res) => {
+    const { name, email, feedback } = req.body;
+
+    // Validation
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
+    if (!email || typeof email !== 'string' || email.trim().length === 0) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: "Please provide a valid email address" });
+    }
+
+    if (!feedback || typeof feedback !== 'string') {
+      return res.status(400).json({ message: "Feedback is required" });
+    }
+
+    if (feedback.trim().length < 10) {
+      return res.status(400).json({ message: "Feedback must be at least 10 characters long" });
+    }
+
+    if (feedback.trim().length > 2000) {
+      return res.status(400).json({ message: "Feedback must be less than 2000 characters" });
+    }
+
+    // Rate limiting - max 2 feedback submissions per 15 minutes per IP
+    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+    const rateLimitKey = `public_feedback_${clientIP}`;
+    if (!checkRateLimit(rateLimitKey, 2)) {
+      return res.status(429).json({ 
+        message: "Too many feedback submissions. Please wait 15 minutes before submitting again."
+      });
+    }
+
+    try {
+      const subject = "Journey App - Public Feedback";
+      const emailContent = `
+New public feedback received from Journey website:
+
+Name: ${name.trim()}
+Email: ${email.trim()}
+
+Feedback:
+${feedback.trim()}
+
+----
+Submitted at: ${new Date().toISOString()}
+IP Address: ${clientIP}
+      `.trim();
+
+      await sendEmailFn(
+        process.env.SUPPORT_EMAIL || 'support@journey.app', 
+        subject, 
+        emailContent
+      );
+
+      console.log(`✅ Public feedback submitted by ${email.trim()}`);
+      res.json({ message: "Feedback submitted successfully" });
+    } catch (error) {
+      console.error("Public feedback submission error:", error);
+      res.status(500).json({ message: "Failed to submit feedback" });
+    }
+  });
+
   // Photos PIN protection routes
   app.put('/api/user/photos-pin', authenticateToken, async (req: any, res) => {
     try {
