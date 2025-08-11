@@ -270,3 +270,8 @@
     transform: translateY(0);
   }
 }
+
+/* Ensure toast appears above all content */
+[data-radix-toast-viewport] {
+  z-index: 9999 !important;
+}
