@@ -49,7 +49,7 @@ export default function BlogPostView() {
 
   const handleBack = () => {
     if (isAuthenticated) {
-      setLocation("/landing");
+      setLocation("/blog-feed");
     } else {
       setLocation("/");
     }

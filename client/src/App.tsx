@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Auth from "@/pages/auth";
 import Landing from "@/pages/landing";
+import BlogFeed from "@/pages/blog-feed";
 import BlogPostView from "@/pages/blog-post";
 import Home from "@/pages/home";
 import Onboarding from "@/pages/onboarding";
@@ -77,7 +78,7 @@ function Router() {
               <>
                 <Route path="/" component={Home} />
                 <Route path="/home" component={Home} />
-                <Route path="/landing" component={Landing} />
+                <Route path="/blog-feed" component={BlogFeed} />
                 <Route path="/profile" component={Profile} />
                 <Route path="/edit-profile" component={EditProfile} />
                 <Route path="/feedback" component={Feedback} />
