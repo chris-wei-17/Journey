@@ -10,9 +10,9 @@ export default function Landing() {
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      setLocation("/home");
+      setLocation("/home"); // Go to dashboard if authenticated
     } else {
-      setLocation("/"); // This will show the auth component for non-authenticated users
+      setLocation("/register"); // Go to create account page if not authenticated
     }
   };
 

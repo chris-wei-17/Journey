@@ -11,6 +11,8 @@ import Auth from "@/pages/auth";
 import Landing from "@/pages/landing";
 import BlogFeed from "@/pages/blog-feed";
 import BlogPostView from "@/pages/blog-post";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
 import Home from "@/pages/home";
 import Onboarding from "@/pages/onboarding";
 import Profile from "@/pages/profile";
@@ -66,6 +68,8 @@ function Router() {
         <Route path="/blog-post" component={BlogPostView} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
+        <Route path="/login" component={Login} />
+        <Route path="/register" component={Register} />
         
         {!isAuthenticated ? (
           <>

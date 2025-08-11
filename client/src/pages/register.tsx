@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +11,13 @@ import { apiRequest } from "@/lib/queryClient";
 import { registerSchema, type RegisterData } from "@shared/schema";
 
 interface RegisterProps {
-  onToggleMode: () => void;
+  onToggleMode?: () => void;
 }
 
 export default function Register({ onToggleMode }: RegisterProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
   });
@@ -176,7 +178,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
               <button
-                onClick={onToggleMode}
+                onClick={onToggleMode || (() => setLocation("/login"))}
                 className="text-primary-300 hover:text-primary-400 font-semibold"
               >
                 Sign In

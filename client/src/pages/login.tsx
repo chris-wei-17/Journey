@@ -12,7 +12,7 @@ import { loginSchema, type LoginData } from "@shared/schema";
 import { useLocation } from "wouter";
 
 interface LoginProps {
-  onToggleMode: () => void;
+  onToggleMode?: () => void;
 }
 
 export default function Login({ onToggleMode }: LoginProps) {
@@ -164,7 +164,7 @@ export default function Login({ onToggleMode }: LoginProps) {
   <p className="text-sm text-gray-600">
     Don't have an account?{" "}
     <button
-      onClick={onToggleMode}
+      onClick={onToggleMode || (() => setLocation("/register"))}
       className="text-primary-300 hover:text-primary-400 font-semibold"
     >
       Create Account
