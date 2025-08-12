@@ -123,6 +123,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   };
 
   const totals = getTotalMacros();
+  const dayCalories = Math.round(calculateCalories(totals.protein, totals.fats, totals.carbs));
 
   const onSubmit = (data: z.infer<typeof macroTargetSchema>) => {
     updateTargetsMutation.mutate(data);
@@ -260,74 +261,82 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
-          <div className="flex items-center gap-4">
-            {(() => {
-              const normalizedTargets = {
-                proteinTarget: Number((macroTargets as MacroTarget | undefined)?.proteinTarget) || 0,
-                fatsTarget: Number((macroTargets as MacroTarget | undefined)?.fatsTarget) || 0,
-                carbsTarget: Number((macroTargets as MacroTarget | undefined)?.carbsTarget) || 0,
-              };
+        {viewMode === 'macro' ? (
+          <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
+            <div className="flex items-center gap-2">
+              {(() => {
+                const normalizedTargets = {
+                  proteinTarget: Number((macroTargets as MacroTarget | undefined)?.proteinTarget) || 0,
+                  fatsTarget: Number((macroTargets as MacroTarget | undefined)?.fatsTarget) || 0,
+                  carbsTarget: Number((macroTargets as MacroTarget | undefined)?.carbsTarget) || 0,
+                };
 
-              const percentsRaw = calculateMacroPercentages({
-                protein: totals.protein,
-                fats: totals.fats,
-                carbs: totals.carbs,
-                totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs)
-              }, normalizedTargets as MacroTarget);
+                const percentsRaw = calculateMacroPercentages({
+                  protein: totals.protein,
+                  fats: totals.fats,
+                  carbs: totals.carbs,
+                  totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs)
+                }, normalizedTargets as MacroTarget);
 
-              const percents = {
-                protein: Math.max(0, Math.min(100, Math.round(percentsRaw.protein || 0))),
-                fats: Math.max(0, Math.min(100, Math.round(percentsRaw.fats || 0))),
-                carbs: Math.max(0, Math.min(100, Math.round(percentsRaw.carbs || 0))),
-              };
+                const percents = {
+                  protein: Math.max(0, Math.min(100, Math.round(percentsRaw.protein || 0))),
+                  fats: Math.max(0, Math.min(100, Math.round(percentsRaw.fats || 0))),
+                  carbs: Math.max(0, Math.min(100, Math.round(percentsRaw.carbs || 0))),
+                };
 
-              const hexToRgba = (hex: string, alpha: number) => {
-                const clean = hex.replace('#', '');
-                const bigint = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16);
-                const r = (bigint >> 16) & 255;
-                const g = (bigint >> 8) & 255;
-                const b = bigint & 255;
-                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-              };
+                const hexToRgba = (hex: string, alpha: number) => {
+                  const clean = hex.replace('#', '');
+                  const bigint = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16);
+                  const r = (bigint >> 16) & 255;
+                  const g = (bigint >> 8) & 255;
+                  const b = bigint & 255;
+                  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                };
 
-              const createDonutConfig = (percentage: number, color: string) => {
-                const p = Math.max(0, Math.min(100, Math.round(percentage)));
-                return ({
-                data: { datasets: [{ data: [p, 100 - p], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-              });
-              }
+                const createDonutConfig = (percentage: number, color: string) => {
+                  const p = Math.max(0, Math.min(100, Math.round(percentage)));
+                  return ({
+                  data: { datasets: [{ data: [p, 100 - p], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
+                  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+                });
+                }
 
-              const p = createDonutConfig(percents.protein, '#ef4444');
-              const f = createDonutConfig(percents.fats, '#eab308');
-              const c = createDonutConfig(percents.carbs, '#22c55e');
+                const p = createDonutConfig(percents.protein, '#ef4444');
+                const f = createDonutConfig(percents.fats, '#eab308');
+                const c = createDonutConfig(percents.carbs, '#22c55e');
 
-              return (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-red-500 font-medium">P:</span>
-                    <div className="relative w-8 h-8">
-                      <Doughnut data={p.data} options={p.options} />
+                return (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-red-500 font-medium">P:</span>
+                      <div className="relative w-8 h-8">
+                        <Doughnut data={p.data} options={p.options} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-yellow-500 font-medium">F:</span>
-                    <div className="relative w-8 h-8">
-                      <Doughnut data={f.data} options={f.options} />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-yellow-500 font-medium">F:</span>
+                      <div className="relative w-8 h-8">
+                        <Doughnut data={f.data} options={f.options} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-500 font-medium">C:</span>
-                    <div className="relative w-8 h-8">
-                      <Doughnut data={c.data} options={c.options} />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-green-500 font-medium">C:</span>
+                      <div className="relative w-8 h-8">
+                        <Doughnut data={c.data} options={c.options} />
+                      </div>
                     </div>
-                  </div>
-                </>
-              );
-            })()}
+                  </>
+                );
+              })()}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
+            <div className="text-gray-800 text-sm">
+              Total Calories: <span className="font-bold text-blue-600">{dayCalories}</span>
+            </div>
+          </div>
+        )}
 
           {macros.length > 0 ? (
             macros.map((macro: MacroEntry) => (
