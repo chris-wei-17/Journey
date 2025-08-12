@@ -112,8 +112,8 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-0">
         {/* Top-left toggle row */}
-        <div>
-          <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md w-fit m-1">
+        <div className="-mt-1 -ml-1">
+          <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md w-fit">
             <ToggleGroupItem value="macro" className={`text-xs px-2 py-1 ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
               Macro
             </ToggleGroupItem>
