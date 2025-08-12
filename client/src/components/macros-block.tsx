@@ -138,10 +138,10 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
         <div className="-mt-2 -ml-2">
           <ToggleGroup type="single" size="sm" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md w-fit">
             <ToggleGroupItem value="macro" className={`text-xs px-2 h-6 leading-none ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
-              Macro
+              Macros
             </ToggleGroupItem>
             <ToggleGroupItem value="calorie" className={`text-xs px-2 h-6 leading-none ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
-              Calorie
+              Calories
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
@@ -378,14 +378,14 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
             ))
           ) : (
             <div className="text-gray-500 text-center py-2">
-              No macros logged {isToday(selectedDate) ? 'today' : 'for this date'}
+              No entries yet }
             </div>
           )}
  
           <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
             <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
               <i className="fas fa-plus mr-2"></i>
-              ADD MACROS
+              NEW ENTRY
             </Button>
           </Link>
         </CardContent>
