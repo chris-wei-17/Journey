@@ -112,15 +112,17 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md p-0.5">
-              <ToggleGroupItem value="macro" className={`text-xs px-2 py-1 ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
-                Macro
-              </ToggleGroupItem>
-              <ToggleGroupItem value="calorie" className={`text-xs px-2 py-1 ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
-                Calorie
-              </ToggleGroupItem>
-            </ToggleGroup>
+          <div className="flex-1">
+            <div className="mb-2">
+              <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md p-0.5 w-fit">
+                <ToggleGroupItem value="macro" className={`text-xs px-2 py-1 ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+                  Macro
+                </ToggleGroupItem>
+                <ToggleGroupItem value="calorie" className={`text-xs px-2 py-1 ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+                  Calorie
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
             <CardTitle className="text-xl font-bold text-gray-800">Nutrition</CardTitle>
           </div>
           <div className="flex items-center justify-end">
