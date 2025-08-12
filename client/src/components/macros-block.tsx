@@ -11,7 +11,10 @@ import { format, isToday } from "date-fns";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { calculateCalories } from "@/lib/nutrition-utils";
+import { calculateCalories, calculateMacroPercentages, type MacroTarget } from "@/lib/nutrition-utils";
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+ChartJS.register(ArcElement, Tooltip, Legend);
 import * as React from "react";
 
 interface MacroEntry {
@@ -232,13 +235,49 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="space-y-4 mb-2">
-          <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
-            {macros.length > 0 && (
-              <span className="text-xs text-right">
-                P: {totals.protein}g | F: {totals.fats}g | C: {totals.carbs}g
-              </span>
-            )}
+        <div className="flex items-center justify-center gap-6 mb-3">
+            {/* Minimalist donuts showing only percentage */}
+            {(() => {
+              const hasTargets = macroTargets && macroTargets.proteinTarget && macroTargets.fatsTarget && macroTargets.carbsTarget;
+              const percents = hasTargets ? calculateMacroPercentages({
+                protein: totals.protein,
+                fats: totals.fats,
+                carbs: totals.carbs,
+                totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs)
+              }, macroTargets as MacroTarget) : { protein: 0, fats: 0, carbs: 0 };
+
+              const createDonutConfig = (percentage: number, color: string) => ({
+                data: { datasets: [{ data: [Math.max(0, Math.min(100, Math.round(percentage))), Math.max(0, 100 - Math.max(0, Math.min(100, Math.round(percentage))))], backgroundColor: [color, '#f3f4f6'], borderWidth: 0, cutout: '70%' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+              });
+
+              const p = createDonutConfig(percents.protein, '#ef4444');
+              const f = createDonutConfig(percents.fats, '#eab308');
+              const c = createDonutConfig(percents.carbs, '#22c55e');
+
+              return (
+                <>
+                  <div className="relative w-14 h-14">
+                    <Doughnut data={p.data} options={p.options} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[10px] font-medium text-gray-700">{Math.round(percents.protein) || 0}%</span>
+                    </div>
+                  </div>
+                  <div className="relative w-14 h-14">
+                    <Doughnut data={f.data} options={f.options} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[10px] font-medium text-gray-700">{Math.round(percents.fats) || 0}%</span>
+                    </div>
+                  </div>
+                  <div className="relative w-14 h-14">
+                    <Doughnut data={c.data} options={c.options} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[10px] font-medium text-gray-700">{Math.round(percents.carbs) || 0}%</span>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
           
           {macros.length > 0 ? (

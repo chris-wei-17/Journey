@@ -475,56 +475,7 @@ export function NutritionChart() {
         </CardContent>
       </Card>
 
-      {/* Floating Macro Donut Charts */}
-      <div className="flex justify-center gap-8 px-4 mt-6">
-        {/* Protein */}
-        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-          <div className="w-16 h-16 mx-auto relative">
-            <Doughnut data={proteinDonut.data} options={proteinDonut.options} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.protein) || 0}%
-              </span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">Protein</p>
-          <p className="text-xs text-red-500 font-medium">
-            {Math.round(todaySummary.protein) || 0}g / {effectiveTargets.proteinTarget}g
-          </p>
-        </div>
-
-        {/* Fats */}
-        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-          <div className="w-16 h-16 mx-auto relative">
-            <Doughnut data={fatsDonut.data} options={fatsDonut.options} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.fats) || 0}%
-              </span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">Fats</p>
-          <p className="text-xs text-yellow-500 font-medium">
-            {Math.round(todaySummary.fats) || 0}g / {effectiveTargets.fatsTarget}g
-          </p>
-        </div>
-
-        {/* Carbs */}
-        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-          <div className="w-16 h-16 mx-auto relative">
-            <Doughnut data={carbsDonut.data} options={carbsDonut.options} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.carbs) || 0}%
-              </span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">Carbs</p>
-          <p className="text-xs text-green-500 font-medium">
-            {Math.round(todaySummary.carbs) || 0}g / {effectiveTargets.carbsTarget}g
-          </p>
-        </div>
-      </div>
+      {/* Macro donuts moved to dashboard */}
     </>
   );
 }
