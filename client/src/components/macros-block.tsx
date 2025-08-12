@@ -225,8 +225,8 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="flex items-center justify-center gap-4 mb-3">
-            {/* Minimalist donuts showing only percentage */}
+        <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
+          <div className="ml-auto flex items-center gap-4">
             {(() => {
               const hasTargets = macroTargets && macroTargets.proteinTarget && macroTargets.fatsTarget && macroTargets.carbsTarget;
               const percents = hasTargets ? calculateMacroPercentages({
@@ -247,29 +247,30 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
               return (
                 <>
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-10 h-10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-red-500 font-medium">P:</span>
+                    <div className="relative w-8 h-8">
                       <Doughnut data={p.data} options={p.options} />
                     </div>
-                    <span className="mt-1 text-[10px] text-red-500 font-medium">P:</span>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-10 h-10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-yellow-500 font-medium">F:</span>
+                    <div className="relative w-8 h-8">
                       <Doughnut data={f.data} options={f.options} />
                     </div>
-                    <span className="mt-1 text-[10px] text-yellow-500 font-medium">F:</span>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-10 h-10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-green-500 font-medium">C:</span>
+                    <div className="relative w-8 h-8">
                       <Doughnut data={c.data} options={c.options} />
                     </div>
-                    <span className="mt-1 text-[10px] text-green-500 font-medium">C:</span>
                   </div>
                 </>
               );
             })()}
           </div>
-          
+        </div>
+
           {macros.length > 0 ? (
             macros.map((macro: MacroEntry) => (
               <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
@@ -292,15 +293,15 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
             <div className="text-gray-500 text-center py-2">
               No macros logged {isToday(selectedDate) ? 'today' : 'for this date'}
             </div>
-                    )}
+          )}
          
-         <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
-           <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
-             <i className="fas fa-plus mr-2"></i>
-             ADD MACROS
-           </Button>
-         </Link>
-       </CardContent>
-     </Card>
-   );
-}
+          <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
+            <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
+              <i className="fas fa-plus mr-2"></i>
+              ADD MACROS
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
