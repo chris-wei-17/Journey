@@ -236,6 +236,7 @@ export const macros = pgTable("macros", {
   protein: numeric("protein", { precision: 5, scale: 1 }).notNull().$type<string>(), // grams - stored as string
   fats: numeric("fats", { precision: 5, scale: 1 }).notNull().$type<string>(), // grams - stored as string
   carbs: numeric("carbs", { precision: 5, scale: 1 }).notNull().$type<string>(), // grams - stored as string
+  calories: numeric("calories", { precision: 6, scale: 1 }).$type<string | null>(), // optional calories entry mode
   date: timestamp("date").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -247,6 +248,7 @@ export const insertMacroSchema = createInsertSchema(macros).omit({
   protein: z.union([z.string(), z.number()]).transform(val => String(val)),
   fats: z.union([z.string(), z.number()]).transform(val => String(val)),
   carbs: z.union([z.string(), z.number()]).transform(val => String(val)),
+  calories: z.union([z.string(), z.number(), z.null()]).optional().transform((val) => val === undefined ? undefined : (val === null ? null : String(val))),
 });
 
 export type InsertMacro = z.infer<typeof insertMacroSchema>;

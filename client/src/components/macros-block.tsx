@@ -23,9 +23,10 @@ interface MacroEntry {
   id: number;
   userId: number;
   description: string;
-  protein: number;
-  fats: number;
-  carbs: number;
+  protein: number | string;
+  fats: number | string;
+  carbs: number | string;
+  calories?: number | string | null;
   date: string;
   createdAt: string;
 }
@@ -118,14 +119,23 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
   const getTotalMacros = () => {
     return macros.reduce((totals, macro) => ({
-      protein: totals.protein + parseFloat(macro.protein.toString()),
-      fats: totals.fats + parseFloat(macro.fats.toString()),
-      carbs: totals.carbs + parseFloat(macro.carbs.toString()),
+      protein: totals.protein + (Number(macro.protein) || 0),
+      fats: totals.fats + (Number(macro.fats) || 0),
+      carbs: totals.carbs + (Number(macro.carbs) || 0),
     }), { protein: 0, fats: 0, carbs: 0 });
   };
 
   const totals = getTotalMacros();
-  const dayCalories = Math.round(calculateCalories(totals.protein, totals.fats, totals.carbs));
+  const dayCalories = Math.round(
+    macros.reduce((sum, macro) => {
+      const cal = macro.calories !== undefined && macro.calories !== null ? Number(macro.calories) : 0;
+      if (cal && isFinite(cal) && cal > 0) return sum + cal;
+      const p = Number(macro.protein) || 0;
+      const f = Number(macro.fats) || 0;
+      const c = Number(macro.carbs) || 0;
+      return sum + calculateCalories(p, f, c);
+    }, 0)
+  );
 
   const onSubmit = (data: z.infer<typeof macroTargetSchema>) => {
     updateTargetsMutation.mutate(data);

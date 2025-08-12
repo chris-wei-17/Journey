@@ -11,9 +11,10 @@ export interface MacroEntry {
   id: number;
   userId: number;
   description: string;
-  protein: number;
-  fats: number;
-  carbs: number;
+  protein: number | string;
+  fats: number | string;
+  carbs: number | string;
+  calories?: number | string | null;
   date: string;
   createdAt: string;
 }
@@ -64,9 +65,21 @@ export function calculateDayMacros(macros: MacroEntry[]): MacroSummary {
     { protein: 0, fats: 0, carbs: 0 }
   );
 
+  // Sum calories across entries: prefer explicit calories field when present (>0), else compute from grams
+  const totalCalories = macros.reduce((sum, macro) => {
+    const calField = macro.calories !== undefined && macro.calories !== null ? Number(macro.calories) : 0;
+    if (calField && isFinite(calField) && calField > 0) {
+      return sum + calField;
+    }
+    const p = Number(macro.protein) || 0;
+    const f = Number(macro.fats) || 0;
+    const c = Number(macro.carbs) || 0;
+    return sum + calculateCalories(p, f, c);
+  }, 0);
+
   return {
     ...totals,
-    totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs),
+    totalCalories,
   };
 }
 
@@ -85,7 +98,6 @@ export function generateCalorieData(
     const dateKey = format(date, 'yyyy-MM-dd');
     const dayMacros = macrosByDate[dateKey] || [];
     
-    // Only add data point if there are actual macro entries for this day
     if (dayMacros.length > 0) {
       const summary = calculateDayMacros(dayMacros);
       dataPoints.push({
