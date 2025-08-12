@@ -100,6 +100,7 @@ export interface IStorage {
   getUserMacros(userId: number): Promise<Macro[]>;
   getMacrosForDate(userId: number, date: string): Promise<Macro[]>;
   createMacro(macro: InsertMacro): Promise<Macro>;
+  updateMacro(id: number, macro: InsertMacro): Promise<Macro>;
   deleteMacro(id: number, userId: number): Promise<void>;
 
   // Macro target operations
@@ -477,6 +478,21 @@ export class DatabaseStorage implements IStorage {
       .values(macroData)
       .returning();
     return macro;
+  }
+
+  async updateMacro(id: number, macroData: InsertMacro): Promise<Macro> {
+    const [updated] = await db
+      .update(macros)
+      .set({
+        description: macroData.description,
+        protein: macroData.protein,
+        fats: macroData.fats,
+        carbs: macroData.carbs,
+        date: macroData.date,
+      })
+      .where(and(eq(macros.id, id), eq(macros.userId, macroData.userId)))
+      .returning();
+    return updated;
   }
 
   async deleteMacro(id: number, userId: number): Promise<void> {

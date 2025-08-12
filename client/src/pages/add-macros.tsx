@@ -25,6 +25,8 @@ export default function AddMacros() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'macro' | 'calorie'>('macro');
   const VIEW_MODE_STORAGE_KEY = 'add-macros-view-mode';
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editMacroId, setEditMacroId] = useState<number | null>(null);
 
   useEffect(() => {
     try {
@@ -41,10 +43,25 @@ export default function AddMacros() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const dateParam = params.get('date');
+    const editParam = params.get('edit');
+    const descParam = params.get('description');
+    const pParam = params.get('protein');
+    const fParam = params.get('fats');
+    const cParam = params.get('carbs');
     if (dateParam) {
       // Create date safely to avoid timezone issues
       const [year, month, day] = dateParam.split('-').map(Number);
       setSelectedDate(new Date(year, month - 1, day));
+    }
+    if (editParam) {
+      setIsEditMode(true);
+      setEditMacroId(parseInt(editParam));
+      if (descParam) setDescription(descParam);
+      if (pParam) setProtein(String(pParam));
+      if (fParam) setFats(String(fParam));
+      if (cParam) setCarbs(String(cParam));
+      // Clean URL
+      window.history.replaceState({}, '', '/add-macros');
     }
   }, []);
 
@@ -84,6 +101,40 @@ export default function AddMacros() {
     },
   });
 
+  const updateMacroMutation = useMutation({
+    mutationFn: async (macroData: any) => {
+      return await apiRequest('PUT', `/api/macros/${editMacroId}`, macroData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/macros'] });
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      queryClient.invalidateQueries({ queryKey: [`/api/macros/date/${dateStr}`] });
+      toast({ title: 'Success', description: 'Macros updated successfully!' });
+      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      setLocation(`/?date=${dateParam}`);
+    },
+    onError: () => {
+      toast({ title: 'Error', description: 'Failed to update macros.', variant: 'destructive' });
+    }
+  });
+
+  const deleteMacroMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('DELETE', `/api/macros/${editMacroId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/macros'] });
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      queryClient.invalidateQueries({ queryKey: [`/api/macros/date/${dateStr}`] });
+      toast({ title: 'Success', description: 'Macro deleted successfully!' });
+      const dateParam = format(selectedDate, 'yyyy-MM-dd');
+      setLocation(`/?date=${dateParam}`);
+    },
+    onError: () => {
+      toast({ title: 'Error', description: 'Failed to delete macro.', variant: 'destructive' });
+    }
+  });
+
   const handleSubmit = () => {
     if (viewMode === 'macro') {
       if (!description.trim() || !protein || !fats || !carbs) {
@@ -117,7 +168,11 @@ export default function AddMacros() {
       };
     }
 
-    createMacroMutation.mutate(macroData);
+    if (isEditMode && editMacroId) {
+      updateMacroMutation.mutate(macroData);
+    } else {
+      createMacroMutation.mutate(macroData);
+    }
   };
 
   return (
@@ -135,7 +190,7 @@ export default function AddMacros() {
         >
           <i className="fas fa-chevron-left text-xl"></i>
         </Button>
-        <h1 className="text-xl font-bold text-white">ADD MACROS</h1>
+        <h1 className="text-xl font-bold text-white">{isEditMode ? 'EDIT MACROS' : 'ADD MACROS'}</h1>
         <div 
           onClick={() => {
             const dateParam = format(selectedDate, 'yyyy-MM-dd');
@@ -267,11 +322,22 @@ export default function AddMacros() {
         {/* Save Button */}
         <Button 
           onClick={handleSubmit}
-          disabled={createMacroMutation.isPending}
+          disabled={isEditMode ? updateMacroMutation.isPending : createMacroMutation.isPending}
           className="w-full bg-white/20 hover:bg-white/30 text-white py-4 rounded-lg text-lg font-medium transition-all duration-200 disabled:opacity-50"
         >
-          {createMacroMutation.isPending ? "SAVING..." : "SAVE"}
+          {isEditMode ? (updateMacroMutation.isPending ? 'UPDATING...' : 'UPDATE') : (createMacroMutation.isPending ? 'SAVING...' : 'SAVE')}
         </Button>
+
+        {isEditMode && (
+          <Button
+            onClick={() => deleteMacroMutation.mutate()}
+            disabled={deleteMacroMutation.isPending}
+            variant="destructive"
+            className="w-full py-3 rounded-lg transition-all duration-200 mt-2"
+          >
+            {deleteMacroMutation.isPending ? 'DELETING...' : 'DELETE MACRO'}
+          </Button>
+        )}
       </main>
     </div>
   );

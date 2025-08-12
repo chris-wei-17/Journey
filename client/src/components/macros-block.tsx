@@ -17,6 +17,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 ChartJS.register(ArcElement, Tooltip, Legend);
 import * as React from "react";
+import { useLocation } from "wouter";
 
 interface MacroEntry {
   id: number;
@@ -45,6 +46,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'macro' | 'calorie'>('macro');
   const VIEW_MODE_STORAGE_KEY = 'macros-view-mode';
+  const [, setLocation] = useLocation();
 
   React.useEffect(() => {
     try {
@@ -340,7 +342,11 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
           {macros.length > 0 ? (
             macros.map((macro: MacroEntry) => (
-              <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3 mb-2">
+              <div
+                key={macro.id}
+                className="flex items-center justify-between bg-gray-800 rounded-lg p-3 mb-2 cursor-pointer hover:bg-gray-700 transition-colors"
+                onClick={() => setLocation(`/add-macros?edit=${macro.id}&description=${encodeURIComponent(macro.description)}&protein=${encodeURIComponent(macro.protein)}&fats=${encodeURIComponent(macro.fats)}&carbs=${encodeURIComponent(macro.carbs)}&date=${format(selectedDate, 'yyyy-MM-dd')}`)}
+              >
                 <div className="flex items-center space-x-3">
                   <div className="bg-green-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
                     <i className="fas fa-utensils text-white text-sm"></i>
