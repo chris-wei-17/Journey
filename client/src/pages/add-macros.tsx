@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { calculateCalories } from "@/lib/nutrition-utils";
 
 export default function AddMacros() {
   const [, setLocation] = useLocation();
@@ -19,7 +21,21 @@ export default function AddMacros() {
   const [protein, setProtein] = useState('');
   const [fats, setFats] = useState('');
   const [carbs, setCarbs] = useState('');
+  const [calories, setCalories] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<'macro' | 'calorie'>('macro');
+  const VIEW_MODE_STORAGE_KEY = 'add-macros-view-mode';
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+      if (saved === 'macro' || saved === 'calorie') setViewMode(saved as 'macro' | 'calorie');
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode); } catch {}
+  }, [viewMode]);
 
   // Get date from URL params
   useEffect(() => {
@@ -69,22 +85,39 @@ export default function AddMacros() {
   });
 
   const handleSubmit = () => {
-    if (!description.trim() || !protein || !fats || !carbs) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
+    if (viewMode === 'macro') {
+      if (!description.trim() || !protein || !fats || !carbs) {
+        toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" });
+        return;
+      }
+    } else {
+      if (!description.trim() || !calories) {
+        toast({ title: "Error", description: "Please enter description and calories.", variant: "destructive" });
+        return;
+      }
     }
 
-    const macroData = {
-      description: description.trim(),
-      protein: parseFloat(protein),
-      fats: parseFloat(fats),
-      carbs: parseFloat(carbs),
-      date: format(selectedDate, 'yyyy-MM-dd'), // Use date-only format to avoid timezone issues
-    };
+    let macroData: any;
+    if (viewMode === 'macro') {
+      macroData = {
+        description: description.trim(),
+        protein: parseFloat(protein),
+        fats: parseFloat(fats),
+        carbs: parseFloat(carbs),
+        date: format(selectedDate, 'yyyy-MM-dd'),
+      };
+    } else {
+      // Convert calories to carbs-only grams as a simple fallback (4 kcal/g)
+      const cals = Math.max(0, parseFloat(calories) || 0);
+      const carbsOnly = cals / 4;
+      macroData = {
+        description: description.trim(),
+        protein: 0,
+        fats: 0,
+        carbs: parseFloat(carbsOnly.toFixed(1)),
+        date: format(selectedDate, 'yyyy-MM-dd'),
+      };
+    }
 
     createMacroMutation.mutate(macroData);
   };
@@ -92,7 +125,7 @@ export default function AddMacros() {
   return (
     <div className="app-gradient-bg min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 mt-12 mb-6">
+      <div className="flex items-center justify-between p-4 mt-12 mb-2">
         <Button 
           variant="ghost" 
           size="sm"
@@ -116,6 +149,18 @@ export default function AddMacros() {
         </div>
       </div>
 
+      {/* Local toggle (page-specific) */}
+      <div className="px-4 mb-2">
+        <ToggleGroup type="single" size="sm" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-white/80 rounded-md w-fit">
+          <ToggleGroupItem value="macro" className={`text-xs px-2 h-6 leading-none ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-800'}`}>
+            Macro
+          </ToggleGroupItem>
+          <ToggleGroupItem value="calorie" className={`text-xs px-2 h-6 leading-none ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-800'}`}>
+            Calorie
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
       <main className="px-4 max-w-lg mx-auto">
         {/* Description Section */}
         <div className="mb-6">
@@ -134,62 +179,80 @@ export default function AddMacros() {
         </div>
 
         {/* Macros Section */}
-        <div className="mb-6">
-          <h3 className="text-gray-400 text-sm font-medium mb-4 tracking-wide">MACRONUTRIENTS (GRAMS)</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <Label className="text-white mb-2 block">Protein</Label>
-              <Card className="bg-gray-800 border-0">
-                <CardContent className="p-4">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.1"
-                    placeholder="0.0"
-                    value={protein}
-                    onChange={(e) => setProtein(e.target.value)}
-                    className="bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:outline-none text-center text-lg"
-                  />
-                </CardContent>
-              </Card>
-            </div>
+        {viewMode === 'macro' ? (
+          <div className="mb-6">
+            <h3 className="text-gray-400 text-sm font-medium mb-4 tracking-wide">MACRONUTRIENTS (GRAMS)</h3>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-white mb-2 block">Protein</Label>
+                <Card className="bg-gray-800 border-0">
+                  <CardContent className="p-4">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.1"
+                      placeholder="0.0"
+                      value={protein}
+                      onChange={(e) => setProtein(e.target.value)}
+                      className="bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:outline-none text-center text-lg"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
 
-            <div>
-              <Label className="text-white mb-2 block">Fats</Label>
-              <Card className="bg-gray-800 border-0">
-                <CardContent className="p-4">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.1"
-                    placeholder="0.0"
-                    value={fats}
-                    onChange={(e) => setFats(e.target.value)}
-                    className="bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:outline-none text-center text-lg"
-                  />
-                </CardContent>
-              </Card>
-            </div>
+              <div>
+                <Label className="text-white mb-2 block">Fats</Label>
+                <Card className="bg-gray-800 border-0">
+                  <CardContent className="p-4">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.1"
+                      placeholder="0.0"
+                      value={fats}
+                      onChange={(e) => setFats(e.target.value)}
+                      className="bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:outline-none text-center text-lg"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
 
-            <div>
-              <Label className="text-white mb-2 block">Carbs</Label>
-              <Card className="bg-gray-800 border-0">
-                <CardContent className="p-4">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.1"
-                    placeholder="0.0"
-                    value={carbs}
-                    onChange={(e) => setCarbs(e.target.value)}
-                    className="bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:outline-none text-center text-lg"
-                  />
-                </CardContent>
-              </Card>
+              <div>
+                <Label className="text-white mb-2 block">Carbs</Label>
+                <Card className="bg-gray-800 border-0">
+                  <CardContent className="p-4">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.1"
+                      placeholder="0.0"
+                      value={carbs}
+                      onChange={(e) => setCarbs(e.target.value)}
+                      className="bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:outline-none text-center text-lg"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="mb-6">
+            <h3 className="text-gray-400 text-sm font-medium mb-4 tracking-wide">CALORIES</h3>
+            <Card className="bg-gray-800 border-0">
+              <CardContent className="p-4">
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  step="1"
+                  placeholder="0"
+                  value={calories}
+                  onChange={(e) => setCalories(e.target.value)}
+                  className="bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:outline-none text-center text-lg"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Save Button */}
         <Button 
