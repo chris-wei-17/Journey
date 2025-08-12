@@ -1534,15 +1534,17 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       const [year, month, day] = dateStr.split('-').map(Number);
       const macroDate = new Date(year, month - 1, day, 12, 0, 0, 0); // Use noon to avoid timezone edge cases
       
-      const macroData = {
+      const macroData: any = {
         userId,
         description: req.body.description,
         protein: req.body.protein,
         fats: req.body.fats,
         carbs: req.body.carbs,
-        calories: req.body.calories ?? null,
         date: macroDate,
       };
+      if (req.body.calories !== undefined && req.body.calories !== null && req.body.calories !== '') {
+        macroData.calories = req.body.calories;
+      }
       
       console.log('Processed macro data:', JSON.stringify(macroData, null, 2));
       
@@ -1578,15 +1580,17 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       const dateStr = req.body.date;
       const [year, month, day] = dateStr.split('-').map(Number);
       const macroDate = new Date(year, month - 1, day, 12, 0, 0, 0);
-      const macroData = {
+      const macroData: any = {
         userId,
         description: req.body.description,
         protein: req.body.protein,
         fats: req.body.fats,
         carbs: req.body.carbs,
-        calories: req.body.calories ?? null,
         date: macroDate,
       };
+      if (req.body.calories !== undefined && req.body.calories !== null && req.body.calories !== '') {
+        macroData.calories = req.body.calories;
+      }
       const result = insertMacroSchema.safeParse(macroData);
       if (!result.success) {
         return res.status(400).json({ message: 'Invalid macro data', errors: result.error.errors });
