@@ -488,6 +488,7 @@ export class DatabaseStorage implements IStorage {
         protein: macroData.protein,
         fats: macroData.fats,
         carbs: macroData.carbs,
+        calories: (macroData as any).calories ?? null,
         date: macroData.date,
       })
       .where(and(eq(macros.id, id), eq(macros.userId, macroData.userId)))

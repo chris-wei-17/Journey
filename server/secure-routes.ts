@@ -1540,6 +1540,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         protein: req.body.protein,
         fats: req.body.fats,
         carbs: req.body.carbs,
+        calories: req.body.calories ?? null,
         date: macroDate,
       };
       
@@ -1583,6 +1584,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         protein: req.body.protein,
         fats: req.body.fats,
         carbs: req.body.carbs,
+        calories: req.body.calories ?? null,
         date: macroDate,
       };
       const result = insertMacroSchema.safeParse(macroData);

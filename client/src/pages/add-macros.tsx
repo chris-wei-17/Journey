@@ -164,6 +164,7 @@ export default function AddMacros() {
         protein: 0,
         fats: 0,
         carbs: 0,
+        calories: parseFloat(calories),
         date: format(selectedDate, 'yyyy-MM-dd'),
       };
     }
