@@ -296,7 +296,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
           {macros.length > 0 ? (
             macros.map((macro: MacroEntry) => (
-              <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
+              <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3 mb-2">
                 <div className="flex items-center space-x-3">
                   <div className="bg-green-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
                     <i className="fas fa-utensils text-white text-sm"></i>
