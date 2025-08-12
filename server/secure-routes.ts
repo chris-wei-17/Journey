@@ -727,6 +727,45 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update basic user fields
+  app.put('/api/profile/user', authenticateToken, async (req: any, res) => {
+    try {
+      const { firstName, lastName, username, email } = req.body || {};
+      const updated = await storage.updateUser(req.userId!, {
+        firstName: firstName ?? undefined,
+        lastName: lastName ?? undefined,
+        username: username ?? undefined,
+        email: email ?? undefined,
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ message: 'Failed to update user' });
+    }
+  });
+
+  // Update extended profile fields
+  app.put('/api/profile/profile', authenticateToken, async (req: any, res) => {
+    try {
+      const { gender, birthday, height, weight, bodyType } = req.body || {};
+      const profileUpdate: any = {
+        userId: req.userId!,
+        gender: gender ?? undefined,
+        height: height ?? undefined,
+        weight: weight ?? undefined,
+        bodyType: bodyType ?? undefined,
+      };
+      if (birthday) {
+        try { profileUpdate.birthday = new Date(birthday); } catch {}
+      }
+      const updated = await storage.updateUserProfile(req.userId!, profileUpdate);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ message: 'Failed to update profile' });
+    }
+  });
+
   // Upload avatar and update user profileImageUrl
   app.post('/api/profile/avatar', authenticateToken, upload.single('profileImage'), async (req: any, res) => {
     try {
