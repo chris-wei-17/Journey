@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
@@ -39,6 +39,7 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouch, setLastTouch] = useState<{ x: number; y: number } | null>(null);
   const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
+  const [isPWA, setIsPWA] = useState(false);
   
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,6 +47,21 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
   const initials = getInitials(firstName, lastName);
   const gradient = getGradientFromName(firstName, lastName);
   const sizeClass = sizeClasses[size];
+
+  // Detect PWA for dialog positioning
+  useEffect(() => {
+    const checkPWA = () => {
+      const isPWAMode = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.matchMedia('(display-mode: fullscreen)').matches ||
+                        (window.navigator as any).standalone === true ||
+                        document.referrer.includes('android-app://');
+      setIsPWA(isPWAMode);
+    };
+    checkPWA();
+    const mq = window.matchMedia('(display-mode: standalone)');
+    mq.addEventListener('change', checkPWA);
+    return () => mq.removeEventListener('change', checkPWA);
+  }, []);
 
   const handleFileSelect = (file: File) => {
     setImageFile(file);
@@ -183,7 +199,11 @@ export function Avatar({ firstName, lastName, profileImageUrl, size = "md", onIm
           />
 
           <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
-            <DialogContent className="max-w-md">
+            <DialogContent className={`max-w-md max-h-[85vh] overflow-y-auto ${
+              isPWA
+                ? 'fixed top-[5vh] left-[5vw] right-[5vw] bottom-auto w-[90vw] max-w-md mx-auto translate-x-0 translate-y-0'
+                : 'm-4 w-[calc(100vw-2rem)] sm:w-full'
+            }`}>
               <DialogHeader>
                 <DialogTitle className="text-center">Adjust Your Photo</DialogTitle>
                 <DialogDescription className="sr-only">
