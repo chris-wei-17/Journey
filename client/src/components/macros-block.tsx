@@ -352,7 +352,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                     <div className="text-gray-300 text-xs">
                       {viewMode === 'macro' ? (
                         <>
-                          P: {macro.protein}g • F: {macro.fats}g • C: {macro.carbs}g
+                          P: {Number(macro.protein) === 0 ? '-' : macro.protein + 'g'} • F: {Number(macro.fats) === 0 ? '-' : macro.fats + 'g'} • C: {Number(macro.carbs) === 0 ? '-' : macro.carbs + 'g'}
                         </>
                       ) : (
                         <>

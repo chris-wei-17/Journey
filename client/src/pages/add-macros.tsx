@@ -149,18 +149,6 @@ export default function AddMacros() {
         </div>
       </div>
 
-      {/* Local toggle (page-specific) */}
-      <div className="px-4 mb-2">
-        <ToggleGroup type="single" size="sm" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-white/80 rounded-md w-fit">
-          <ToggleGroupItem value="macro" className={`text-xs px-2 h-6 leading-none ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-800'}`}>
-            Macro
-          </ToggleGroupItem>
-          <ToggleGroupItem value="calorie" className={`text-xs px-2 h-6 leading-none ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-800'}`}>
-            Calorie
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-
       <main className="px-4 max-w-lg mx-auto">
         {/* Description Section */}
         <div className="mb-6">
@@ -176,6 +164,30 @@ export default function AddMacros() {
               />
             </CardContent>
           </Card>
+        </div>
+
+        {/* Local toggle (page-specific) now below description */}
+        <div className="mb-4 flex justify-center">
+          <ToggleGroup
+            type="single"
+            size="lg"
+            value={viewMode}
+            onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')}
+            className="bg-white/90 rounded-md w-fit"
+          >
+            <ToggleGroupItem
+              value="macro"
+              className={`text-sm px-4 h-10 leading-none ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-900'}`}
+            >
+              Macro
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="calorie"
+              className={`text-sm px-4 h-10 leading-none ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-900'}`}
+            >
+              Calorie
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
         {/* Macros Section */}
