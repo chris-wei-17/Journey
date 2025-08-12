@@ -321,7 +321,21 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                       {macro.description}
                     </div>
                     <div className="text-gray-300 text-xs">
-                      P: {macro.protein}g • F: {macro.fats}g • C: {macro.carbs}g
+                      {viewMode === 'macro' ? (
+                        <>
+                          P: {macro.protein}g • F: {macro.fats}g • C: {macro.carbs}g
+                        </>
+                      ) : (
+                        <>
+                          Calories: {Math.round(
+                            calculateCalories(
+                              Number(macro.protein) || 0,
+                              Number(macro.fats) || 0,
+                              Number(macro.carbs) || 0
+                            )
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
