@@ -10,6 +10,7 @@ import {
   Legend,
   TimeScale,
   ArcElement,
+  BarElement,
 } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -141,6 +143,20 @@ export function NutritionChart() {
     calorieData = [];
   }
 
+  // Generate date range keys for the selected time window
+  const daysInRange = getDaysForRange(timeRange);
+  const dateKeys = Array.from({ length: daysInRange }, (_, idx) =>
+    format(subDays(new Date(), daysInRange - 1 - idx), 'yyyy-MM-dd')
+  );
+
+  // Build daily macro totals aligned to dateKeys
+  const dailyMacroSummaries = dateKeys.map(dateKey => calculateDayMacros(macrosByDate[dateKey] || []));
+
+  // Macro series for triple bar chart
+  const proteinSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].protein || 0 }));
+  const fatsSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].fats || 0 }));
+  const carbsSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].carbs || 0 }));
+
   // Get today's macros for donut charts
   const today = format(new Date(), 'yyyy-MM-dd');
   const todayMacros = macrosByDate[today] || [];
@@ -210,6 +226,35 @@ export function NutritionChart() {
         pointRadius: 3,
         pointHoverRadius: 5,
         spanGaps: false,
+        yAxisID: 'y',
+        type: 'line',
+      },
+      {
+        label: 'Protein',
+        data: proteinSeries,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+        yAxisID: 'y1',
+        type: 'bar',
+        barThickness: 18,
+      },
+      {
+        label: 'Fats',
+        data: fatsSeries,
+        backgroundColor: '#eab308',
+        borderColor: '#eab308',
+        yAxisID: 'y1',
+        type: 'bar',
+        barThickness: 18,
+      },
+      {
+        label: 'Carbs',
+        data: carbsSeries,
+        backgroundColor: '#22c55e',
+        borderColor: '#22c55e',
+        yAxisID: 'y1',
+        type: 'bar',
+        barThickness: 18,
       },
     ],
   };
@@ -220,7 +265,8 @@ export function NutritionChart() {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false,
+        display: true,
+        position: 'bottom',
       },
       tooltip: {
         mode: 'index' as const,
@@ -270,6 +316,26 @@ export function NutritionChart() {
         title: {
           display: true,
           text: 'Calories',
+          color: '#6b7280',
+          font: {
+            size: 12,
+          },
+        },
+      },
+      y1: {
+        type: 'linear' as const,
+        display: true,
+        position: 'right' as const,
+        beginAtZero: true,
+        grid: {
+          drawOnChartArea: false,
+        },
+        ticks: {
+          color: '#6b7280',
+        },
+        title: {
+          display: true,
+          text: 'Macros (g)',
           color: '#6b7280',
           font: {
             size: 12,
