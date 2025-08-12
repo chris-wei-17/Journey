@@ -4,7 +4,7 @@ import Mailgun from 'mailgun.js';
 
 const DOMAIN = process.env.MAILGUN_DOMAIN;
 const API_KEY = process.env.MAILGUN_API_KEY;
-const EU_REGION = process.env.MAILGUN_EU_REGION === 'true';
+const EU_REGION = process.env.MAILGUN_EU_REGION === 'false';
 
 let client: any = null;
 
