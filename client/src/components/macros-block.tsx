@@ -112,12 +112,12 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-0">
         {/* Top-left toggle row */}
-        <div className="-mt-0.5 -ml-0.5">
-          <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md w-fit">
-            <ToggleGroupItem value="macro" className={`text-xs px-2 py-0 ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+        <div className="-mt-2 -ml-2">
+          <ToggleGroup type="single" size="sm" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md w-fit">
+            <ToggleGroupItem value="macro" className={`text-xs px-2 h-6 leading-none ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
               Macro
             </ToggleGroupItem>
-            <ToggleGroupItem value="calorie" className={`text-xs px-2 py-0 ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+            <ToggleGroupItem value="calorie" className={`text-xs px-2 h-6 leading-none ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
               Calorie
             </ToggleGroupItem>
           </ToggleGroup>
