@@ -107,14 +107,12 @@ export default function AddMacros() {
         date: format(selectedDate, 'yyyy-MM-dd'),
       };
     } else {
-      // Convert calories to carbs-only grams as a simple fallback (4 kcal/g)
-      const cals = Math.max(0, parseFloat(calories) || 0);
-      const carbsOnly = cals / 4;
+      // Store macros as zeros; calories are not converted to macros
       macroData = {
         description: description.trim(),
         protein: 0,
         fats: 0,
-        carbs: parseFloat(carbsOnly.toFixed(1)),
+        carbs: 0,
         date: format(selectedDate, 'yyyy-MM-dd'),
       };
     }
