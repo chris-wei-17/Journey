@@ -56,12 +56,11 @@ export default function Landing() {
           {/* Hero Image Placeholder */}
           <div className="bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl p-8 shadow-xl">
             <div className="bg-white rounded-xl p-6 shadow-inner">
-              <p className="text-gray-500 text-center">
-                [App Screenshot - Dashboard Overview]
-              </p>
-              <p className="text-sm text-gray-400 mt-2">
-                Comprehensive dashboard showing your fitness metrics, progress charts, and goal tracking
-              </p>
+              <img
+                src="/img_hero.jpeg"
+                alt="App Screenshot - Dashboard Overview"
+                className="w-full h-auto rounded-lg shadow"
+              />
             </div>
           </div>
         </div>
