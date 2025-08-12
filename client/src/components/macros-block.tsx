@@ -225,7 +225,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="flex items-center justify-center gap-6 mb-3">
+        <div className="flex items-center justify-center gap-4 mb-3">
             {/* Minimalist donuts showing only percentage */}
             {(() => {
               const hasTargets = macroTargets && macroTargets.proteinTarget && macroTargets.fatsTarget && macroTargets.carbsTarget;
@@ -237,7 +237,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
               }, macroTargets as MacroTarget) : { protein: 0, fats: 0, carbs: 0 };
 
               const createDonutConfig = (percentage: number, color: string) => ({
-                data: { datasets: [{ data: [Math.max(0, Math.min(100, Math.round(percentage))), Math.max(0, 100 - Math.max(0, Math.min(100, Math.round(percentage))))], backgroundColor: [color, '#f3f4f6'], borderWidth: 0, cutout: '70%' }] },
+                data: { datasets: [{ data: [Math.max(0, Math.min(100, Math.round(percentage))), Math.max(0, 100 - Math.max(0, Math.min(100, Math.round(percentage))))], backgroundColor: [color, '#e5e7eb'], borderWidth: 0, cutout: '75%' }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
               });
 
@@ -247,23 +247,23 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
 
               return (
                 <>
-                  <div className="relative w-14 h-14">
-                    <Doughnut data={p.data} options={p.options} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[10px] font-medium text-gray-700">{Math.round(percents.protein) || 0}%</span>
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-10 h-10">
+                      <Doughnut data={p.data} options={p.options} />
                     </div>
+                    <span className="mt-1 text-[10px] text-red-500 font-medium">P:</span>
                   </div>
-                  <div className="relative w-14 h-14">
-                    <Doughnut data={f.data} options={f.options} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[10px] font-medium text-gray-700">{Math.round(percents.fats) || 0}%</span>
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-10 h-10">
+                      <Doughnut data={f.data} options={f.options} />
                     </div>
+                    <span className="mt-1 text-[10px] text-yellow-500 font-medium">F:</span>
                   </div>
-                  <div className="relative w-14 h-14">
-                    <Doughnut data={c.data} options={c.options} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[10px] font-medium text-gray-700">{Math.round(percents.carbs) || 0}%</span>
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-10 h-10">
+                      <Doughnut data={c.data} options={c.options} />
                     </div>
+                    <span className="mt-1 text-[10px] text-green-500 font-medium">C:</span>
                   </div>
                 </>
               );
