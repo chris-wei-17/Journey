@@ -355,7 +355,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
               <div
                 key={macro.id}
                 className="flex items-center justify-between bg-gray-800 rounded-lg p-3 mb-2 cursor-pointer hover:bg-gray-700 transition-colors"
-                onClick={() => setLocation(`/add-macros?edit=${macro.id}&description=${encodeURIComponent(macro.description)}&protein=${encodeURIComponent(macro.protein)}&fats=${encodeURIComponent(macro.fats)}&carbs=${encodeURIComponent(macro.carbs)}&date=${format(selectedDate, 'yyyy-MM-dd')}`)}
+                onClick={() => setLocation(`/add-macros?edit=${macro.id}&description=${encodeURIComponent(macro.description)}&protein=${encodeURIComponent(macro.protein)}&fats=${encodeURIComponent(macro.fats)}&carbs=${encodeURIComponent(macro.carbs)}&calories=${encodeURIComponent(String(macro.calories ?? ''))}&date=${format(selectedDate, 'yyyy-MM-dd')}`)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="bg-green-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
@@ -372,13 +372,17 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                         </>
                       ) : (
                         <>
-                          Calories: {Math.round(
-                            calculateCalories(
-                              Number(macro.protein) || 0,
-                              Number(macro.fats) || 0,
-                              Number(macro.carbs) || 0
-                            )
-                          )}
+                          Calories: {(() => {
+                            const explicit = Number(macro.calories ?? 0);
+                            if (explicit && isFinite(explicit) && explicit > 0) return Math.round(explicit);
+                            return Math.round(
+                              calculateCalories(
+                                Number(macro.protein) || 0,
+                                Number(macro.fats) || 0,
+                                Number(macro.carbs) || 0
+                              )
+                            );
+                          })()}
                         </>
                       )}
                     </div>

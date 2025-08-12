@@ -48,6 +48,7 @@ export default function AddMacros() {
     const pParam = params.get('protein');
     const fParam = params.get('fats');
     const cParam = params.get('carbs');
+    const calParam = params.get('calories');
     if (dateParam) {
       // Create date safely to avoid timezone issues
       const [year, month, day] = dateParam.split('-').map(Number);
@@ -60,6 +61,10 @@ export default function AddMacros() {
       if (pParam) setProtein(String(pParam));
       if (fParam) setFats(String(fParam));
       if (cParam) setCarbs(String(cParam));
+      if (calParam) {
+        setCalories(String(calParam));
+        setViewMode('calorie');
+      }
       // Clean URL
       window.history.replaceState({}, '', '/add-macros');
     }
