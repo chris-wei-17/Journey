@@ -697,6 +697,15 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       // Get profile data
       const profile = await storage.getUserProfile(req.userId!);
       const goals = await storage.getUserGoals(req.userId!);
+      // If profileImageUrl is a storage path, generate a signed URL
+      let profileImageUrl = user.profileImageUrl;
+      try {
+        if (profileImageUrl && !/^https?:\/\//i.test(profileImageUrl)) {
+          profileImageUrl = await photoUrlService.getSignedUrl(profileImageUrl);
+        }
+      } catch (e) {
+        // ignore signing errors and fall back to stored value
+      }
       
       res.json({
         id: user.id,
@@ -704,7 +713,7 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
+        profileImageUrl,
         photosPin: user.photosPin,
         photosPinEnabled: user.photosPinEnabled,
         membership: user.membership,
@@ -715,6 +724,52 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Upload avatar and update user profileImageUrl
+  app.post('/api/profile/avatar', authenticateToken, upload.single('profileImage'), async (req: any, res) => {
+    try {
+      const file = req.file as Express.Multer.File | undefined;
+      if (!file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+      const userId = req.userId!;
+      // Build storage path
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const ext = (file.originalname.split('.').pop() || 'jpg').toLowerCase();
+      const filename = `avatar_${timestamp}_${randomSuffix}.${ext}`;
+      const folder = `user_${userId}/avatar`;
+      const fullPath = `${folder}/${filename}`;
+
+      // Optionally, resize to a reasonable size
+      const resized = await sharp(file.buffer)
+        .resize(512, 512, { fit: 'cover' })
+        .toFormat('jpeg', { quality: 85 })
+        .toBuffer();
+
+      const { error: uploadErr } = await supabase.storage
+        .from(PHOTOS_BUCKET)
+        .upload(fullPath, resized, { contentType: 'image/jpeg', upsert: true });
+      if (uploadErr) {
+        console.error('Avatar upload error:', uploadErr);
+        return res.status(500).json({ message: 'Failed to upload avatar' });
+      }
+
+      // Save storage path in DB
+      await storage.updateUser(userId, { profileImageUrl: fullPath });
+
+      // Return signed URL for immediate client use
+      let signedUrl: string | undefined = undefined;
+      try {
+        signedUrl = await photoUrlService.getSignedUrl(fullPath);
+      } catch (e) {}
+
+      return res.json({ profileImageUrl: signedUrl || fullPath });
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+      return res.status(500).json({ message: 'Failed to update avatar' });
     }
   });
 
