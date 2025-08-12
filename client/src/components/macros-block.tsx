@@ -226,18 +226,39 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       
       <CardContent className="pt-0">
         <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
-          <div className="ml-auto flex items-center gap-4">
+          <div className="flex items-center gap-4">
             {(() => {
               const hasTargets = macroTargets && macroTargets.proteinTarget && macroTargets.fatsTarget && macroTargets.carbsTarget;
-              const percents = hasTargets ? calculateMacroPercentages({
+              const normalizedTargets = hasTargets ? {
+                proteinTarget: Number((macroTargets as MacroTarget).proteinTarget) || 0,
+                fatsTarget: Number((macroTargets as MacroTarget).fatsTarget) || 0,
+                carbsTarget: Number((macroTargets as MacroTarget).carbsTarget) || 0,
+              } : { proteinTarget: 150, fatsTarget: 80, carbsTarget: 200 };
+
+              const percentsRaw = calculateMacroPercentages({
                 protein: totals.protein,
                 fats: totals.fats,
                 carbs: totals.carbs,
                 totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs)
-              }, macroTargets as MacroTarget) : { protein: 0, fats: 0, carbs: 0 };
+              }, normalizedTargets as MacroTarget);
+
+              const percents = {
+                protein: Math.max(0, Math.min(100, Math.round(percentsRaw.protein || 0))),
+                fats: Math.max(0, Math.min(100, Math.round(percentsRaw.fats || 0))),
+                carbs: Math.max(0, Math.min(100, Math.round(percentsRaw.carbs || 0))),
+              };
+
+              const hexToRgba = (hex: string, alpha: number) => {
+                const clean = hex.replace('#', '');
+                const bigint = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16);
+                const r = (bigint >> 16) & 255;
+                const g = (bigint >> 8) & 255;
+                const b = bigint & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+              };
 
               const createDonutConfig = (percentage: number, color: string) => ({
-                data: { datasets: [{ data: [Math.max(0, Math.min(100, Math.round(percentage))), Math.max(0, 100 - Math.max(0, Math.min(100, Math.round(percentage))))], backgroundColor: [color, '#e5e7eb'], borderWidth: 0, cutout: '75%' }] },
+                data: { datasets: [{ data: [percentage, 100 - percentage], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
               });
 
