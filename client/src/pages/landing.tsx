@@ -54,7 +54,7 @@ export default function Landing() {
           </div>
 
           {/* Hero Image Placeholder */}
-          <div className="bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl p-8 shadow-xl">
+          <div className="bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl p-4 shadow-xl">
             
               <img
                 src="/IMG_8247.jpeg"
