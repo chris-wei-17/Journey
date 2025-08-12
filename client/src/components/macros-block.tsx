@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { calculateCalories, calculateMacroPercentages, type MacroTarget } from "@/lib/nutrition-utils";
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 ChartJS.register(ArcElement, Tooltip, Legend);
 import * as React from "react";
 
@@ -42,6 +43,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<'macro' | 'calorie'>('macro');
 
   const { data: macros = [] } = useQuery<MacroEntry[]>({
     queryKey: [`/api/macros/date/${format(selectedDate, 'yyyy-MM-dd')}`],
@@ -110,7 +112,17 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-gray-800">Nutrition</CardTitle>
+          <div className="flex items-center gap-3">
+            <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md p-0.5">
+              <ToggleGroupItem value="macro" className={`text-xs px-2 py-1 ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+                Macro
+              </ToggleGroupItem>
+              <ToggleGroupItem value="calorie" className={`text-xs px-2 py-1 ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+                Calorie
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <CardTitle className="text-xl font-bold text-gray-800">Nutrition</CardTitle>
+          </div>
           <div className="flex items-center justify-end">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
