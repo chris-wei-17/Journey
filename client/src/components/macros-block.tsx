@@ -44,6 +44,26 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'macro' | 'calorie'>('macro');
+  const VIEW_MODE_STORAGE_KEY = 'macros-view-mode';
+
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+      if (saved === 'macro' || saved === 'calorie') {
+        setViewMode(saved as 'macro' | 'calorie');
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [viewMode]);
 
   const { data: macros = [] } = useQuery<MacroEntry[]>({
     queryKey: [`/api/macros/date/${format(selectedDate, 'yyyy-MM-dd')}`],
