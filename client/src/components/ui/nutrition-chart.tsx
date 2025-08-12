@@ -10,6 +10,7 @@ import {
   Legend,
   TimeScale,
   ArcElement,
+  BarElement,
 } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -141,6 +143,23 @@ export function NutritionChart() {
     calorieData = [];
   }
 
+  // Generate date range keys for the selected time window
+  const daysInRange = getDaysForRange(timeRange);
+  const dateKeys = Array.from({ length: daysInRange }, (_, idx) =>
+    format(subDays(new Date(), daysInRange - 1 - idx), 'yyyy-MM-dd')
+  );
+
+  // Build daily macro totals aligned to dateKeys
+  const dailyMacroSummaries = dateKeys.map(dateKey => calculateDayMacros(macrosByDate[dateKey] || []));
+
+  // Macro series for triple bar chart
+  const proteinSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].protein || 0 }));
+  const fatsSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].fats || 0 }));
+  const carbsSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].carbs || 0 }));
+
+  // Dynamic bar thickness by time range
+  const macroBarThickness = timeRange === '7d' ? 9 : timeRange === '14d' ? 4 : timeRange === '30d' ? 2 : 1;
+
   // Get today's macros for donut charts
   const today = format(new Date(), 'yyyy-MM-dd');
   const todayMacros = macrosByDate[today] || [];
@@ -202,14 +221,45 @@ export function NutritionChart() {
           x: point.date,
           y: isFinite(point.value) ? point.value : null
         })),
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        borderColor: '#7c3aed',
+        backgroundColor: 'rgba(124, 58, 237, 0.1)',
         borderWidth: 1, // Low weight line
         fill: false,
         tension: 0.4,
+        pointBackgroundColor: '#7c3aed',
+        pointBorderColor: '#7c3aed',
         pointRadius: 3,
         pointHoverRadius: 5,
         spanGaps: false,
+        yAxisID: 'y',
+        type: 'line',
+      },
+      {
+        label: 'Protein',
+        data: proteinSeries,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+        yAxisID: 'y1',
+        type: 'bar',
+        barThickness: macroBarThickness,
+      },
+      {
+        label: 'Fats',
+        data: fatsSeries,
+        backgroundColor: '#eab308',
+        borderColor: '#eab308',
+        yAxisID: 'y1',
+        type: 'bar',
+        barThickness: macroBarThickness,
+      },
+      {
+        label: 'Carbs',
+        data: carbsSeries,
+        backgroundColor: '#22c55e',
+        borderColor: '#22c55e',
+        yAxisID: 'y1',
+        type: 'bar',
+        barThickness: macroBarThickness,
       },
     ],
   };
@@ -220,7 +270,8 @@ export function NutritionChart() {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false,
+        display: true,
+        position: 'bottom',
       },
       tooltip: {
         mode: 'index' as const,
@@ -228,7 +279,7 @@ export function NutritionChart() {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: 'white',
         bodyColor: 'white',
-        borderColor: '#10b981',
+        borderColor: '#7c3aed',
         borderWidth: 1,
       },
     },
@@ -270,6 +321,26 @@ export function NutritionChart() {
         title: {
           display: true,
           text: 'Calories',
+          color: '#6b7280',
+          font: {
+            size: 12,
+          },
+        },
+      },
+      y1: {
+        type: 'linear' as const,
+        display: true,
+        position: 'right' as const,
+        beginAtZero: true,
+        grid: {
+          drawOnChartArea: false,
+        },
+        ticks: {
+          color: '#6b7280',
+        },
+        title: {
+          display: true,
+          text: 'Macros (g)',
           color: '#6b7280',
           font: {
             size: 12,
@@ -404,56 +475,7 @@ export function NutritionChart() {
         </CardContent>
       </Card>
 
-      {/* Floating Macro Donut Charts */}
-      <div className="flex justify-center gap-8 px-4 mt-6">
-        {/* Protein */}
-        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-          <div className="w-16 h-16 mx-auto relative">
-            <Doughnut data={proteinDonut.data} options={proteinDonut.options} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.protein) || 0}%
-              </span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">Protein</p>
-          <p className="text-xs text-red-500 font-medium">
-            {Math.round(todaySummary.protein) || 0}g / {effectiveTargets.proteinTarget}g
-          </p>
-        </div>
-
-        {/* Fats */}
-        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-          <div className="w-16 h-16 mx-auto relative">
-            <Doughnut data={fatsDonut.data} options={fatsDonut.options} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.fats) || 0}%
-              </span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">Fats</p>
-          <p className="text-xs text-yellow-500 font-medium">
-            {Math.round(todaySummary.fats) || 0}g / {effectiveTargets.fatsTarget}g
-          </p>
-        </div>
-
-        {/* Carbs */}
-        <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-          <div className="w-16 h-16 mx-auto relative">
-            <Doughnut data={carbsDonut.data} options={carbsDonut.options} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-700">
-                {Math.round(macroPercentages.carbs) || 0}%
-              </span>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-1">Carbs</p>
-          <p className="text-xs text-green-500 font-medium">
-            {Math.round(todaySummary.carbs) || 0}g / {effectiveTargets.carbsTarget}g
-          </p>
-        </div>
-      </div>
+      {/* Macro donuts moved to dashboard */}
     </>
   );
 }

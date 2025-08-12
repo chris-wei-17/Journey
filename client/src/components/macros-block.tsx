@@ -11,7 +11,10 @@ import { format, isToday } from "date-fns";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { calculateCalories } from "@/lib/nutrition-utils";
+import { calculateCalories, calculateMacroPercentages, type MacroTarget } from "@/lib/nutrition-utils";
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+ChartJS.register(ArcElement, Tooltip, Legend);
 import * as React from "react";
 
 interface MacroEntry {
@@ -23,16 +26,6 @@ interface MacroEntry {
   carbs: number;
   date: string;
   createdAt: string;
-}
-
-interface MacroTarget {
-  id: number;
-  userId: number;
-  proteinTarget: number;
-  fatsTarget: number;
-  carbsTarget: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface MacrosBlockProps {
@@ -232,18 +225,78 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="space-y-4 mb-2">
-          <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
-            {macros.length > 0 && (
-              <span className="text-xs text-right">
-                P: {totals.protein}g | F: {totals.fats}g | C: {totals.carbs}g
-              </span>
-            )}
+        <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
+          <div className="flex items-center gap-4">
+            {(() => {
+              const normalizedTargets = {
+                proteinTarget: Number((macroTargets as MacroTarget | undefined)?.proteinTarget) || 0,
+                fatsTarget: Number((macroTargets as MacroTarget | undefined)?.fatsTarget) || 0,
+                carbsTarget: Number((macroTargets as MacroTarget | undefined)?.carbsTarget) || 0,
+              };
+
+              const percentsRaw = calculateMacroPercentages({
+                protein: totals.protein,
+                fats: totals.fats,
+                carbs: totals.carbs,
+                totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs)
+              }, normalizedTargets as MacroTarget);
+
+              const percents = {
+                protein: Math.max(0, Math.min(100, Math.round(percentsRaw.protein || 0))),
+                fats: Math.max(0, Math.min(100, Math.round(percentsRaw.fats || 0))),
+                carbs: Math.max(0, Math.min(100, Math.round(percentsRaw.carbs || 0))),
+              };
+
+              const hexToRgba = (hex: string, alpha: number) => {
+                const clean = hex.replace('#', '');
+                const bigint = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16);
+                const r = (bigint >> 16) & 255;
+                const g = (bigint >> 8) & 255;
+                const b = bigint & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+              };
+
+              const createDonutConfig = (percentage: number, color: string) => {
+                const p = Math.max(0, Math.min(100, Math.round(percentage)));
+                return ({
+                data: { datasets: [{ data: [p, 100 - p], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+              });
+              }
+
+              const p = createDonutConfig(percents.protein, '#ef4444');
+              const f = createDonutConfig(percents.fats, '#eab308');
+              const c = createDonutConfig(percents.carbs, '#22c55e');
+
+              return (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-red-500 font-medium">P:</span>
+                    <div className="relative w-8 h-8">
+                      <Doughnut data={p.data} options={p.options} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-yellow-500 font-medium">F:</span>
+                    <div className="relative w-8 h-8">
+                      <Doughnut data={f.data} options={f.options} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-green-500 font-medium">C:</span>
+                    <div className="relative w-8 h-8">
+                      <Doughnut data={c.data} options={c.options} />
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
-          
+        </div>
+
           {macros.length > 0 ? (
             macros.map((macro: MacroEntry) => (
-              <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
+              <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3 mb-2">
                 <div className="flex items-center space-x-3">
                   <div className="bg-green-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
                     <i className="fas fa-utensils text-white text-sm"></i>
@@ -264,15 +317,14 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
               No macros logged {isToday(selectedDate) ? 'today' : 'for this date'}
             </div>
           )}
-        </div>
-        
-        <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
-          <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
-            <i className="fas fa-plus mr-2"></i>
-            ADD MACROS
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
-  );
-}
+ 
+          <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
+            <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
+              <i className="fas fa-plus mr-2"></i>
+              ADD MACROS
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }

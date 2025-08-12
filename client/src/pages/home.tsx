@@ -12,6 +12,7 @@ import { MetricsBlock } from "@/components/metrics-block";
 import { PhotosBlock } from "@/components/photos-block";
 import { format, isToday } from "date-fns";
 import { createDateFromString } from "@/lib/date-utils";
+// Donut charts for macros are displayed within MacrosBlock
 
 export default function Home() {
   const { user } = useAuth();
@@ -120,6 +121,8 @@ export default function Home() {
         {/* Stats Overview */}
         </div>
 
+        {/* Macro donuts are shown inside MacrosBlock */}
+ 
         {/* <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-4 mt-4">
           <Card className="bg-white/75 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 border-0" style={{
             boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
