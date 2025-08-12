@@ -57,7 +57,7 @@ export default function Landing() {
           <div className="bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl p-8 shadow-xl">
             <div className="bg-white rounded-xl p-6 shadow-inner">
               <img
-                src="/img_hero.jpeg"
+                src="/IMG_8247.jpeg"
                 alt="App Screenshot - Dashboard Overview"
                 className="w-full h-auto rounded-lg shadow"
               />
