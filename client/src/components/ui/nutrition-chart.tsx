@@ -272,6 +272,11 @@ export function NutritionChart() {
       legend: {
         display: true,
         position: 'bottom',
+        labels: {
+          boxWidth: 10,
+          boxHeight: 10,
+          padding: 6,
+        },
       },
       tooltip: {
         mode: 'index' as const,
@@ -302,7 +307,7 @@ export function NutritionChart() {
           color: '#6b7280',
           display: true,
           font: {
-            size: 11,
+            size: 10,
           },
         },
         border: {
@@ -352,6 +357,11 @@ export function NutritionChart() {
       mode: 'nearest' as const,
       axis: 'x' as const,
       intersect: false,
+    },
+    layout: {
+      padding: {
+        bottom: 2,
+      },
     },
   };
 
@@ -427,21 +437,21 @@ export function NutritionChart() {
     <>
       {/* Main Chart */}
       <Card className="bg-white/75 backdrop-blur-sm border-0 shadow-xl">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold text-gray-800">
               Daily Calories
             </CardTitle>
             
             {/* Time Range Selector */}
-            <div className="flex gap-0.5 bg-gray-100 rounded-md p-0.5 w-fit">
+            <div className="flex gap-0.5 bg-gray-100 rounded-md p-0 w-fit">
               {timeRangeOptions.map((option) => (
                 <Button
                   key={option.value}
                   variant={timeRange === option.value ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setTimeRange(option.value)}
-                  className={`text-xs px-1.5 py-0.5 h-5 min-w-0 ${
+                  className={`text-[10px] px-1 py-0 h-4 min-w-0 ${
                     timeRange === option.value
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-600 hover:text-gray-800'
@@ -454,7 +464,7 @@ export function NutritionChart() {
           </div>
         </CardHeader>
         
-        <CardContent className="pt-0 space-y-6">
+        <CardContent className="pt-0 space-y-3">
           {/* Line Chart */}
           <div className="h-64 w-full">
             <Line data={chartData} options={lineOptions} />
