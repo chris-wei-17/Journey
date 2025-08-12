@@ -228,12 +228,11 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
         <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
           <div className="flex items-center gap-4">
             {(() => {
-              const hasTargets = macroTargets && macroTargets.proteinTarget && macroTargets.fatsTarget && macroTargets.carbsTarget;
-              const normalizedTargets = hasTargets ? {
-                proteinTarget: Number((macroTargets as MacroTarget).proteinTarget) || 0,
-                fatsTarget: Number((macroTargets as MacroTarget).fatsTarget) || 0,
-                carbsTarget: Number((macroTargets as MacroTarget).carbsTarget) || 0,
-              } : { proteinTarget: 150, fatsTarget: 80, carbsTarget: 200 };
+              const normalizedTargets = {
+                proteinTarget: Number((macroTargets as MacroTarget | undefined)?.proteinTarget) || 0,
+                fatsTarget: Number((macroTargets as MacroTarget | undefined)?.fatsTarget) || 0,
+                carbsTarget: Number((macroTargets as MacroTarget | undefined)?.carbsTarget) || 0,
+              };
 
               const percentsRaw = calculateMacroPercentages({
                 protein: totals.protein,
@@ -295,7 +294,29 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
           </div>
         </div>
 
-          {/* Removed individual macro entries list */}
+          {macros.length > 0 ? (
+            macros.map((macro: MacroEntry) => (
+              <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
+                    <i className="fas fa-utensils text-white text-sm"></i>
+                  </div>
+                  <div>
+                    <div className="text-white font-medium">
+                      {macro.description}
+                    </div>
+                    <div className="text-gray-300 text-xs">
+                      P: {macro.protein}g • F: {macro.fats}g • C: {macro.carbs}g
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-gray-500 text-center py-2">
+              No macros logged {isToday(selectedDate) ? 'today' : 'for this date'}
+            </div>
+          )}
  
           <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
             <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
