@@ -466,11 +466,7 @@ export function NutritionChart() {
             <p className="text-xl font-bold text-gray-800">
               {Math.round(todaySummary.totalCalories) || 0} calories
             </p>
-            {!hasValidTargets && (
-              <p className="text-xs text-amber-600 mt-2">
-                Using default macro targets. Set your personal targets in settings for better tracking.
-              </p>
-            )}
+
           </div>
         </CardContent>
       </Card>
