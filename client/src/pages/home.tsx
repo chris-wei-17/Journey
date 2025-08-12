@@ -12,11 +12,7 @@ import { MetricsBlock } from "@/components/metrics-block";
 import { PhotosBlock } from "@/components/photos-block";
 import { format, isToday } from "date-fns";
 import { createDateFromString } from "@/lib/date-utils";
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { calculateDayMacros, calculateMacroPercentages, type MacroEntry, type MacroTarget } from "@/lib/nutrition-utils";
-
-ChartJS.register(ArcElement, Tooltip, Legend);
+// Donut charts for macros are displayed within MacrosBlock
 
 export default function Home() {
   const { user } = useAuth();
@@ -125,8 +121,7 @@ export default function Home() {
         {/* Stats Overview */}
         </div>
 
-        {/* Macro Donuts (moved from Nutrition) */}
-        <DashboardMacroDonuts selectedDate={selectedDate} />
+        {/* Macro donuts are shown inside MacrosBlock */}
  
         {/* <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-4 mt-4">
           <Card className="bg-white/75 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 border-0" style={{
@@ -221,82 +216,5 @@ export default function Home() {
         </main>
       </div>
     </>
-  );
-}
-
-function DashboardMacroDonuts({ selectedDate }: { selectedDate: Date }) {
-  const { data: macros = [] } = useQuery<MacroEntry[]>({
-    queryKey: [`/api/macros/date/${format(selectedDate, 'yyyy-MM-dd')}`],
-  });
-  const { data: macroTargets } = useQuery<MacroTarget>({
-    queryKey: ['/api/macro-targets'],
-  });
-
-  const totals = calculateDayMacros(macros);
-  const hasValidTargets = macroTargets &&
-    typeof macroTargets.proteinTarget === 'number' &&
-    typeof macroTargets.fatsTarget === 'number' &&
-    typeof macroTargets.carbsTarget === 'number' &&
-    macroTargets.proteinTarget > 0 &&
-    macroTargets.fatsTarget > 0 &&
-    macroTargets.carbsTarget > 0;
-
-  const defaultTargets = { proteinTarget: 150, fatsTarget: 80, carbsTarget: 200 } as MacroTarget as any;
-  const effectiveTargets = hasValidTargets ? macroTargets! : defaultTargets;
-  const macroPercentages = calculateMacroPercentages(totals, effectiveTargets);
-
-  const createDonutConfig = (percentage: number, color: string) => ({
-    data: {
-      datasets: [{
-        data: [Math.max(0, Math.min(100, Math.round(percentage))), Math.max(0, 100 - Math.max(0, Math.min(100, Math.round(percentage))))],
-        backgroundColor: [color, '#f3f4f6'],
-        borderWidth: 0,
-        cutout: '70%',
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { enabled: false } },
-    }
-  });
-
-  const proteinDonut = createDonutConfig(macroPercentages.protein, '#ef4444');
-  const fatsDonut = createDonutConfig(macroPercentages.fats, '#eab308');
-  const carbsDonut = createDonutConfig(macroPercentages.carbs, '#22c55e');
-
-  return (
-    <div className="flex justify-center gap-8 px-4 mt-6">
-      <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-        <div className="w-16 h-16 mx-auto relative">
-          <Doughnut data={proteinDonut.data} options={proteinDonut.options} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-medium text-gray-700">{Math.round(macroPercentages.protein) || 0}%</span>
-          </div>
-        </div>
-        <p className="text-xs text-gray-600 mt-1">Protein</p>
-        <p className="text-xs text-red-500 font-medium"></p>
-      </div>
-      <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-        <div className="w-16 h-16 mx-auto relative">
-          <Doughnut data={fatsDonut.data} options={fatsDonut.options} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-medium text-gray-700">{Math.round(macroPercentages.fats) || 0}%</span>
-          </div>
-        </div>
-        <p className="text-xs text-gray-600 mt-1">Fats</p>
-        <p className="text-xs text-yellow-500 font-medium"></p>
-      </div>
-      <div className="text-center bg-white/75 backdrop-blur-sm rounded-xl p-4 shadow-xl border-0">
-        <div className="w-16 h-16 mx-auto relative">
-          <Doughnut data={carbsDonut.data} options={carbsDonut.options} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-medium text-gray-700">{Math.round(macroPercentages.carbs) || 0}%</span>
-          </div>
-        </div>
-        <p className="text-xs text-gray-600 mt-1">Carbs</p>
-        <p className="text-xs text-green-500 font-medium"></p>
-      </div>
-    </div>
   );
 }

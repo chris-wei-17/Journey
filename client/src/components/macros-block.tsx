@@ -225,7 +225,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="flex items-center justify-between text-sm font-medium text-gray-600 mb-3">
+        <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
           <div className="flex items-center gap-4">
             {(() => {
               const hasTargets = macroTargets && macroTargets.proteinTarget && macroTargets.fatsTarget && macroTargets.carbsTarget;
@@ -257,10 +257,13 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                 return `rgba(${r}, ${g}, ${b}, ${alpha})`;
               };
 
-              const createDonutConfig = (percentage: number, color: string) => ({
-                data: { datasets: [{ data: [percentage, 100 - percentage], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
+              const createDonutConfig = (percentage: number, color: string) => {
+                const p = Math.max(0, Math.min(100, Math.round(percentage)));
+                return ({
+                data: { datasets: [{ data: [p, 100 - p], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
               });
+              }
 
               const p = createDonutConfig(percents.protein, '#ef4444');
               const f = createDonutConfig(percents.fats, '#eab308');
