@@ -28,16 +28,6 @@ interface MacroEntry {
   createdAt: string;
 }
 
-interface MacroTarget {
-  id: number;
-  userId: number;
-  proteinTarget: number;
-  fatsTarget: number;
-  carbsTarget: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface MacrosBlockProps {
   selectedDate: Date;
 }
