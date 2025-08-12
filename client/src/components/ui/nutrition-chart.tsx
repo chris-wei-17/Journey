@@ -157,6 +157,9 @@ export function NutritionChart() {
   const fatsSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].fats || 0 }));
   const carbsSeries = dateKeys.map((dateKey, i) => ({ x: dateKey, y: dailyMacroSummaries[i].carbs || 0 }));
 
+  // Dynamic bar thickness by time range
+  const macroBarThickness = timeRange === '7d' ? 9 : timeRange === '14d' ? 4 : timeRange === '30d' ? 2 : 1;
+
   // Get today's macros for donut charts
   const today = format(new Date(), 'yyyy-MM-dd');
   const todayMacros = macrosByDate[today] || [];
@@ -238,7 +241,7 @@ export function NutritionChart() {
         borderColor: '#ef4444',
         yAxisID: 'y1',
         type: 'bar',
-        barThickness: 9,
+        barThickness: macroBarThickness,
       },
       {
         label: 'Fats',
@@ -247,7 +250,7 @@ export function NutritionChart() {
         borderColor: '#eab308',
         yAxisID: 'y1',
         type: 'bar',
-        barThickness: 9,
+        barThickness: macroBarThickness,
       },
       {
         label: 'Carbs',
@@ -256,7 +259,7 @@ export function NutritionChart() {
         borderColor: '#22c55e',
         yAxisID: 'y1',
         type: 'bar',
-        barThickness: 9,
+        barThickness: macroBarThickness,
       },
     ],
   };
