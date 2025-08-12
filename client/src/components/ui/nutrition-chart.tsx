@@ -218,11 +218,13 @@ export function NutritionChart() {
           x: point.date,
           y: isFinite(point.value) ? point.value : null
         })),
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        borderColor: '#7c3aed',
+        backgroundColor: 'rgba(124, 58, 237, 0.1)',
         borderWidth: 1, // Low weight line
         fill: false,
         tension: 0.4,
+        pointBackgroundColor: '#7c3aed',
+        pointBorderColor: '#7c3aed',
         pointRadius: 3,
         pointHoverRadius: 5,
         spanGaps: false,
@@ -236,7 +238,7 @@ export function NutritionChart() {
         borderColor: '#ef4444',
         yAxisID: 'y1',
         type: 'bar',
-        barThickness: 18,
+        barThickness: 9,
       },
       {
         label: 'Fats',
@@ -245,7 +247,7 @@ export function NutritionChart() {
         borderColor: '#eab308',
         yAxisID: 'y1',
         type: 'bar',
-        barThickness: 18,
+        barThickness: 9,
       },
       {
         label: 'Carbs',
@@ -254,7 +256,7 @@ export function NutritionChart() {
         borderColor: '#22c55e',
         yAxisID: 'y1',
         type: 'bar',
-        barThickness: 18,
+        barThickness: 9,
       },
     ],
   };
@@ -274,7 +276,7 @@ export function NutritionChart() {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: 'white',
         bodyColor: 'white',
-        borderColor: '#10b981',
+        borderColor: '#7c3aed',
         borderWidth: 1,
       },
     },
