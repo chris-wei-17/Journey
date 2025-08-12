@@ -1476,6 +1476,33 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/macros/:id', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const macroId = parseInt(req.params.id);
+      const dateStr = req.body.date;
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const macroDate = new Date(year, month - 1, day, 12, 0, 0, 0);
+      const macroData = {
+        userId,
+        description: req.body.description,
+        protein: req.body.protein,
+        fats: req.body.fats,
+        carbs: req.body.carbs,
+        date: macroDate,
+      };
+      const result = insertMacroSchema.safeParse(macroData);
+      if (!result.success) {
+        return res.status(400).json({ message: 'Invalid macro data', errors: result.error.errors });
+      }
+      const updated = await storage.updateMacro(macroId, result.data);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating macro:', error);
+      res.status(500).json({ message: 'Failed to update macro' });
+    }
+  });
+
   app.delete('/api/macros/:id', authenticateToken, async (req: any, res) => {
     try {
       const userId = req.userId!;

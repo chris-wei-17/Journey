@@ -14,8 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import { calculateCalories, calculateMacroPercentages, type MacroTarget } from "@/lib/nutrition-utils";
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 ChartJS.register(ArcElement, Tooltip, Legend);
 import * as React from "react";
+import { useLocation } from "wouter";
 
 interface MacroEntry {
   id: number;
@@ -42,6 +44,28 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<'macro' | 'calorie'>('macro');
+  const VIEW_MODE_STORAGE_KEY = 'macros-view-mode';
+  const [, setLocation] = useLocation();
+
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+      if (saved === 'macro' || saved === 'calorie') {
+        setViewMode(saved as 'macro' | 'calorie');
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [viewMode]);
 
   const { data: macros = [] } = useQuery<MacroEntry[]>({
     queryKey: [`/api/macros/date/${format(selectedDate, 'yyyy-MM-dd')}`],
@@ -101,6 +125,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   };
 
   const totals = getTotalMacros();
+  const dayCalories = Math.round(calculateCalories(totals.protein, totals.fats, totals.carbs));
 
   const onSubmit = (data: z.infer<typeof macroTargetSchema>) => {
     updateTargetsMutation.mutate(data);
@@ -109,6 +134,19 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
   return (
     <Card className="mb-2 bg-white/75 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader className="pb-0">
+        {/* Top-left toggle row */}
+        <div className="-mt-2 -ml-2">
+          <ToggleGroup type="single" size="sm" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'macro' | 'calorie')} className="bg-gray-100 rounded-md w-fit">
+            <ToggleGroupItem value="macro" className={`text-xs px-2 h-6 leading-none ${viewMode === 'macro' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+              Macro
+            </ToggleGroupItem>
+            <ToggleGroupItem value="calorie" className={`text-xs px-2 h-6 leading-none ${viewMode === 'calorie' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
+              Calorie
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        {/* Title and actions row */}
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-800">Nutrition</CardTitle>
           <div className="flex items-center justify-end">
@@ -225,78 +263,90 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
-          <div className="flex items-center gap-4">
-            {(() => {
-              const normalizedTargets = {
-                proteinTarget: Number((macroTargets as MacroTarget | undefined)?.proteinTarget) || 0,
-                fatsTarget: Number((macroTargets as MacroTarget | undefined)?.fatsTarget) || 0,
-                carbsTarget: Number((macroTargets as MacroTarget | undefined)?.carbsTarget) || 0,
-              };
+        {viewMode === 'macro' ? (
+          <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
+            <div className="flex items-center gap-2">
+              {(() => {
+                const normalizedTargets = {
+                  proteinTarget: Number((macroTargets as MacroTarget | undefined)?.proteinTarget) || 0,
+                  fatsTarget: Number((macroTargets as MacroTarget | undefined)?.fatsTarget) || 0,
+                  carbsTarget: Number((macroTargets as MacroTarget | undefined)?.carbsTarget) || 0,
+                };
 
-              const percentsRaw = calculateMacroPercentages({
-                protein: totals.protein,
-                fats: totals.fats,
-                carbs: totals.carbs,
-                totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs)
-              }, normalizedTargets as MacroTarget);
+                const percentsRaw = calculateMacroPercentages({
+                  protein: totals.protein,
+                  fats: totals.fats,
+                  carbs: totals.carbs,
+                  totalCalories: calculateCalories(totals.protein, totals.fats, totals.carbs)
+                }, normalizedTargets as MacroTarget);
 
-              const percents = {
-                protein: Math.max(0, Math.min(100, Math.round(percentsRaw.protein || 0))),
-                fats: Math.max(0, Math.min(100, Math.round(percentsRaw.fats || 0))),
-                carbs: Math.max(0, Math.min(100, Math.round(percentsRaw.carbs || 0))),
-              };
+                const percents = {
+                  protein: Math.max(0, Math.min(100, Math.round(percentsRaw.protein || 0))),
+                  fats: Math.max(0, Math.min(100, Math.round(percentsRaw.fats || 0))),
+                  carbs: Math.max(0, Math.min(100, Math.round(percentsRaw.carbs || 0))),
+                };
 
-              const hexToRgba = (hex: string, alpha: number) => {
-                const clean = hex.replace('#', '');
-                const bigint = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16);
-                const r = (bigint >> 16) & 255;
-                const g = (bigint >> 8) & 255;
-                const b = bigint & 255;
-                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-              };
+                const hexToRgba = (hex: string, alpha: number) => {
+                  const clean = hex.replace('#', '');
+                  const bigint = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16);
+                  const r = (bigint >> 16) & 255;
+                  const g = (bigint >> 8) & 255;
+                  const b = bigint & 255;
+                  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                };
 
-              const createDonutConfig = (percentage: number, color: string) => {
-                const p = Math.max(0, Math.min(100, Math.round(percentage)));
-                return ({
-                data: { datasets: [{ data: [p, 100 - p], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-              });
-              }
+                const createDonutConfig = (percentage: number, color: string) => {
+                  const p = Math.max(0, Math.min(100, Math.round(percentage)));
+                  return ({
+                  data: { datasets: [{ data: [p, 100 - p], backgroundColor: [color, hexToRgba(color, 0.15)], borderWidth: 0, cutout: '75%' }] },
+                  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+                });
+                }
 
-              const p = createDonutConfig(percents.protein, '#ef4444');
-              const f = createDonutConfig(percents.fats, '#eab308');
-              const c = createDonutConfig(percents.carbs, '#22c55e');
+                const p = createDonutConfig(percents.protein, '#ef4444');
+                const f = createDonutConfig(percents.fats, '#eab308');
+                const c = createDonutConfig(percents.carbs, '#22c55e');
 
-              return (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-red-500 font-medium">P:</span>
-                    <div className="relative w-8 h-8">
-                      <Doughnut data={p.data} options={p.options} />
+                return (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-red-500 font-medium">P:</span>
+                      <div className="relative w-8 h-8">
+                        <Doughnut data={p.data} options={p.options} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-yellow-500 font-medium">F:</span>
-                    <div className="relative w-8 h-8">
-                      <Doughnut data={f.data} options={f.options} />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-yellow-500 font-medium">F:</span>
+                      <div className="relative w-8 h-8">
+                        <Doughnut data={f.data} options={f.options} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-500 font-medium">C:</span>
-                    <div className="relative w-8 h-8">
-                      <Doughnut data={c.data} options={c.options} />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-green-500 font-medium">C:</span>
+                      <div className="relative w-8 h-8">
+                        <Doughnut data={c.data} options={c.options} />
+                      </div>
                     </div>
-                  </div>
-                </>
-              );
-            })()}
+                  </>
+                );
+              })()}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-start text-sm font-medium text-gray-600 mb-3">
+            <div className="text-gray-800 text-sm">
+              Total Calories: <span className="font-bold text-blue-600">{dayCalories}</span>
+            </div>
+          </div>
+        )}
 
           {macros.length > 0 ? (
             macros.map((macro: MacroEntry) => (
-              <div key={macro.id} className="flex items-center justify-between bg-gray-800 rounded-lg p-3 mb-2">
+              <div
+                key={macro.id}
+                className="flex items-center justify-between bg-gray-800 rounded-lg p-3 mb-2 cursor-pointer hover:bg-gray-700 transition-colors"
+                onClick={() => setLocation(`/add-macros?edit=${macro.id}&description=${encodeURIComponent(macro.description)}&protein=${encodeURIComponent(macro.protein)}&fats=${encodeURIComponent(macro.fats)}&carbs=${encodeURIComponent(macro.carbs)}&date=${format(selectedDate, 'yyyy-MM-dd')}`)}
+              >
                 <div className="flex items-center space-x-3">
                   <div className="bg-green-500 rounded-lg p-2 flex items-center justify-center min-w-[48px] h-12">
                     <i className="fas fa-utensils text-white text-sm"></i>
@@ -306,7 +356,21 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
                       {macro.description}
                     </div>
                     <div className="text-gray-300 text-xs">
-                      P: {macro.protein}g • F: {macro.fats}g • C: {macro.carbs}g
+                      {viewMode === 'macro' ? (
+                        <>
+                          P: {Number(macro.protein) === 0 ? '-' : macro.protein + 'g'} • F: {Number(macro.fats) === 0 ? '-' : macro.fats + 'g'} • C: {Number(macro.carbs) === 0 ? '-' : macro.carbs + 'g'}
+                        </>
+                      ) : (
+                        <>
+                          Calories: {Math.round(
+                            calculateCalories(
+                              Number(macro.protein) || 0,
+                              Number(macro.fats) || 0,
+                              Number(macro.carbs) || 0
+                            )
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
