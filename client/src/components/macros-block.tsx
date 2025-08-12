@@ -292,16 +292,15 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
             <div className="text-gray-500 text-center py-2">
               No macros logged {isToday(selectedDate) ? 'today' : 'for this date'}
             </div>
-          )}
-        </div>
-        
-        <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
-          <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
-            <i className="fas fa-plus mr-2"></i>
-            ADD MACROS
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
-  );
+                    )}
+         
+         <Link href={`/add-macros?date=${format(selectedDate, 'yyyy-MM-dd')}`}>
+           <Button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all duration-200">
+             <i className="fas fa-plus mr-2"></i>
+             ADD MACROS
+           </Button>
+         </Link>
+       </CardContent>
+     </Card>
+   );
 }
