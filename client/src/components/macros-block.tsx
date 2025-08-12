@@ -378,7 +378,7 @@ export function MacrosBlock({ selectedDate }: MacrosBlockProps) {
             ))
           ) : (
             <div className="text-gray-500 text-center py-2">
-              No entries yet }
+              No entries yet
             </div>
           )}
  
