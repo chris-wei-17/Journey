@@ -50,7 +50,7 @@ export default function Workouts() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-fist-raised text-red-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Strength</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */}
               </CardContent>
             </Card>
             
@@ -58,7 +58,7 @@ export default function Workouts() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-heartbeat text-red-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Cardio</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */}
               </CardContent>
             </Card>
             
@@ -66,7 +66,7 @@ export default function Workouts() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-leaf text-green-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Flexibility</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */}
               </CardContent>
             </Card>
             
@@ -74,7 +74,7 @@ export default function Workouts() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-stopwatch text-blue-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">HIIT</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */}
               </CardContent>
             </Card>
           </div>

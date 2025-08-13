@@ -49,7 +49,7 @@ export default function Template() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-chart-line text-blue-500 text-2xl mb-2"></i> {/* Change icon and color */}
                 <p className="text-sm text-gray-600">Metric 1</p> {/* Change metric name */}
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p> {/* Replace with actual data */}
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */} {/* Replace with actual data */}
               </CardContent>
             </Card>
             
@@ -57,7 +57,7 @@ export default function Template() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-trophy text-yellow-500 text-2xl mb-2"></i> {/* Change icon and color */}
                 <p className="text-sm text-gray-600">Metric 2</p> {/* Change metric name */}
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p> {/* Replace with actual data */}
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */} {/* Replace with actual data */}
               </CardContent>
             </Card>
             
@@ -65,7 +65,7 @@ export default function Template() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-target text-green-500 text-2xl mb-2"></i> {/* Change icon and color */}
                 <p className="text-sm text-gray-600">Metric 3</p> {/* Change metric name */}
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p> {/* Replace with actual data */}
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */} {/* Replace with actual data */}
               </CardContent>
             </Card>
             
@@ -73,7 +73,7 @@ export default function Template() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-calendar text-purple-500 text-2xl mb-2"></i> {/* Change icon and color */}
                 <p className="text-sm text-gray-600">Metric 4</p> {/* Change metric name */}
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p> {/* Replace with actual data */}
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */} {/* Replace with actual data */}
               </CardContent>
             </Card>
           </div>

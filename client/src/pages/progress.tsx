@@ -50,7 +50,7 @@ export default function Progress() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-trophy text-yellow-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Achievements</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */}
               </CardContent>
             </Card>
             
@@ -58,7 +58,7 @@ export default function Progress() {
               <CardContent className="p-4 text-center">
                 <i className="fas fa-fire text-red-500 text-2xl mb-2"></i>
                 <p className="text-sm text-gray-600">Streak</p>
-                <p className="text-xl font-bold text-gray-800">Coming Soon</p>
+                {/* <p className="text-xl font-bold text-gray-800">Coming Soon</p> */}
               </CardContent>
             </Card>
           </div>
