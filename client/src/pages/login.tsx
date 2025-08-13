@@ -50,10 +50,12 @@ export default function Login({ onToggleMode }: LoginProps) {
         const userResponse = await apiRequest("GET", "/api/user");
         queryClient.setQueryData(["/api/user"], userResponse);
         console.log("Login successful, user data updated:", userResponse);
+        // Navigate to dashboard
+        setLocation('/home');
       } catch (error) {
         console.error("Failed to fetch user data after login:", error);
-        // If user fetch fails, fall back to reload
-        window.location.reload();
+        // Navigate to dashboard even if fetch fails; cache will hydrate later
+        setLocation('/home');
       }
     },
     onError: (error: any) => {
