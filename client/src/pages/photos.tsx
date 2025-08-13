@@ -297,10 +297,10 @@ export default function Photos() {
                       </div>
                     )}
                     <div className="bg-white/75 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
-                      <h2 className="text-lg font-semibold text-gray-800">
+                      <h2 className="text-[13px] font-semibold text-gray-800">
                         {formatDisplayDate(dateStr)}
                       </h2>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-[11px] text-gray-600">
                         {datePhotos.length} photo{datePhotos.length !== 1 ? 's' : ''}
                       </p>
                     </div>
@@ -314,7 +314,7 @@ export default function Photos() {
                     <div 
                       className="grid gap-3"
                       style={{
-                        gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
                         maxWidth: "100%"
                       }}
                     >
