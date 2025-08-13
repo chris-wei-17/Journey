@@ -60,10 +60,10 @@ export async function apiRequest(
     // Handle unauthorized responses
     if (res.status === 401) {
       localStorage.removeItem('authToken');
-      // Don't redirect if already on auth page
-      if (!window.location.pathname.includes('/auth')) {
-        window.location.reload();
-      }
+      // TEMP (AdSense): disable redirect on 401 to allow public access during review
+      // if (!window.location.pathname.includes('/auth')) {
+      //   window.location.reload();
+      // }
     }
     
     throw new Error(`${res.status}: ${text}`);

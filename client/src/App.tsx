@@ -73,20 +73,19 @@ function Router() {
         <Route path="/register" component={Register} />
         <Route path="/public-feedback" component={PublicFeedback} />
         
-        {!isAuthenticated ? (
+        {/* TEMP (AdSense): Expose routes publicly - comment out auth gating */}
+        {false ? (
+          <></>
+        ) : (
           <>
             {/* Landing page for browser users, Auth for PWA */}
             <Route path="/" component={isPWAMode() ? Auth : Landing} />
-            {/* Redirect all other routes to auth page for unauthenticated users */}
-            <Route path="/:path*" component={Auth} />
-          </>
-        ) : (
-          <>
-            {!user?.onboardingCompleted ? (
+            {/* Publicly expose all routes during review */}
+            {/* Auth-only block commented */}
+            {/* {!user?.onboardingCompleted ? (
               <Route path="/" component={Onboarding} />
-            ) : (
+            ) : ( */}
               <>
-                <Route path="/" component={Home} />
                 <Route path="/home" component={Home} />
                 <Route path="/blog-feed" component={BlogFeed} />
                 <Route path="/profile" component={Profile} />
@@ -107,10 +106,8 @@ function Router() {
                 <Route path="/journal-entry" component={JournalEntry} />
                 <Route path="/journal-history" component={JournalHistory} />
                 <Route path="/subscription/success" component={SubscriptionSuccess} />
-                {/* <Route path="/template" component={Template} /> */} {/* Uncomment when using template */}
-                {/* <Route path="/your-route" component={YourNewPage} /> */} {/* Example: replace with actual route and component */}
               </>
-            )}
+            {/* )} */}
           </>
         )}
         <Route component={NotFound} />
