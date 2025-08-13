@@ -466,17 +466,8 @@ export function NutritionChart() {
         
         <CardContent className="pt-0 space-y-3">
           {/* Line Chart */}
-          <div className="h-64 w-full">
+                    <div className="h-64 w-full">
             <Line data={chartData} options={lineOptions} />
-          </div>
-
-                    {/* Today's Total Calories */}
-          <div className="text-center pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600">Today's Total</p>
-            <p className="text-xl font-bold text-gray-800">
-              {Math.round(todaySummary.totalCalories) || 0} calories
-            </p>
-
           </div>
         </CardContent>
       </Card>
