@@ -127,27 +127,27 @@ export default function Landing() {
             <div className="grid grid-cols-2 gap-4 items-stretch">
               {/* Left stacked images matching right height */}
               <div className="flex flex-col gap-4 h-full">
-                <div className="relative flex-1 rounded-lg overflow-hidden shadow">
+                <div className="flex-1 rounded-lg overflow-hidden shadow bg-white">
                   <img
                     src="/cal.jpg"
                     alt="Calories screenshot"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
-                <div className="relative flex-1 rounded-lg overflow-hidden shadow">
+                <div className="flex-1 rounded-lg overflow-hidden shadow bg-white">
                   <img
                     src="/sleep.jpg"
                     alt="Sleep screenshot"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
               </div>
-              {/* Right single image controls overall height via aspect ratio */}
-              <div className="relative w-full rounded-lg overflow-hidden shadow aspect-[3/4] sm:aspect-[4/5] md:aspect-[5/6]">
+              {/* Right single image controls overall height via intrinsic aspect ratio */}
+              <div className="rounded-lg overflow-hidden shadow bg-white flex">
                 <img
                   src="/photos.jpg"
                   alt="Photos screenshot"
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="w-full h-auto object-contain"
                 />
               </div>
             </div>
