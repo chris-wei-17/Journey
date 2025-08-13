@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -265,8 +266,8 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
     );
   }
 
-  return (
-    <div className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 ${className}`}>
+  return createPortal(
+    <div className={`fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4 ${className}`}>
       <Card className="bg-white max-w-md w-full max-h-[90vh] overflow-hidden">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4 text-center">{label}</h3>
@@ -335,6 +336,7 @@ export function DateTimePicker({ label, value, onChange, className = "" }: DateT
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div>,
+    document.body
   );
 }
