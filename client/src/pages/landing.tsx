@@ -123,14 +123,33 @@ export default function Landing() {
           </div>
 
           {/* Feature Screenshot Placeholder */}
-          <div className="bg-gradient-to-r from-primary-100 to-lavender-100 rounded-2xl p-8 shadow-xl">
-            <div className="bg-white rounded-xl p-6 shadow-inner">
-              <p className="text-gray-500 text-center text-lg font-semibold">
-                [App Screenshots - Features Grid]
-              </p>
-              <p className="text-sm text-gray-400 mt-2 text-center">
-                Side-by-side comparison showing progress charts, photo gallery, and nutrition logging interface
-              </p>
+          <div className="bg-gradient-to-r from-primary-100 to-lavender-100 rounded-2xl p-4 shadow-xl">
+            <div className="grid grid-cols-2 gap-4 items-stretch">
+              {/* Left stacked images matching right height */}
+              <div className="flex flex-col gap-4 h-full">
+                <div className="relative flex-1 rounded-lg overflow-hidden shadow">
+                  <img
+                    src="/cal.jpg"
+                    alt="Calories screenshot"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <div className="relative flex-1 rounded-lg overflow-hidden shadow">
+                  <img
+                    src="/sleep.jpg"
+                    alt="Sleep screenshot"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              {/* Right single image controls overall height via aspect ratio */}
+              <div className="relative w-full rounded-lg overflow-hidden shadow aspect-[3/4] sm:aspect-[4/5] md:aspect-[5/6]">
+                <img
+                  src="/photos.jpg"
+                  alt="Photos screenshot"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
