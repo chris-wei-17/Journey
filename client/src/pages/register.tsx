@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest as api } from "@/lib/queryClient";
 import { registerSchema, type RegisterData } from "@shared/schema";
+import { useState } from "react";
 
 interface RegisterProps {
   onToggleMode?: () => void;
@@ -21,6 +22,37 @@ export default function Register({ onToggleMode }: RegisterProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
   });
+
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+
+  const checkUsername = async (value: string) => {
+    if (!value) return;
+    setCheckingUsername(true);
+    try {
+      const res = await api('GET', `/api/availability?username=${encodeURIComponent(value)}`);
+      setUsernameError(res.usernameAvailable ? null : 'Username is already taken');
+    } catch {
+      setUsernameError(null);
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
+  const checkEmail = async (value: string) => {
+    if (!value) return;
+    setCheckingEmail(true);
+    try {
+      const res = await api('GET', `/api/availability?email=${encodeURIComponent(value)}`);
+      setEmailError(res.emailAvailable ? null : 'Email is already in use');
+    } catch {
+      setEmailError(null);
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
@@ -57,6 +89,10 @@ export default function Register({ onToggleMode }: RegisterProps) {
   });
 
   const onSubmit = (data: RegisterData) => {
+    if (usernameError || emailError) {
+      toast({ title: 'Please fix errors', description: 'Username or email is unavailable.', variant: 'destructive' });
+      return;
+    }
     registerMutation.mutate(data);
   };
 
@@ -120,9 +156,13 @@ export default function Register({ onToggleMode }: RegisterProps) {
                 className="mt-2"
                 autoComplete="username"
                 data-form-type="register"
+                onBlur={(e) => checkUsername(e.target.value)}
               />
               {errors.username && (
                 <p className="text-sm text-red-500 mt-1">{errors.username.message}</p>
+              )}
+              {usernameError && !errors.username && (
+                <p className="text-sm text-red-500 mt-1">{usernameError}</p>
               )}
             </div>
 
@@ -137,9 +177,13 @@ export default function Register({ onToggleMode }: RegisterProps) {
                 className="mt-2"
                 autoComplete="email"
                 data-form-type="register"
+                onBlur={(e) => checkEmail(e.target.value)}
               />
               {errors.email && (
                 <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+              )}
+              {emailError && !errors.email && (
+                <p className="text-sm text-red-500 mt-1">{emailError}</p>
               )}
             </div>
 

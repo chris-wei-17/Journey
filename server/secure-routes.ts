@@ -466,7 +466,29 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Public authentication routes
+    // Public authentication routes
+  app.get('/api/availability', async (req, res) => {
+    try {
+      const { username, email } = req.query as { username?: string; email?: string };
+      if (!username && !email) {
+        return res.status(400).json({ message: 'username or email is required' });
+      }
+      const result: any = {};
+      if (username) {
+        const user = await storage.getUserByUsername(username);
+        result.usernameAvailable = !user;
+      }
+      if (email) {
+        const user = await storage.getUserByEmail(email);
+        result.emailAvailable = !user;
+      }
+      return res.json(result);
+    } catch (err) {
+      console.error('Availability check error:', err);
+      return res.status(500).json({ message: 'Failed to check availability' });
+    }
+  });
+
   app.post('/api/register', async (req, res) => {
     try {
       console.log('=== REGISTER ROUTE CALLED ===');

@@ -52,6 +52,8 @@ export interface IStorage {
   // User operations - secure authentication
   getUser(id: number): Promise<User | undefined>;
   getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: Omit<InsertUser, 'id'>): Promise<User>;
   updateUser(id: number, user: Partial<User>): Promise<User>;
   
@@ -133,6 +135,22 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail)));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
     return user;
   }
 
