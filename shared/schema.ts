@@ -28,7 +28,7 @@ export const users = pgTable("users", {
   isEmailVerified: boolean("is_email_verified").default(false),
   photosPin: varchar("photos_pin"),
   photosPinEnabled: boolean("photos_pin_enabled"),
-  membership: varchar("membership", { length: 20 }).notNull().default("Premium (beta)"), // Free, Ad-free, Premium, Premium (beta)
+  membership: varchar("membership", { length: 20 }).notNull().default("Free"), // Free, Ad-free, Premium, Premium (beta)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
