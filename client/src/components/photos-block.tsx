@@ -28,10 +28,25 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
+
+  useEffect(() => {
+    const checkPWA = () => {
+      const isPWAMode = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.matchMedia('(display-mode: fullscreen)').matches ||
+                        (window.navigator as any).standalone === true ||
+                        document.referrer.includes('android-app://');
+      setIsPWA(isPWAMode);
+    };
+    checkPWA();
+    const mq = window.matchMedia('(display-mode: standalone)');
+    mq.addEventListener('change', checkPWA);
+    return () => mq.removeEventListener('change', checkPWA);
+  }, []);
 
   // Get photos for the selected date
   const { data: photos = [] } = useQuery<Photo[]>({
@@ -252,7 +267,9 @@ export function PhotosBlock({ selectedDate }: PhotosBlockProps) {
 
       {/* Photo Preview Modal - Responsive sizing */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[98vw] max-h-[98vh] w-auto h-auto p-0 overflow-hidden flex flex-col">
+        <DialogContent className={`max-w-[98vw] max-h-[98vh] w-auto h-auto p-0 overflow-hidden flex flex-col ${
+          isPWA ? 'fixed top-[5vh] left-[5vw] right-[5vw] bottom-auto w-[90vw] translate-x-0 translate-y-0 z-[9999]' : ''
+        }`}>
           <DialogHeader className="p-4 pb-2 flex-shrink-0 border-b">
             <DialogTitle className="text-center text-lg font-semibold">
               Progress Photo {currentPhotoIndex + 1} of {photos.length}
