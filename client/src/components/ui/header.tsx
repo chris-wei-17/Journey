@@ -64,7 +64,7 @@ export function Header({ title, showBackButton = false, onBack, showHomeButton =
               </div>
             </Link>
           ) : (
-            <Link href="/">
+            <Link href="/login">
               <Button 
                 variant="default"
                 size="sm"
