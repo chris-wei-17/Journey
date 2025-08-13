@@ -109,10 +109,10 @@ export const getQueryFn: <T>(options: {
 
     if (res.status === 401) {
       localStorage.removeItem('authToken');
-      // Don't redirect if already on auth page  
-      if (!window.location.pathname.includes('/auth')) {
-        window.location.reload();
-      }
+      // TEMP (AdSense): disable redirect/reload on 401 to prevent refresh loops for public users
+      // if (!window.location.pathname.includes('/auth')) {
+      //   window.location.reload();
+      // }
     }
 
     await throwIfResNotOk(res);
