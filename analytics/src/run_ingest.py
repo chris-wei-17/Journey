@@ -26,6 +26,18 @@ if __name__ == "__main__":
     q4 = pd.read_parquet(base / "q4.parquet") if (base / "q4.parquet").exists() else pd.DataFrame()  # metrics (weight)
     q5 = pd.read_parquet(base / "q5.parquet") if (base / "q5.parquet").exists() else pd.DataFrame()  # macro targets
 
+    # Optional user filter (manual validation)
+    user_filter = os.getenv("ANALYTICS_USER_FILTER")
+    if user_filter:
+        try:
+            uf = int(user_filter)
+            for df_name in ["q1", "q2", "q3", "q4", "q5"]:
+                df = locals().get(df_name)
+                if isinstance(df, pd.DataFrame) and not df.empty and "user_id" in df.columns:
+                    locals()[df_name] = df[df["user_id"] == uf]
+        except Exception:
+            pass
+
     aggs = daily_weekly_monthly_aggregates(
         sleep=None,  # sleep not yet modeled separately in queries
         macros=q3,
@@ -118,3 +130,6 @@ if __name__ == "__main__":
     prefix = os.getenv("ANALYTICS_STORAGE_PREFIX", f"analytics/{batch_id}")
     if bucket:
         upload_dir_to_bucket(metrics_dir, bucket, prefix)
+
+    # Emit batch id for external orchestration
+    print(f"BATCH_ID:{batch_id}")
