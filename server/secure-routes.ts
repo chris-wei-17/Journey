@@ -2001,78 +2001,105 @@ IP Address: ${clientIP}
     });
   });
 
-// Authenticated: Reset password while logged in
-app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
-  await resetPasswordWhileLoggedIn(req as AuthenticatedRequest, res);
-});
-
-// Public: Request password reset email
-app.post('/api/auth/request-password-reset', async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: "Email is required" });
-
-  // Rate limiting - max 3 requests per 15 minutes per email
-  const rateLimitKey = `pwd_reset_${email}`;
-  if (!checkRateLimit(rateLimitKey, 3)) {
-    return res.status(429).json({ 
-      message: "Too many password reset requests. Please wait 15 minutes before trying again." 
-    });
-  }
-
-  try {
-    await sendForgotPasswordEmail(email, sendEmailFn);
-    res.json({ message: "If the email is registered, a reset link has been sent" });
-  } catch (error) {
-    console.error("Forgot password error:", error);
-    res.status(500).json({ message: "Failed to send reset link" });
-  }
-});
-
-// Public: Reset password with token
-app.post('/api/auth/reset-password', async (req, res) => {
-  await resetPasswordWithToken(req, res);
-});
-
-console.log('🚀 CHECKPOINT: Just before debug/routes - function still executing');
-
-console.log('🔍 About to register debug/routes endpoint');
-// Debug route to verify route registration
-app.get('/api/debug/routes', (req, res) => {
-  console.log('🧪 Debug route hit - routes are registering correctly');
-  res.json({ 
-    message: 'Routes are working', 
-    timestamp: new Date(),
-    totalRoutes: app._router ? app._router.stack.length : 'unknown'
+  // Manual analytics trigger (admin only)
+  app.post('/api/run_pipeline', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const me = await storage.getUser(userId);
+      if (!me || me.username.toLowerCase() !== 'chris') {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      const { user_id } = req.query as { user_id?: string };
+      const { spawn } = await import('node:child_process');
+      const env = { ...process.env } as any;
+      if (user_id) env.ANALYTICS_USER_FILTER = String(user_id);
+      const cmd = spawn('python', ['-m', 'analytics.src.run_ingest'], { env });
+      let output = '';
+      cmd.stdout.on('data', (data) => { output += data.toString(); });
+      cmd.stderr.on('data', (data) => { output += data.toString(); });
+      cmd.on('close', (code) => {
+        const m = output.match(/BATCH_ID:(.+)/);
+        const batchId = m ? m[1].trim() : null;
+        res.json({ status: code === 0 ? 'ok' : 'error', code, batchId, log: output });
+      });
+    } catch (err: any) {
+      console.error('run_pipeline error:', err);
+      res.status(500).json({ message: 'Failed to start pipeline', error: String(err?.message || err) });
+    }
   });
-});
-console.log('✅ debug/routes route registered');
 
-console.log('🔍 About to register debug/storage endpoint');
-// Test if the issue is with storage import
-app.get('/api/debug/storage', (req, res) => {
-  try {
-    console.log('🧪 Testing storage import');
-    console.log('Storage object exists:', !!storage);
-    console.log('Storage methods:', Object.getOwnPropertyNames(storage.__proto__));
-    console.log('getUserGoalTargets exists:', typeof storage.getUserGoalTargets);
-    
+  // Authenticated: Reset password while logged in
+  app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
+    await resetPasswordWhileLoggedIn(req as AuthenticatedRequest, res);
+  });
+
+  // Public: Request password reset email
+  app.post('/api/auth/request-password-reset', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    // Rate limiting - max 3 requests per 15 minutes per email
+    const rateLimitKey = `pwd_reset_${email}`;
+    if (!checkRateLimit(rateLimitKey, 3)) {
+      return res.status(429).json({ 
+        message: "Too many password reset requests. Please wait 15 minutes before trying again." 
+      });
+    }
+
+    try {
+      await sendForgotPasswordEmail(email, sendEmailFn);
+      res.json({ message: "If the email is registered, a reset link has been sent" });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to send reset link" });
+    }
+  });
+
+  // Public: Reset password with token
+  app.post('/api/auth/reset-password', async (req, res) => {
+    await resetPasswordWithToken(req, res);
+  });
+
+  console.log('🚀 CHECKPOINT: Just before debug/routes - function still executing');
+
+  console.log('🔍 About to register debug/routes endpoint');
+  // Debug route to verify route registration
+  app.get('/api/debug/routes', (req, res) => {
+    console.log('🧪 Debug route hit - routes are registering correctly');
     res.json({ 
-      message: 'Storage debug complete',
-      storageExists: !!storage,
-      hasGoalMethods: typeof storage.getUserGoalTargets === 'function'
+      message: 'Routes are working', 
+      timestamp: new Date(),
+      totalRoutes: app._router ? app._router.stack.length : 'unknown'
     });
-  } catch (error) {
-    console.error('❌ Storage debug error:', error);
-    res.status(500).json({ message: 'Storage error', error: error instanceof Error ? error.message : 'Unknown' });
-  }
-});
-console.log('✅ debug/storage route registered');
+  });
+  console.log('✅ debug/routes route registered');
 
-// OLD GOALS ROUTES REMOVED - MOVED TO SAFE POSITION AFTER HEALTH CHECK
+  console.log('🔍 About to register debug/storage endpoint');
+  // Test if the issue is with storage import
+  app.get('/api/debug/storage', (req, res) => {
+    try {
+      console.log('🧪 Testing storage import');
+      console.log('Storage object exists:', !!storage);
+      console.log('Storage methods:', Object.getOwnPropertyNames(storage.__proto__));
+      console.log('getUserGoalTargets exists:', typeof storage.getUserGoalTargets);
+      
+      res.json({ 
+        message: 'Storage debug complete',
+        storageExists: !!storage,
+        hasGoalMethods: typeof storage.getUserGoalTargets === 'function'
+      });
+    } catch (error) {
+      console.error('❌ Storage debug error:', error);
+      res.status(500).json({ message: 'Storage error', error: error instanceof Error ? error.message : 'Unknown' });
+    }
+  });
+  console.log('✅ debug/storage route registered');
 
-console.log('🎉 ALL ROUTES REGISTERED SUCCESSFULLY');
-const httpServer = createServer(app);
-return httpServer;
+  // OLD GOALS ROUTES REMOVED - MOVED TO SAFE POSITION AFTER HEALTH CHECK
+
+  console.log('🎉 ALL ROUTES REGISTERED SUCCESSFULLY');
+  const httpServer = createServer(app);
+  return httpServer;
     
   } catch (error) {
     console.error('💥 CRITICAL ERROR in registerSecureRoutes:');
@@ -2086,32 +2113,5 @@ return httpServer;
     return httpServer;
   }
 }
-
-// Diagnostics and utilities: manual analytics trigger
-app.post('/api/run_pipeline', authenticateToken, async (req: any, res) => {
-  try {
-    const userId = req.userId!;
-    const user = await storage.getUser(userId);
-    if (!user || user.username.toLowerCase() !== 'chris') {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-    const { user_id } = req.query as { user_id?: string };
-    const { spawn } = await import('node:child_process');
-    const env = { ...process.env } as any;
-    if (user_id) env.ANALYTICS_USER_FILTER = String(user_id);
-    const cmd = spawn('python', ['-m', 'analytics.src.run_ingest'], { env });
-    let output = '';
-    cmd.stdout.on('data', (data) => { output += data.toString(); });
-    cmd.stderr.on('data', (data) => { output += data.toString(); });
-    cmd.on('close', (code) => {
-      const m = output.match(/BATCH_ID:(.+)/);
-      const batchId = m ? m[1].trim() : null;
-      res.json({ status: code === 0 ? 'ok' : 'error', code, batchId, log: output });
-    });
-  } catch (err: any) {
-    console.error('run_pipeline error:', err);
-    res.status(500).json({ message: 'Failed to start pipeline', error: String(err?.message || err) });
-  }
-});
 
 
