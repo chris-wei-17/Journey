@@ -3,6 +3,8 @@ import pandas as pd
 from .ingest import run_ingest
 from .config import get_settings
 from .metrics import daily_weekly_monthly_aggregates, derived_features
+from .cloud import upload_dir_to_bucket
+import os
 
 if __name__ == "__main__":
     batch_id = run_ingest()
@@ -40,3 +42,9 @@ if __name__ == "__main__":
     )
     if not derived.empty:
         derived.to_parquet(metrics_dir / "derived_features.parquet", index=False)
+
+    # Optional cloud upload
+    bucket = os.getenv("ANALYTICS_STORAGE_BUCKET")
+    prefix = os.getenv("ANALYTICS_STORAGE_PREFIX", f"analytics/{batch_id}")
+    if bucket:
+        upload_dir_to_bucket(metrics_dir, bucket, prefix)

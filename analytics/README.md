@@ -25,3 +25,11 @@ Outputs
 Security
 - Use Supabase service key
 - Queries/read-only role constraints enforced in Supabase
+
+Cloud Deployment (Vercel + Supabase)
+- Use environment vars on Vercel:
+  - SUPABASE_URL, SUPABASE_SERVICE_KEY
+  - ANALYTICS_STORAGE_BUCKET (optional: to upload outputs to Supabase Storage)
+  - ANALYTICS_STORAGE_PREFIX (optional)
+- Schedule ingestion via Vercel Cron to run analytics/src/run_ingest.py (wrap in an API route or serverless function that invokes the module)
+- Ensure Supabase read-only analytics role and RLS policies allow required SELECTs
