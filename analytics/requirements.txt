@@ -1,0 +1,7 @@
+python-dotenv==1.0.1
+psycopg[binary]==3.2.3
+pandas==2.2.3
+pyarrow==17.0.0
+sqlalchemy==2.0.36
+pydantic==2.9.2
+loguru==0.7.2
