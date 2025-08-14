@@ -4,6 +4,7 @@ from .ingest import run_ingest
 from .config import get_settings
 from .metrics import daily_weekly_monthly_aggregates, derived_features
 from .cloud import upload_dir_to_bucket
+from .run_relations import run_relations
 import os
 
 if __name__ == "__main__":
@@ -42,6 +43,9 @@ if __name__ == "__main__":
     )
     if not derived.empty:
         derived.to_parquet(metrics_dir / "derived_features.parquet", index=False)
+
+    # Relations (step 3)
+    run_relations(batch_id)
 
     # Optional cloud upload
     bucket = os.getenv("ANALYTICS_STORAGE_BUCKET")
