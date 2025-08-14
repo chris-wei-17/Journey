@@ -99,43 +99,21 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       }
       const { user_id } = req.query as { user_id?: string };
 
-      // Prefer external function if configured (Supabase Edge Function / Worker)
       const fnUrl = process.env.ANALYTICS_FUNCTION_URL;
       const fnKey = process.env.ANALYTICS_FUNCTION_KEY;
-      if (fnUrl) {
-        try {
-          const resp = await fetch(fnUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(fnKey ? { 'Authorization': `Bearer ${fnKey}` } : {}),
-            },
-            body: JSON.stringify({ user_id: user_id || null }),
-          });
-          const data = await resp.json().catch(() => ({}));
-          return res.json({ status: resp.ok ? 'ok' : 'error', code: resp.status, ...data });
-        } catch (e: any) {
-          return res.status(502).json({ message: 'Function trigger failed', error: String(e?.message || e) });
-        }
+      if (!fnUrl) {
+        return res.status(500).json({ message: 'ANALYTICS_FUNCTION_URL not configured' });
       }
-
-      // Local/dev fallback: spawn Python only if a binary is specified
-      const pythonBin = process.env.PYTHON_BIN || 'python3';
-      const { spawn } = await import('node:child_process');
-      const env = { ...process.env } as any;
-      if (user_id) env.ANALYTICS_USER_FILTER = String(user_id);
-      const cmd = spawn(pythonBin, ['-m', 'analytics.src.run_ingest'], { env });
-      let output = '';
-      cmd.stdout.on('data', (data) => { output += data.toString(); });
-      cmd.stderr.on('data', (data) => { output += data.toString(); });
-      cmd.on('error', (err) => {
-        return res.status(501).json({ message: 'Python runtime not available in this environment', error: String(err?.message || err) });
+      const resp = await fetch(fnUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(fnKey ? { 'Authorization': `Bearer ${fnKey}` } : {}),
+        },
+        body: JSON.stringify({ user_id: user_id || null }),
       });
-      cmd.on('close', (code) => {
-        const m = output.match(/BATCH_ID:(.+)/);
-        const batchId = m ? m[1].trim() : null;
-        res.json({ status: code === 0 ? 'ok' : 'error', code, batchId, log: output });
-      });
+      const data = await resp.json().catch(() => ({}));
+      return res.json({ status: resp.ok ? 'ok' : 'error', code: resp.status, ...data });
     } catch (err: any) {
       console.error('run_pipeline error:', err);
       res.status(500).json({ message: 'Failed to start pipeline', error: String(err?.message || err) });
