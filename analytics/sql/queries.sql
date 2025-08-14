@@ -40,3 +40,11 @@ FROM metrics me;
 
 -- Derived metrics example: BMI (if weight and height available)
 -- This is a placeholder; compute in Python for better unit handling.
+
+-- Macro targets (per user)
+-- Expected columns: user_id, protein_target, fats_target, carbs_target
+SELECT mt.user_id,
+       mt.protein_target AS protein_target,
+       mt.fats_target    AS fats_target,
+       mt.carbs_target   AS carbs_target
+FROM macro_targets mt;
