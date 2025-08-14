@@ -89,6 +89,34 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
   console.log('✅ health route registered');
 
+  // Manual analytics trigger (admin only)
+  app.post('/api/run_pipeline', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.userId!;
+      const me = await storage.getUser(userId);
+      if (!me || me.username.toLowerCase() !== 'chris') {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      const { user_id } = req.query as { user_id?: string };
+      const { spawn } = await import('node:child_process');
+      const env = { ...process.env } as any;
+      if (user_id) env.ANALYTICS_USER_FILTER = String(user_id);
+      const cmd = spawn('python', ['-m', 'analytics.src.run_ingest'], { env });
+      let output = '';
+      cmd.stdout.on('data', (data) => { output += data.toString(); });
+      cmd.stderr.on('data', (data) => { output += data.toString(); });
+      cmd.on('close', (code) => {
+        const m = output.match(/BATCH_ID:(.+)/);
+        const batchId = m ? m[1].trim() : null;
+        res.json({ status: code === 0 ? 'ok' : 'error', code, batchId, log: output });
+      });
+    } catch (err: any) {
+      console.error('run_pipeline error:', err);
+      res.status(500).json({ message: 'Failed to start pipeline', error: String(err?.message || err) });
+    }
+  });
+  console.log('✅ run_pipeline route registered');
+
   // ===== STRIPE PAYMENT ROUTES =====
   console.log('🔧 Registering Stripe payment routes...');
   try {
@@ -2001,32 +2029,6 @@ IP Address: ${clientIP}
     });
   });
 
-  // Manual analytics trigger (admin only)
-  app.post('/api/run_pipeline', authenticateToken, async (req: any, res) => {
-    try {
-      const userId = req.userId!;
-      const me = await storage.getUser(userId);
-      if (!me || me.username.toLowerCase() !== 'chris') {
-        return res.status(403).json({ message: 'Forbidden' });
-      }
-      const { user_id } = req.query as { user_id?: string };
-      const { spawn } = await import('node:child_process');
-      const env = { ...process.env } as any;
-      if (user_id) env.ANALYTICS_USER_FILTER = String(user_id);
-      const cmd = spawn('python', ['-m', 'analytics.src.run_ingest'], { env });
-      let output = '';
-      cmd.stdout.on('data', (data) => { output += data.toString(); });
-      cmd.stderr.on('data', (data) => { output += data.toString(); });
-      cmd.on('close', (code) => {
-        const m = output.match(/BATCH_ID:(.+)/);
-        const batchId = m ? m[1].trim() : null;
-        res.json({ status: code === 0 ? 'ok' : 'error', code, batchId, log: output });
-      });
-    } catch (err: any) {
-      console.error('run_pipeline error:', err);
-      res.status(500).json({ message: 'Failed to start pipeline', error: String(err?.message || err) });
-    }
-  });
 
   // Authenticated: Reset password while logged in
   app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
