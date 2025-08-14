@@ -33,3 +33,13 @@ Cloud Deployment (Vercel + Supabase)
   - ANALYTICS_STORAGE_PREFIX (optional)
 - Schedule ingestion via Vercel Cron to run analytics/src/run_ingest.py (wrap in an API route or serverless function that invokes the module)
 - Ensure Supabase read-only analytics role and RLS policies allow required SELECTs
+
+Scheduling & Operations
+- Scheduling (Vercel Cron): create a serverless handler that imports analytics.src.run_ingest and invoke nightly (e.g., 03:00 UTC)
+- Monitoring:
+  - Set ALERT_WEBHOOK_URL (Slack/Discord/Teams) for alerts
+  - ANALYTICS_MAX_DURATION_SEC to flag long runs
+- Performance:
+  - Optimize SQL (indexes, filtered scans)
+  - Incremental runs by date window
+  - Cache stable dimensions (profile, macro targets) and reuse

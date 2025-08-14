@@ -9,8 +9,11 @@ from .run_insights import run_insights
 from .persist import create_run, finish_run, upsert_summary, insert_relationships
 from loguru import logger
 import os
+from .monitor import send_alert
+import time
 
 if __name__ == "__main__":
+    t0 = time.time()
     batch_id = run_ingest()
     settings = get_settings()
     base = Path(settings.staging_dir) / batch_id
@@ -104,6 +107,11 @@ if __name__ == "__main__":
         run_log.error = str(e)
 
     finish_run(run_log)
+    duration = time.time() - t0
+    if duration > float(os.getenv("ANALYTICS_MAX_DURATION_SEC", "600")):
+        send_alert(f"Analytics batch {batch_id} exceeded duration threshold: {duration:.1f}s")
+    if run_log.status == "error":
+        send_alert(f"Analytics batch {batch_id} ended with errors: {run_log.error}")
 
     # Optional cloud upload
     bucket = os.getenv("ANALYTICS_STORAGE_BUCKET")
