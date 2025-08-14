@@ -2112,3 +2112,29 @@ return httpServer;
 +  });
 // ... existing code ...
 
+// ... existing code ...
+   // Apple Health integration scaffolding
+   app.post('/api/health/apple/upload', authenticateToken, upload.single('file'), async (req: any, res) => {
+     try {
+       const userId = req.userId!;
+       if (!req.file) return res.status(400).json({ message: 'file is required (Apple Health export zip/xml)' });
+       // TODO: parse zip/xml, stage, normalize into core tables
+       console.log('Received Apple Health file:', req.file.originalname, 'size:', req.file.size, 'bytes for user', userId);
+       res.json({ status: 'received', filename: req.file.originalname, size: req.file.size });
+     } catch (err: any) {
+       console.error('Apple Health upload error:', err);
+       res.status(500).json({ message: 'Upload failed' });
+     }
+   });
+
+   app.get('/api/health/apple/status', authenticateToken, async (req: any, res) => {
+     try {
+       const userId = req.userId!;
+       // TODO: return last import status; for now, static placeholder
+       res.json({ userId, lastImportAt: null, counts: { workouts: 0, sleep: 0, nutrition: 0, weight: 0 } });
+     } catch (err: any) {
+       res.status(500).json({ message: 'Status failed' });
+     }
+   });
+// ... existing code ...
+
