@@ -5,6 +5,7 @@ from .config import get_settings
 from .metrics import daily_weekly_monthly_aggregates, derived_features
 from .cloud import upload_dir_to_bucket
 from .run_relations import run_relations
+from .run_insights import run_insights
 import os
 
 if __name__ == "__main__":
@@ -46,6 +47,9 @@ if __name__ == "__main__":
 
     # Relations (step 3)
     run_relations(batch_id)
+
+    # Insights (step 4)
+    run_insights(batch_id)
 
     # Optional cloud upload
     bucket = os.getenv("ANALYTICS_STORAGE_BUCKET")
