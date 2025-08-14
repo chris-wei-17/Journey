@@ -52,13 +52,6 @@ function isPWAMode(): boolean {
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="app-gradient-bg flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <>
