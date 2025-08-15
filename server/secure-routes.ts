@@ -2160,4 +2160,87 @@ app.get('/api/analytics/storage-prefix', authenticateToken, async (req: any, res
   }
 });
 
+// Admin: latest run id
+app.get('/api/analytics/runs/latest', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const { db } = await import('./db.js');
+    const { sql } = await import('drizzle-orm');
+    const result = await db.execute(sql`SELECT batch_id FROM analytics_runs ORDER BY started_at DESC LIMIT 1`);
+    const batchId = Array.isArray(result) ? (result[0] as any)?.batch_id : (result as any)?.rows?.[0]?.batch_id || null;
+    res.json({ batchId });
+  } catch (e) {
+    res.json({ batchId: null });
+  }
+});
+
+// Admin: sample data
+app.get('/api/analytics/summary/sample', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const limit = Math.min(parseInt(String(req.query.limit || '50')), 200);
+    const { db } = await import('./db.js');
+    const { sql } = await import('drizzle-orm');
+    const result = await db.execute(sql`SELECT user_id, batch_id, summary, insights, created_at FROM analytics_summary ORDER BY id DESC LIMIT ${limit}`);
+    const rows = Array.isArray(result) ? result : (result as any)?.rows || [];
+    res.json({ rows });
+  } catch (e) {
+    res.json({ rows: [] });
+  }
+});
+
+app.get('/api/analytics/relationships/sample', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const limit = Math.min(parseInt(String(req.query.limit || '100')), 500);
+    const { db } = await import('./db.js');
+    const { sql } = await import('drizzle-orm');
+    const result = await db.execute(sql`SELECT batch_id, user_id, var_x, var_y, metric, value, lag, created_at FROM analytics_relationships ORDER BY id DESC LIMIT ${limit}`);
+    const rows = Array.isArray(result) ? result : (result as any)?.rows || [];
+    res.json({ rows });
+  } catch (e) {
+    res.json({ rows: [] });
+  }
+});
+
+// Admin: list storage objects for batch
+app.get('/api/analytics/storage/list', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const bucket = process.env.ANALYTICS_STORAGE_BUCKET;
+    const prefixBase = process.env.ANALYTICS_STORAGE_PREFIX || '';
+    if (!bucket) return res.json({ keys: [] });
+    const batchId = String(req.query.batchId || '');
+    const prefix = batchId ? `${prefixBase}/${batchId}/metrics` : prefixBase;
+    const { supabase } = await import('./supabase-client.js');
+    const r = await supabase.storage.from(bucket).list(prefix, { limit: 1000, search: '' });
+    const keys = (r.data || []).map((o: any) => `${prefix}/${o.name}`);
+    res.json({ keys, prefix });
+  } catch (e) {
+    res.json({ keys: [] });
+  }
+});
+
+// Admin: get signed url for a storage key
+app.get('/api/analytics/storage/signed-url', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const bucket = process.env.ANALYTICS_STORAGE_BUCKET;
+    if (!bucket) return res.status(400).json({ message: 'No bucket configured' });
+    const key = String(req.query.key || '');
+    if (!key) return res.status(400).json({ message: 'key is required' });
+    const { supabase } = await import('./supabase-client.js');
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(key, 3600);
+    if (error) return res.status(500).json({ message: error.message });
+    res.json({ url: data.signedUrl });
+  } catch (e) {
+    res.status(500).json({ message: 'Failed to sign' });
+  }
+});
+
 

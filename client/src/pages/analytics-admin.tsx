@@ -17,6 +17,9 @@ export default function AnalyticsAdmin() {
   const [summaryCount, setSummaryCount] = useState<number>(0);
   const [relationshipsCount, setRelationshipsCount] = useState<number>(0);
   const [storagePrefix, setStoragePrefix] = useState<string>("");
+  const [summaryRows, setSummaryRows] = useState<any[]>([]);
+  const [relRows, setRelRows] = useState<any[]>([]);
+  const [storageKeys, setStorageKeys] = useState<string[]>([]);
 
   const allowed = isAuthenticated && (user?.username?.toLowerCase?.() === 'chris');
 
@@ -41,11 +44,31 @@ export default function AnalyticsAdmin() {
     try {
       const s = await apiRequest('GET', '/api/analytics/summary/count');
       setSummaryCount(s.count || 0);
+    } catch {}
+    try {
       const r = await apiRequest('GET', '/api/analytics/relationships/count');
       setRelationshipsCount(r.count || 0);
+    } catch {}
+    try {
       const p = await apiRequest('GET', '/api/analytics/storage-prefix');
       setStoragePrefix(p.prefix || '');
-    } catch (e) {}
+    } catch {}
+    try {
+      const sr = await apiRequest('GET', '/api/analytics/summary/sample?limit=10');
+      setSummaryRows(sr.rows || []);
+    } catch {}
+    try {
+      const rr = await apiRequest('GET', '/api/analytics/relationships/sample?limit=10');
+      setRelRows(rr.rows || []);
+    } catch {}
+    try {
+      const latest = await apiRequest('GET', '/api/analytics/runs/latest');
+      const bid = latest.batchId || batchId;
+      if (bid) {
+        const ks = await apiRequest('GET', `/api/analytics/storage/list?batchId=${encodeURIComponent(bid)}`);
+        setStorageKeys(ks.keys || []);
+      }
+    } catch {}
   };
 
   useEffect(() => {
@@ -83,14 +106,21 @@ export default function AnalyticsAdmin() {
                   <div className="p-2 rounded bg-gray-50">
                     <div className="font-medium">analytics_summary</div>
                     <div>Rows: {summaryCount}</div>
+                    <pre className="text-xs mt-2 bg-white p-2 rounded max-h-40 overflow-auto">{JSON.stringify(summaryRows, null, 2)}</pre>
                   </div>
                   <div className="p-2 rounded bg-gray-50">
                     <div className="font-medium">analytics_relationships</div>
                     <div>Rows: {relationshipsCount}</div>
+                    <pre className="text-xs mt-2 bg-white p-2 rounded max-h-40 overflow-auto">{JSON.stringify(relRows, null, 2)}</pre>
                   </div>
                   <div className="p-2 rounded bg-gray-50 col-span-2">
                     <div className="font-medium">Storage prefix</div>
                     <div className="text-xs break-all">{storagePrefix || '(unset)'}</div>
+                    <div className="mt-2 font-medium">Latest batch storage keys</div>
+                    <ul className="text-xs list-disc pl-4 max-h-40 overflow-auto bg-white p-2 rounded">
+                      {storageKeys.map(k => <li key={k}>{k}</li>)}
+                      {storageKeys.length === 0 && <li>(none)</li>}
+                    </ul>
                   </div>
                 </div>
                 <div className="mt-2 text-xs text-gray-500">Use Supabase to browse tables; artifacts uploaded under the prefix shown.</div>
