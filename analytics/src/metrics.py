@@ -78,12 +78,12 @@ def daily_weekly_monthly_aggregates(
         # period resamples
         weekly = (
             daily.set_index("date").groupby("user_id")[
-                [c for c in daily.columns if c not in ["user_id"]]
+                [c for c in daily.columns if c not in ["user_id", "date"]]
             ].resample("W").mean().reset_index()
         )
         monthly = (
             daily.set_index("date").groupby("user_id")[
-                [c for c in daily.columns if c not in ["user_id"]]
+                [c for c in daily.columns if c not in ["user_id", "date"]]
             ].resample("M").mean().reset_index()
         )
         results["macros"] = {"daily": daily, "weekly": weekly, "monthly": monthly}
