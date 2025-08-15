@@ -102,7 +102,8 @@ export const getQueryFn: <T>(options: {
       credentials: "include",
     });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+    if (unauthorizedBehavior === "returnNull" && (res.status === 401 || res.status === 404)) {
+      // For auth probe like /api/user, treat 401/404 as unauthenticated
       localStorage.removeItem('authToken');
       return null;
     }
