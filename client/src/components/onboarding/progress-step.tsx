@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -9,6 +9,7 @@ import { OnboardingData } from "@/pages/onboarding";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useLocation } from "wouter";
 
 const GOAL_LABELS: Record<string, string> = {
   "general-fitness": "General Fitness",
@@ -28,6 +29,8 @@ export default function ProgressStep({ data, updateData }: ProgressStepProps) {
   const [progress, setProgress] = useState<Record<string, number>>(data.progress);
   const [photos, setPhotos] = useState<File[]>(data.photos);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     // Initialize progress for selected goals
@@ -59,30 +62,31 @@ export default function ProgressStep({ data, updateData }: ProgressStepProps) {
         photos.forEach(photo => {
           formData.append('photos', photo);
         });
-        await fetch('/api/photos', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include',
-        });
+        // Use apiRequest so Authorization header is included
+        await apiRequest('POST', '/api/photos', formData);
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Welcome to Journey!",
-        description: "Your account has been created successfully.",
+        description: "Your account has been set up.",
       });
-      // Reload to trigger auth check and redirect to home
-      window.location.reload();
+      try {
+        const userResponse = await apiRequest("GET", "/api/user");
+        queryClient.setQueryData(["/api/user"], userResponse);
+      } catch {}
+      // Navigate to dashboard after completion
+      setLocation('/home');
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          description: "You are logged out. Please sign in again.",
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          setLocation('/login');
         }, 500);
         return;
       }
