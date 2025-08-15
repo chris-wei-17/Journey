@@ -56,7 +56,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
-      const response = await apiRequest("POST", "/api/register", data);
+      const response = await api("POST", "/api/register", data);
       return response;
     },
     onSuccess: async (data) => {
@@ -70,7 +70,7 @@ export default function Register({ onToggleMode }: RegisterProps) {
       
       // Instead of reloading, fetch user data and update cache
       try {
-        const userResponse = await apiRequest("GET", "/api/user");
+        const userResponse = await api("GET", "/api/user");
         queryClient.setQueryData(["/api/user"], userResponse);
         console.log("Registration successful, user data updated:", userResponse);
       } catch (error) {
