@@ -4,6 +4,7 @@ from .ingest import run_ingest
 from .config import get_settings
 from .metrics import daily_weekly_monthly_aggregates, derived_features
 from .cloud import upload_dir_to_bucket
+from .cloud import build_manifest
 from .run_relations import run_relations
 from .run_insights import run_insights
 from .persist import create_run, finish_run, upsert_summary, insert_relationships
@@ -128,8 +129,12 @@ if __name__ == "__main__":
     # Optional cloud upload
     bucket = os.getenv("ANALYTICS_STORAGE_BUCKET")
     prefix = os.getenv("ANALYTICS_STORAGE_PREFIX", f"analytics/{batch_id}")
+    # Save manifest
+    manifest = build_manifest(metrics_dir)
+    (metrics_dir / "manifest.json").write_text(pd.Series(manifest["files"]).to_json(orient='values'))
     if bucket:
         upload_dir_to_bucket(metrics_dir, bucket, prefix)
+        print(f"UPLOAD_ATTEMPT:bucket={bucket},prefix={prefix},files={len(manifest['files'])}")
 
     # Emit batch id for external orchestration
     print(f"BATCH_ID:{batch_id}")

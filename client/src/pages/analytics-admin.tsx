@@ -14,6 +14,9 @@ export default function AnalyticsAdmin() {
   const [runResult, setRunResult] = useState<any>(null);
   const [status, setStatus] = useState<string>("");
   const [batchId, setBatchId] = useState<string>("");
+  const [summaryCount, setSummaryCount] = useState<number>(0);
+  const [relationshipsCount, setRelationshipsCount] = useState<number>(0);
+  const [storagePrefix, setStoragePrefix] = useState<string>("");
 
   const allowed = isAuthenticated && (user?.username?.toLowerCase?.() === 'chris');
 
@@ -34,6 +37,21 @@ export default function AnalyticsAdmin() {
     }
   };
 
+  const refreshOutputs = async () => {
+    try {
+      const s = await apiRequest('GET', '/api/analytics/summary/count');
+      setSummaryCount(s.count || 0);
+      const r = await apiRequest('GET', '/api/analytics/relationships/count');
+      setRelationshipsCount(r.count || 0);
+      const p = await apiRequest('GET', '/api/analytics/storage-prefix');
+      setStoragePrefix(p.prefix || '');
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    if (allowed) refreshOutputs();
+  }, [allowed]);
+
   return (
     <div className="app-gradient-bg min-h-screen">
       <Header title="Analytics Admin" showHomeButton />
@@ -51,6 +69,7 @@ export default function AnalyticsAdmin() {
                   </div>
                   <Button onClick={runPipeline} className="bg-blue-600 text-white">Run Pipeline</Button>
                   {batchId && <span className="text-sm text-gray-600">Batch: {batchId}</span>}
+                  <Button onClick={refreshOutputs} variant="outline">Refresh Outputs</Button>
                 </div>
                 <div className="mt-2 text-sm text-gray-500">{status}</div>
                 <pre className="text-xs mt-2 bg-gray-100 p-2 rounded max-h-64 overflow-auto">{log}</pre>
@@ -60,13 +79,21 @@ export default function AnalyticsAdmin() {
             <Card className="bg-white/75 border-0">
               <CardContent className="p-4">
                 <h3 className="font-semibold mb-2">Data Products</h3>
-                <ul className="list-disc pl-6 text-sm text-gray-700">
-                  <li>analytics_runs (Supabase)</li>
-                  <li>analytics_summary (Supabase)</li>
-                  <li>analytics_relationships (Supabase)</li>
-                  <li>Supabase Storage (if configured): analytics/&lt;batch_id&gt;/metrics/</li>
-                </ul>
-                <div className="mt-2 text-xs text-gray-500">Use Supabase SQL editor or REST to browse tables; artifacts uploaded to Storage if configured.</div>
+                <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                  <div className="p-2 rounded bg-gray-50">
+                    <div className="font-medium">analytics_summary</div>
+                    <div>Rows: {summaryCount}</div>
+                  </div>
+                  <div className="p-2 rounded bg-gray-50">
+                    <div className="font-medium">analytics_relationships</div>
+                    <div>Rows: {relationshipsCount}</div>
+                  </div>
+                  <div className="p-2 rounded bg-gray-50 col-span-2">
+                    <div className="font-medium">Storage prefix</div>
+                    <div className="text-xs break-all">{storagePrefix || '(unset)'}</div>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-gray-500">Use Supabase to browse tables; artifacts uploaded under the prefix shown.</div>
               </CardContent>
             </Card>
           </div>

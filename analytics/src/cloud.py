@@ -2,6 +2,7 @@ from pathlib import Path
 from loguru import logger
 from supabase import create_client, Client
 from .config import get_settings
+import json
 
 
 def get_supabase_client() -> Client:
@@ -20,3 +21,11 @@ def upload_dir_to_bucket(local_dir: Path, bucket: str, prefix: str = ""):
             with open(path, "rb") as f:
                 logger.info(f"Uploading {path} -> {bucket}/{key}")
                 client.storage.from_(bucket).upload(key, f, file_options={"upsert": True})
+
+
+def build_manifest(local_dir: Path) -> dict:
+    files = []
+    for path in local_dir.rglob("*"):
+        if path.is_file():
+            files.append(str(path.relative_to(local_dir)))
+    return {"files": files}

@@ -15,6 +15,45 @@ def run_insights(batch_id: str):
         return
     df = pd.read_parquet(derived_path)
 
+    # Correlations
+    mats = correlation_matrices(df)
+    mats["pearson"].to_parquet(out / "corr_pearson.parquet")
+    mats["spearman"].to_parquet(out / "corr_spearman.parquet")
+
+    # Mutual information
+    mi = mutual_information_matrix(df)
+    mi.to_parquet(out / "mutual_info.parquet")
+
+    # PCA/ICA
+    comps = pca_ica(df, n_components=5)
+    pd.DataFrame(comps["pca"][0]).to_parquet(out / "pca_components.parquet")
+    pd.Series(comps["pca"][1]).to_parquet(out / "pca_explained_variance.parquet")
+    pd.DataFrame(comps["ica"][0]).to_parquet(out / "ica_components.parquet")
+
+    # VIF
+    vif = vif_scores(df)
+    vif.to_parquet(out / "vif.parquet")
+
+    # Pairwise over time (example columns)
+    value_cols = [c for c in ["calories", "total_minutes", "weight"] if c in df.columns]
+    if value_cols:
+        corr_time = pairwise_correlation_over_time(df, time_col="date", value_cols=value_cols)
+        pd.Series(corr_time).to_parquet(out / "pairwise_corr_over_time.parquet")
+
+    # Cross-lag (example: calories vs weight)
+    if all(c in df.columns for c in ["calories", "weight"]):
+        xlag = cross_lag(df, x="calories", y="weight")
+        xlag.to_parquet(out / "cross_lag_calories_weight.parquet")
+
+    # Cluster multivariate patterns
+    cols = [c for c in ["calories", "total_minutes", "weight"] if c in df.columns]
+    if cols:
+        clus = cluster_multivariate_patterns(df, cols=cols, n_std=1.0)
+        clus.to_parquet(out / "clusters.parquet")
+
+    # index file for UI
+    (out / "index.json").write_text("{\"products\":[\"corr_pearson\",\"corr_spearman\",\"mutual_info\",\"pca_components\",\"pca_explained_variance\",\"ica_components\",\"vif\",\"pairwise_corr_over_time\",\"cross_lag_calories_weight\",\"clusters\"]}")
+
     trends = detect_trends(df)
     if not trends.empty:
         trends.to_parquet(out / "trends.parquet", index=False)

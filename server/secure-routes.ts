@@ -2120,4 +2120,44 @@ IP Address: ${clientIP}
   }
 }
 
+// Admin: analytics counts
+app.get('/api/analytics/summary/count', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const { db } = await import('./db.js');
+    const { sql } = await import('drizzle-orm');
+    const result = await db.execute(sql`SELECT count(*)::int AS count FROM analytics_summary`);
+    const count = Array.isArray(result) ? (result[0] as any)?.count : (result as any)?.rows?.[0]?.count || 0;
+    res.json({ count: Number(count) || 0 });
+  } catch {
+    res.json({ count: 0 });
+  }
+});
+
+app.get('/api/analytics/relationships/count', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const { db } = await import('./db.js');
+    const { sql } = await import('drizzle-orm');
+    const result = await db.execute(sql`SELECT count(*)::int AS count FROM analytics_relationships`);
+    const count = Array.isArray(result) ? (result[0] as any)?.count : (result as any)?.rows?.[0]?.count || 0;
+    res.json({ count: Number(count) || 0 });
+  } catch {
+    res.json({ count: 0 });
+  }
+});
+
+app.get('/api/analytics/storage-prefix', authenticateToken, async (req: any, res) => {
+  try {
+    const me = await storage.getUser(req.userId!);
+    if (!me || me.username.toLowerCase() !== 'chris') return res.status(403).json({ message: 'Forbidden' });
+    const prefix = process.env.ANALYTICS_STORAGE_PREFIX || '';
+    res.json({ prefix });
+  } catch {
+    res.json({ prefix: '' });
+  }
+});
+
 
