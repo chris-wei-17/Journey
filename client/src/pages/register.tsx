@@ -73,12 +73,16 @@ export default function Register({ onToggleMode }: RegisterProps) {
         const userResponse = await api("GET", "/api/user");
         queryClient.setQueryData(["/api/user"], userResponse);
         console.log("Registration successful, user data updated:", userResponse);
-        // Navigate to dashboard
-        setLocation('/home');
+        // Navigate based on onboarding state
+        if (!userResponse?.onboardingCompleted) {
+          setLocation('/onboarding');
+        } else {
+          setLocation('/home');
+        }
       } catch (error) {
         console.error("Failed to fetch user data after registration:", error);
-        // Navigate to dashboard even if fetch fails; cache will hydrate later
-        setLocation('/home');
+        // Default to onboarding for new accounts
+        setLocation('/onboarding');
       }
     },
     onError: (error: any) => {
