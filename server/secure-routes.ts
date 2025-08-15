@@ -99,24 +99,57 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
       }
       const { user_id } = req.query as { user_id?: string };
 
-      const fnUrl = process.env.ANALYTICS_FUNCTION_URL;
+      const fnUrlEnv = process.env.ANALYTICS_FUNCTION_URL;
       const fnKey = process.env.ANALYTICS_FUNCTION_KEY;
-      if (!fnUrl) {
+      if (!fnUrlEnv) {
         return res.status(500).json({ message: 'ANALYTICS_FUNCTION_URL not configured' });
       }
-      const resp = await fetch(fnUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(fnKey ? { 'Authorization': `Bearer ${fnKey}` } : {}),
-        },
-        body: JSON.stringify({ user_id: user_id || null }),
-      });
-      const data = await resp.json().catch(() => ({}));
-      return res.json({ status: resp.ok ? 'ok' : 'error', code: resp.status, ...data });
+
+      const baseUrl = fnUrlEnv.replace(/\/$/, '');
+      const runUrl = /\/run\/?$/.test(baseUrl) ? baseUrl : `${baseUrl}/run`;
+      const healthUrl = `${baseUrl}/health`;
+      const timeoutMs = Number(process.env.ANALYTICS_FUNCTION_TIMEOUT_MS || 30000);
+
+      const fetchWithTimeout = async (url: string, init?: RequestInit, tmo = timeoutMs) => {
+        const ac = new AbortController();
+        const id = setTimeout(() => ac.abort(), tmo);
+        try {
+          const r = await fetch(url, { ...(init || {}), signal: ac.signal });
+          return r;
+        } finally {
+          clearTimeout(id);
+        }
+      };
+
+      // Best-effort wake-up probe (ignore errors)
+      try { await fetchWithTimeout(healthUrl, { method: 'GET' }, 5000); } catch {}
+
+      const runBody = JSON.stringify({ user_id: user_id || null });
+      const headers: any = { 'Content-Type': 'application/json', ...(fnKey ? { 'Authorization': `Bearer ${fnKey}` } : {}) };
+
+      let resp = await fetchWithTimeout(runUrl, { method: 'POST', headers, body: runBody });
+      if (!resp.ok) {
+        // Retry once after brief delay in case of cold start
+        await new Promise(r => setTimeout(r, 1000));
+        resp = await fetchWithTimeout(runUrl, { method: 'POST', headers, body: runBody });
+      }
+
+      let data: any = {};
+      try { data = await resp.json(); } catch {}
+
+      if (!resp.ok) {
+        return res.status(resp.status >= 500 ? 502 : resp.status).json({
+          status: 'error',
+          code: resp.status,
+          message: data?.message || resp.statusText || 'Upstream error',
+          attemptedUrl: runUrl,
+        });
+      }
+
+      return res.json({ status: 'ok', code: resp.status, attemptedUrl: runUrl, ...data });
     } catch (err: any) {
       console.error('run_pipeline error:', err);
-      res.status(500).json({ message: 'Failed to start pipeline', error: String(err?.message || err) });
+      res.status(502).json({ message: 'Failed to reach analytics service', error: String(err?.message || err) });
     }
   });
   console.log('✅ run_pipeline route registered');
