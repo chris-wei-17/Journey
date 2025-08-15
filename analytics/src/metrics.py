@@ -60,7 +60,10 @@ def daily_weekly_monthly_aggregates(
             mt = macro_targets.rename(columns={"protein_target": "protein_t", "fats_target": "fats_t", "carbs_target": "carbs_t"})
             daily = daily.merge(mt, on="user_id", how="left")
             for col, tgt in [("protein", "protein_t"), ("fats", "fats_t"), ("carbs", "carbs_t")]:
-                daily[f"{col}_pct_goal"] = np.where(daily[tgt].fillna(0) > 0, daily[col] / daily[tgt] * 100.0, np.nan)
+                num = pd.to_numeric(daily[col], errors="coerce")
+                den = pd.to_numeric(daily[tgt], errors="coerce")
+                safe_den = den.replace(0, np.nan)
+                daily[f"{col}_pct_goal"] = num.divide(safe_den) * 100.0
         # macro ratios
         total_macros = daily[["protein", "fats", "carbs"]].sum(axis=1)
         for c in ["protein", "fats", "carbs"]:
