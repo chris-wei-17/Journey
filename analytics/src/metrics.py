@@ -37,7 +37,7 @@ def daily_weekly_monthly_aggregates(
         monthly = (
             sleep.set_index("date")
             .groupby("user_id")["hours"]
-            .resample("M")
+            .resample("ME")
             .agg(avg_hours="mean", std_hours="std", min_hours="min", max_hours="max")
             .reset_index()
         )
@@ -84,7 +84,7 @@ def daily_weekly_monthly_aggregates(
         monthly = (
             daily.set_index("date").groupby("user_id")[
                 [c for c in daily.columns if c not in ["user_id", "date"]]
-            ].resample("M").mean().reset_index()
+            ].resample("ME").mean().reset_index()
         )
         results["macros"] = {"daily": daily, "weekly": weekly, "monthly": monthly}
 
@@ -174,8 +174,11 @@ def derived_features(
 
     # Energy balance (placeholder): calories in minus estimated calories out (kcal)
     # Estimate calories out from total_minutes * 5 kcal per minute as a simple baseline
-    base["calories_out_est"] = np.where(base.get("total_minutes") is not None, base["total_minutes"].fillna(0) * 5.0, 0.0)
-    base["energy_balance"] = base["calories"].fillna(0) - base["calories_out_est"].fillna(0)
+    mins = pd.to_numeric(base.get("total_minutes", pd.Series(0, index=base.index)), errors="coerce").fillna(0.0)
+    base["calories_out_est"] = mins * 5.0
+    cal_in = pd.to_numeric(base.get("calories"), errors="coerce").fillna(0.0)
+    cal_out = pd.to_numeric(base.get("calories_out_est"), errors="coerce").fillna(0.0)
+    base["energy_balance"] = cal_in - cal_out
 
     # Lag features
     base = base.sort_values(["user_id", "date"])  # ensure order
