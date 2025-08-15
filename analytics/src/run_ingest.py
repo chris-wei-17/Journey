@@ -57,20 +57,29 @@ def run_pipeline() -> str:
 			df.to_parquet(metrics_dir / f"{domain}_{period}.parquet", index=False)
 
 	# Derived features
-	derived = derived_features(
-		profiles=q1,
-		macros_daily=aggs.get("macros", {}).get("daily"),
-		activities_daily=aggs.get("exercise", {}).get("daily"),
-		weight_daily=aggs.get("weight", {}).get("daily"),
-	)
-	if not derived.empty:
-		derived.to_parquet(metrics_dir / "derived_features.parquet", index=False)
+	try:
+		derived = derived_features(
+			profiles=q1,
+			macros_daily=aggs.get("macros", {}).get("daily"),
+			activities_daily=aggs.get("exercise", {}).get("daily"),
+			weight_daily=aggs.get("weight", {}).get("daily"),
+		)
+		if not derived.empty:
+			derived.to_parquet(metrics_dir / "derived_features.parquet", index=False)
+	except Exception as e:
+		logger.exception("derived_features failed")
 
 	# Relations (step 3)
-	run_relations(batch_id)
+	try:
+		run_relations(batch_id)
+	except Exception as e:
+		logger.exception("run_relations failed")
 
 	# Insights (step 4)
-	run_insights(batch_id)
+	try:
+		run_insights(batch_id)
+	except Exception as e:
+		logger.exception("run_insights failed")
 
 	# Persist summaries and relationships
 	# Summary: one record per user with basic means and generated insights
