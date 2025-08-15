@@ -103,7 +103,7 @@ def daily_weekly_monthly_aggregates(
             "total_minutes": "sum",
             "avg_intensity": "mean",
         }).reset_index()
-        monthly = agg.set_index("date").groupby("user_id").resample("M").agg({
+        monthly = agg.set_index("date").groupby("user_id").resample("ME").agg({
             "sessions": "sum",
             "total_minutes": "sum",
             "avg_intensity": "mean",
@@ -124,7 +124,7 @@ def daily_weekly_monthly_aggregates(
             "w_roll_std7": "mean",
             "w_7d_change": "mean",
         }).reset_index()
-        w_monthly = w.set_index("date").groupby("user_id").resample("M").agg({
+        w_monthly = w.set_index("date").groupby("user_id").resample("ME").agg({
             "weight": "mean",
             "w_ma7": "mean",
             "w_roll_std7": "mean",
