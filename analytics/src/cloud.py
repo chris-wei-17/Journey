@@ -19,8 +19,16 @@ def upload_dir_to_bucket(local_dir: Path, bucket: str, prefix: str = ""):
             rel = path.relative_to(local_dir)
             key = f"{prefix}/{rel}" if prefix else str(rel)
             with open(path, "rb") as f:
+                data = f.read()
                 logger.info(f"Uploading {path} -> {bucket}/{key}")
-                client.storage.from_(bucket).upload(key, f, file_options={"upsert": True})
+                client.storage.from_(bucket).upload(
+                    key,
+                    data,
+                    file_options={
+                        "content-type": "application/octet-stream",
+                        "upsert": "true",
+                    },
+                )
 
 
 def build_manifest(local_dir: Path) -> dict:
