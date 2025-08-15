@@ -7,9 +7,9 @@ import json
 
 def get_supabase_client() -> Client:
     s = get_settings()
-    if not s.supabase_url or not s.supabase_service_key:
-        raise RuntimeError("Supabase URL/key not set for cloud operations")
-    return create_client(s.supabase_url, s.supabase_service_key)
+    if not s.supabase_http_url or not s.supabase_service_key:
+        raise RuntimeError("Supabase HTTP URL/service key not set for cloud operations")
+    return create_client(s.supabase_http_url, s.supabase_service_key)
 
 
 def upload_dir_to_bucket(local_dir: Path, bucket: str, prefix: str = ""):
