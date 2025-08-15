@@ -65,9 +65,16 @@ def daily_weekly_monthly_aggregates(
                 safe_den = den.replace(0, np.nan)
                 daily[f"{col}_pct_goal"] = num.divide(safe_den) * 100.0
         # macro ratios
-        total_macros = daily[["protein", "fats", "carbs"]].sum(axis=1)
+        p = pd.to_numeric(daily["protein"], errors="coerce").fillna(0)
+        f = pd.to_numeric(daily["fats"], errors="coerce").fillna(0)
+        cb = pd.to_numeric(daily["carbs"], errors="coerce").fillna(0)
+        total_macros = p + f + cb
         for c in ["protein", "fats", "carbs"]:
-            daily[f"{c}_ratio"] = np.where(total_macros > 0, daily[c] / total_macros, np.nan)
+            num = pd.to_numeric(daily[c], errors="coerce")
+            ratio = pd.Series(np.nan, index=daily.index)
+            mask = total_macros > 0
+            ratio.loc[mask] = num.loc[mask] / total_macros.loc[mask]
+            daily[f"{c}_ratio"] = ratio
         # period resamples
         weekly = (
             daily.set_index("date").groupby("user_id")[
