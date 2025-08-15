@@ -44,7 +44,7 @@ export default function Feedback() {
       });
 
       setFeedback("");
-      setTimeout(() => setLocation("/"), 2000);
+      setTimeout(() => setLocation("/home"), 2000);
     } catch (error: any) {
       toast({
         title: "Failed to Send",
