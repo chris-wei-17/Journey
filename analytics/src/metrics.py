@@ -51,7 +51,7 @@ def daily_weekly_monthly_aggregates(
             macros["calories"] = (macros["protein"].astype(float) * 4 + macros["fats"].astype(float) * 9 + macros["carbs"].astype(float) * 4)
         # daily totals
         daily = (
-            macros.groupby(["user_id", pd.Grouper(key="date", freq="D")])["calories", "protein", "fats", "carbs"]
+            macros.groupby(["user_id", pd.Grouper(key="date", freq="D")])[ ["calories", "protein", "fats", "carbs"] ]
             .sum()
             .reset_index()
         )
@@ -66,9 +66,6 @@ def daily_weekly_monthly_aggregates(
         for c in ["protein", "fats", "carbs"]:
             daily[f"{c}_ratio"] = np.where(total_macros > 0, daily[c] / total_macros, np.nan)
         # period resamples
-        weekly = (
-            daily.set_index("date").groupby("user_id")["calories", "protein", "fats", "carbs"].sum().reset_index()
-        )
         weekly = (
             daily.set_index("date").groupby("user_id")[
                 [c for c in daily.columns if c not in ["user_id"]]
