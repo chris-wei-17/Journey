@@ -41,20 +41,20 @@ def run_insights(batch_id: str):
         comps = pca_ica(df, n_components=5)
         if comps["pca"][0].size:
             pd.DataFrame(comps["pca"][0]).to_parquet(out / "pca_components.parquet")
-            pd.Series(comps["pca"][1]).to_parquet(out / "pca_explained_variance.parquet")
+            pd.DataFrame({"explained_variance_ratio": comps["pca"][1]}).to_parquet(out / "pca_explained_variance.parquet")
         if comps["ica"][0].size:
             pd.DataFrame(comps["ica"][0]).to_parquet(out / "ica_components.parquet")
 
         # VIF
         vif = vif_scores(df)
         if not vif.empty:
-            vif.to_parquet(out / "vif.parquet")
+            vif.to_frame(name="vif").to_parquet(out / "vif.parquet")
 
     # Pairwise over time (example columns)
     value_cols = [c for c in ["calories", "total_minutes", "weight"] if c in df.columns]
     if value_cols:
         corr_time = pairwise_correlation_over_time(df, time_col="date", value_cols=value_cols)
-        pd.Series(corr_time).to_parquet(out / "pairwise_corr_over_time.parquet")
+        pd.Series(corr_time).to_frame(name="corr").to_parquet(out / "pairwise_corr_over_time.parquet")
 
     # Cross-lag (example: calories vs weight)
     if all(c in df.columns for c in ["calories", "weight"]):
@@ -84,7 +84,7 @@ def run_insights(batch_id: str):
 
     impact = impact_on_weight(df)
     if not impact.empty:
-        impact.to_parquet(out / "impact_weight.parquet")
+        impact.to_frame(name="coef").to_parquet(out / "impact_weight.parquet")
 
     # Generate OpenAI insights per user (summaries)
     summaries = []
