@@ -168,9 +168,12 @@ export default function AddMetric() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="length">Length (in/cm)</SelectItem>
+                  <SelectItem value="length-in">Length (in)</SelectItem>
+                  <SelectItem value="length-cm">Length (cm)</SelectItem>
                   <SelectItem value="percentage">Percentage (%)</SelectItem>
                   <SelectItem value="count">Count/Reps</SelectItem>
+                  <SelectItem value="weight-lb">Max. Weight (lb)</SelectItem>
+                  <SelectItem value="weight-kg">Max. Weight (kg)</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
