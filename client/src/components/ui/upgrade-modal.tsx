@@ -61,6 +61,8 @@ export function UpgradeModal({ isOpen, onClose, targetTier }: UpgradeModalProps)
       });
 
       if (response.sessionId) {
+        // Stop processing before redirect (since we won't come back to this page)
+        setIsProcessing(false);
         // Redirect to Stripe checkout
         await redirectToCheckout(response.sessionId);
       } else {
@@ -68,13 +70,12 @@ export function UpgradeModal({ isOpen, onClose, targetTier }: UpgradeModalProps)
       }
     } catch (error) {
       console.error('Upgrade error:', error);
+      setIsProcessing(false);
       toast({
         title: 'Error',
         description: 'Failed to start checkout process. Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setIsProcessing(false);
     }
   };
 
