@@ -86,6 +86,7 @@ def run_pipeline() -> str:
 	try:
 		derived = pd.read_parquet(metrics_dir / "derived_features.parquet") if (metrics_dir / "derived_features.parquet").exists() else pd.DataFrame()
 		openai_ins = pd.read_parquet(metrics_dir / "insights/openai_insights.parquet") if (metrics_dir / "insights/openai_insights.parquet").exists() else pd.DataFrame()
+		processed_user_ids = set()
 		if not derived.empty:
 			for uid, grp in derived.groupby("user_id"):
 				summary = {
@@ -100,7 +101,21 @@ def run_pipeline() -> str:
 					if not row.empty:
 						insights_txt = str(row.iloc[0]["insights"]) or None
 				upsert_summary(batch_id, int(uid), summary, insights_txt)
+				processed_user_ids.add(int(uid))
 				run_log.rows_processed += 1
+		# Notify server to send user notifications (best-effort)
+		try:
+			import os, httpx
+			server_url = os.getenv("SERVER_BASE_URL", "")
+			notify_key = os.getenv("ANALYTICS_NOTIFY_KEY", "")
+			if server_url and notify_key and processed_user_ids:
+				url = server_url.rstrip('/') + "/api/analytics/notify"
+				headers = {"Authorization": f"Bearer {notify_key}", "Content-Type": "application/json"}
+				payload = {"batchId": batch_id, "userIds": sorted(processed_user_ids)}
+				with httpx.Client(timeout=5.0) as client:
+					client.post(url, headers=headers, json=payload)
+		except Exception:
+			pass
 	except Exception as e:
 		logger.exception("Error persisting summaries")
 		run_log.status = "error"

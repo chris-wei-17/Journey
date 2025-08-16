@@ -2275,4 +2275,38 @@ IP Address: ${clientIP}
   }
 }
 
+// Secure webhook: notify users analytics are ready
+app.post('/api/analytics/notify', async (req: any, res) => {
+  try {
+    const auth = req.headers['authorization'] || '';
+    const expected = process.env.ANALYTICS_NOTIFY_KEY ? `Bearer ${process.env.ANALYTICS_NOTIFY_KEY}` : '';
+    if (!expected || auth !== expected) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    const { batchId, userIds } = req.body || {};
+    if (!batchId || !Array.isArray(userIds)) {
+      return res.status(400).json({ message: 'batchId and userIds[] are required' });
+    }
+
+    let sent = 0;
+    for (const uid of userIds) {
+      try {
+        const user = await storage.getUser(parseInt(uid));
+        if (!user?.email) continue;
+        await sendEmail({
+          to: user.email,
+          subject: 'Journey Analytics',
+          html: `<p>New analytics available.</p><p>Batch: ${batchId}</p>`,
+        });
+        sent++;
+      } catch (e) {
+        // continue
+      }
+    }
+    return res.json({ status: 'ok', batchId, notified: sent });
+  } catch (e) {
+    return res.status(500).json({ message: 'notify failed' });
+  }
+});
+
 
