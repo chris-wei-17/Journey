@@ -105,7 +105,7 @@ def run_pipeline() -> str:
 				run_log.rows_processed += 1
 		# Notify server to send user notifications (best-effort)
 		try:
-			import os, httpx
+			import httpx
 			server_url = os.getenv("SERVER_BASE_URL", "")
 			notify_key = os.getenv("ANALYTICS_NOTIFY_KEY", "")
 			if server_url and notify_key and processed_user_ids:
