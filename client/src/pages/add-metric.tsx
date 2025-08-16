@@ -11,19 +11,19 @@ import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
 const UNITS = {
-  weight-lb: ["lb"],
-  weight-kg:["kg"],
-  length-inch: ["in"],
-  length-cm: ["cm"],
+  weight_lb: ["lb"],
+  weight_kg:["kg"],
+  length_inch: ["in"],
+  length_cm: ["cm"],
   percentage: ["%"],
   count: ["reps", "count"]
 };
 
 const COMMON_METRICS = [
-  { name: "Waist", unit: "length-inch" },
-  { name: "Chest", unit: "length-inch" },
-  { name: "Bicep", unit: "length-inch" },
-  { name: "Thighs", unit: "length-inch" },
+  { name: "Waist", unit: "length_inch" },
+  { name: "Chest", unit: "length_inch" },
+  { name: "Bicep", unit: "length_inch" },
+  { name: "Thighs", unit: "length_inch" },
   { name: "Body Fat %", unit: "percentage" }
 ];
 
@@ -168,12 +168,12 @@ export default function AddMetric() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="length-inch">Length (in)</SelectItem>
-                  <SelectItem value="length-cm">Length (cm)</SelectItem>
+                  <SelectItem value="length_inch">Length (in)</SelectItem>
+                  <SelectItem value="length_cm">Length (cm)</SelectItem>
                   <SelectItem value="percentage">Percentage (%)</SelectItem>
                   <SelectItem value="count">Count/Reps</SelectItem>
-                  <SelectItem value="weight-lb">Max. Weight (lb)</SelectItem>
-                  <SelectItem value="weight-kg">Max. Weight (kg)</SelectItem>
+                  <SelectItem value="weight_lb">Max. Weight (lb)</SelectItem>
+                  <SelectItem value="weight_kg">Max. Weight (kg)</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
