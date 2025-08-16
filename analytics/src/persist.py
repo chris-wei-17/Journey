@@ -62,23 +62,20 @@ def insert_relationships(batch_id: str, rows: List[Dict[str, Any]]):
     if not rows:
         return
     with get_conn() as conn, conn.cursor() as cur:
-        args = [
-            (
-                batch_id,
-                r.get("user_id"),
-                r.get("var_x"),
-                r.get("var_y"),
-                r.get("metric"),
-                r.get("value"),
-                r.get("lag"),
+        for r in rows:
+            cur.execute(
+                """
+                INSERT INTO analytics_relationships(batch_id, user_id, var_x, var_y, metric, value, lag)
+                VALUES(%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    batch_id,
+                    r.get("user_id"),
+                    r.get("var_x"),
+                    r.get("var_y"),
+                    r.get("metric"),
+                    r.get("value"),
+                    r.get("lag"),
+                ),
             )
-            for r in rows
-        ]
-        cur.executemany(
-            """
-            INSERT INTO analytics_relationships(batch_id, user_id, var_x, var_y, metric, value, lag)
-            VALUES(%s, %s, %s, %s, %s, %s, %s)
-            """,
-            args,
-        )
         conn.commit()

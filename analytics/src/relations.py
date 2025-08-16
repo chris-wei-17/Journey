@@ -68,6 +68,11 @@ def matrix_rank(df: pd.DataFrame, cols: List[str] | None = None) -> int:
 def pca_ica(df: pd.DataFrame, n_components: int = 5, cols: List[str] | None = None) -> Dict[str, Tuple[np.ndarray, np.ndarray, List[str]]]:
     num = _numeric_df(df, cols).dropna()
     feature_names = list(num.columns)
+    if num.empty or num.shape[0] == 0 or num.shape[1] == 0:
+        return {
+            "pca": (np.empty((0, 0)), np.array([]), feature_names),
+            "ica": (np.empty((0, 0)), None, feature_names),
+        }
     X = (num - num.mean()) / (num.std(ddof=0) + 1e-8)
     pca = PCA(n_components=min(n_components, X.shape[1]))
     pca_components = pca.fit_transform(X)
