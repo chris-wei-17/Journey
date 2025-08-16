@@ -172,12 +172,12 @@ def run_pipeline() -> str:
 	if bucket:
 		try:
 			upload_dir_to_bucket(metrics_dir, bucket, prefix)
-			print(f"UPLOAD_ATTEMPT:bucket={bucket},prefix={prefix},files={len(manifest['files'])}")
+			# print(f"UPLOAD_ATTEMPT:bucket={bucket},prefix={prefix},files={len(manifest['files'])}")
 		except Exception as e:
 			logger.warning(f"Upload failed: {e}")
 
 	# Emit batch id for external orchestration
-	print(f"BATCH_ID:{batch_id}")
+	# print(f"BATCH_ID:{batch_id}")
 	return batch_id
 
 
