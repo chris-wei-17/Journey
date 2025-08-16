@@ -245,7 +245,7 @@ export default function AddActivity() {
       // Return to home with the activity end date
       const dateParam = endDateTime.date; // Use the end date for navigation
       console.log('🏠 Navigation Debug - Returning to home with date:', dateParam, 'endDateTime.date:', endDateTime.date);
-      setLocation(`/?date=${dateParam}`);
+      setLocation(`/home?date=${dateParam}`);
     },
     onError: (error: Error) => {
       console.error('Frontend mutation error:', error);
@@ -276,7 +276,7 @@ export default function AddActivity() {
       });
       // Return to home with the activity end date
       const dateParam = endDateTime.date; // Use the end date for navigation
-      setLocation(`/?date=${dateParam}`);
+      setLocation(`/home?date=${dateParam}`);
     },
     onError: (error: Error) => {
       toast({
@@ -306,7 +306,7 @@ export default function AddActivity() {
       });
       // Return to home with the activity end date
       const dateParam = endDateTime.date; // Use the end date for navigation
-      setLocation(`/?date=${dateParam}`);
+      setLocation(`/home?date=${dateParam}`);
     },
     onError: (error: Error) => {
       toast({
@@ -424,7 +424,7 @@ export default function AddActivity() {
           size="sm"
           onClick={() => {
             const dateParam = endDateTime.date; // Use end date for navigation
-            setLocation(`/?date=${dateParam}`);
+            setLocation(`/home?date=${dateParam}`);
           }}
           className="p-2 text-white hover:bg-white/20"
         >
@@ -434,7 +434,7 @@ export default function AddActivity() {
         <div 
           onClick={() => {
             const dateParam = endDateTime.date; // Use end date for navigation
-            setLocation(`/?date=${dateParam}`);
+            setLocation(`/home?date=${dateParam}`);
           }}
           className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
         >

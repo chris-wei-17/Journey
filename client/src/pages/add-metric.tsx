@@ -63,7 +63,7 @@ export default function AddMetric() {
       });
       // Return to home with the selected date
       const dateParam = format(selectedDate, 'yyyy-MM-dd');
-      setLocation(`/?date=${dateParam}`);
+      setLocation(`/home?date=${dateParam}`);
     },
     onError: (error) => {
       console.error('Error creating custom metric field:', error);
@@ -104,7 +104,7 @@ export default function AddMetric() {
           size="sm"
           onClick={() => {
             const dateParam = format(selectedDate, 'yyyy-MM-dd');
-            setLocation(`/?date=${dateParam}`);
+            setLocation(`/home?date=${dateParam}`);
           }}
           className="p-2 text-white hover:bg-white/20"
         >
@@ -114,7 +114,7 @@ export default function AddMetric() {
         <div 
           onClick={() => {
             const dateParam = format(selectedDate, 'yyyy-MM-dd');
-            setLocation(`/?date=${dateParam}`);
+            setLocation(`/home?date=${dateParam}`);
           }}
           className="w-10 h-10 flex items-center justify-center cursor-pointer text-black bg-white/90 hover:bg-white rounded-full"
         >
