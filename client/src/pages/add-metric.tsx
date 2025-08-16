@@ -11,20 +11,20 @@ import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
 const UNITS = {
-  weight: ["lbs", "kg"],
-  length: ["in", "cm"],
+  weight-lb: ["lb"],
+  weight-kg:["kg"],
+  length-inch: ["in"],
+  length-cm: ["cm"],
   percentage: ["%"],
   count: ["reps", "count"]
 };
 
 const COMMON_METRICS = [
-  { name: "Waist", unit: "length" },
-  { name: "Chest", unit: "length" },
-  { name: "Arms", unit: "length" },
-  { name: "Thighs", unit: "length" },
-  { name: "Hips", unit: "length" },
-  { name: "Body Fat %", unit: "percentage" },
-  { name: "Muscle Mass", unit: "percentage" }
+  { name: "Waist", unit: "length-inch" },
+  { name: "Chest", unit: "length-inch" },
+  { name: "Bicep", unit: "length-inch" },
+  { name: "Thighs", unit: "length-inch" },
+  { name: "Body Fat %", unit: "percentage" }
 ];
 
 export default function AddMetric() {
@@ -168,7 +168,7 @@ export default function AddMetric() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="length-in">Length (in)</SelectItem>
+                  <SelectItem value="length-inch">Length (in)</SelectItem>
                   <SelectItem value="length-cm">Length (cm)</SelectItem>
                   <SelectItem value="percentage">Percentage (%)</SelectItem>
                   <SelectItem value="count">Count/Reps</SelectItem>
