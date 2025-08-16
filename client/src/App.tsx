@@ -80,7 +80,7 @@ function Router() {
         ) : (
           <>
             {/* Landing page for browser users, Auth for PWA */}
-            <Route path="/" component={isPWAMode() ? Auth : Landing} />
+            <Route path="/" component={isAuthenticated ? Home : (isPWAMode() ? Auth : Landing)} />
             {/* Publicly expose all routes during review */}
             {/* Auth-only block commented */}
             {/* {!user?.onboardingCompleted ? (
