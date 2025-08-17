@@ -205,7 +205,8 @@ def derived_features(
                 return np.nan
         p["height_m"] = p["height"].apply(height_to_m)
         base = base.merge(p[["user_id", "height_m"]], on="user_id", how="left")
-        base["bmi"] = np.where((base["height_m"] > 0) & (base["weight"].notna()), base["weight"] / (base["height_m"] ** 2), np.nan)
+        if "weight" in base.columns:
+            base["bmi"] = np.where((base["height_m"] > 0) & (base["weight"].notna()), base["weight"] / (base["height_m"] ** 2), np.nan)
 
     # Energy balance (placeholder): calories in minus estimated calories out (kcal)
     # Estimate calories out from total_minutes * 5 kcal per minute as a simple baseline
