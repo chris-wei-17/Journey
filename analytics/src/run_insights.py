@@ -26,6 +26,12 @@ def run_insights(batch_id: str):
 
     # Numeric-only frame for certain analyses
     num = df.select_dtypes(include="number").dropna()
+    # Require at least 5 days of data per user to proceed
+    if df.empty:
+        return
+    counts = df.groupby("user_id")["date"].nunique()
+    if counts.empty or counts.max() < 5:
+        return
 
     # Correlations
     if not num.empty:

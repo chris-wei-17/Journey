@@ -14,6 +14,12 @@ def run_relations(batch_id: str):
     if not derived_path.exists():
         return
     df = pd.read_parquet(derived_path)
+    # Require at least 5 days per user to proceed
+    if df.empty:
+        return
+    counts = df.groupby("user_id")["date"].nunique()
+    if counts.empty or counts.max() < 5:
+        return
 
     # Correlations
     mats = rel.correlation_matrices(df)

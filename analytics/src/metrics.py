@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 import numpy as np
 import pandas as pd
 
@@ -10,6 +10,22 @@ def ensure_datetime(df: pd.DataFrame, col: str) -> pd.DataFrame:
     return df
 
 
+def _valid_users_min_days(df: pd.DataFrame, user_col: str, date_col: str, value_cols: List[str], min_days: int = 5) -> pd.Series:
+    if df.empty:
+        return pd.Series([], dtype=int)
+    d = df.copy()
+    # Any non-null (and numeric-usable) across value columns counts as a logged day
+    mask = np.zeros(len(d), dtype=bool)
+    for c in value_cols:
+        if c in d.columns:
+            mask = mask | d[c].notna()
+    d = d.loc[mask]
+    if d.empty:
+        return pd.Series([], dtype=int)
+    counts = d.groupby(user_col)[date_col].nunique()
+    return counts[counts >= min_days].index
+
+
 def daily_weekly_monthly_aggregates(
     sleep: pd.DataFrame | None = None,
     macros: pd.DataFrame | None = None,
@@ -18,6 +34,7 @@ def daily_weekly_monthly_aggregates(
     macro_targets: pd.DataFrame | None = None,
 ) -> Dict[str, Dict[str, pd.DataFrame]]:
     results: Dict[str, Dict[str, pd.DataFrame]] = {}
+    MIN_DAYS = 5
 
     # Sleep aggregates
     if sleep is not None and not sleep.empty:
@@ -27,6 +44,9 @@ def daily_weekly_monthly_aggregates(
             sleep["hours"] = (sleep["duration_minutes"].astype(float) / 60.0)
         g = sleep.groupby(["user_id", pd.Grouper(key="date", freq="D")])["hours"]
         daily = g.agg(avg_hours="mean", std_hours="std", min_hours="min", max_hours="max").reset_index()
+        # Filter users with at least MIN_DAYS of data
+        valid = _valid_users_min_days(daily, "user_id", "date", ["avg_hours"], MIN_DAYS)
+        daily = daily[daily["user_id"].isin(valid)]
         weekly = (
             sleep.set_index("date")
             .groupby("user_id")["hours"]
@@ -34,6 +54,7 @@ def daily_weekly_monthly_aggregates(
             .agg(avg_hours="mean", std_hours="std", min_hours="min", max_hours="max")
             .reset_index()
         )
+        weekly = weekly[weekly["user_id"].isin(valid)]
         monthly = (
             sleep.set_index("date")
             .groupby("user_id")["hours"]
@@ -41,6 +62,7 @@ def daily_weekly_monthly_aggregates(
             .agg(avg_hours="mean", std_hours="std", min_hours="min", max_hours="max")
             .reset_index()
         )
+        monthly = monthly[monthly["user_id"].isin(valid)]
         results["sleep"] = {"daily": daily, "weekly": weekly, "monthly": monthly}
 
     # Macros aggregates
@@ -55,6 +77,8 @@ def daily_weekly_monthly_aggregates(
             .sum()
             .reset_index()
         )
+        valid = _valid_users_min_days(daily, "user_id", "date", ["calories", "protein", "fats", "carbs"], MIN_DAYS)
+        daily = daily[daily["user_id"].isin(valid)]
         # % of target if provided (join on user)
         if macro_targets is not None and not macro_targets.empty:
             mt = macro_targets.rename(columns={"protein_target": "protein_t", "fats_target": "fats_t", "carbs_target": "carbs_t"})
@@ -96,6 +120,8 @@ def daily_weekly_monthly_aggregates(
             sessions=("activity_type", "count"),
             total_minutes=("duration_minutes", "sum"),
         ).reset_index()
+        valid = _valid_users_min_days(agg, "user_id", "date", ["sessions", "total_minutes"], MIN_DAYS)
+        agg = agg[agg["user_id"].isin(valid)]
         # intensity score placeholder: duration scaled (0-10)
         agg["avg_intensity"] = np.clip(agg["total_minutes"].astype(float) / 30.0, 0, 10)
         weekly = agg.set_index("date").groupby("user_id").resample("W").agg({
@@ -117,14 +143,16 @@ def daily_weekly_monthly_aggregates(
         w["w_ma7"] = w.groupby("user_id")["weight"].transform(lambda s: s.rolling(7, min_periods=1).mean())
         w["w_roll_std7"] = w.groupby("user_id")["weight"].transform(lambda s: s.rolling(7, min_periods=2).std())
         w["w_7d_change"] = w.groupby("user_id")["weight"].diff(7)
-        w_daily = w
-        w_weekly = w.set_index("date").groupby("user_id").resample("W").agg({
+        # Filter by min days
+        valid = _valid_users_min_days(w, "user_id", "date", ["weight"], MIN_DAYS)
+        w_daily = w[w["user_id"].isin(valid)]
+        w_weekly = w_daily.set_index("date").groupby("user_id").resample("W").agg({
             "weight": "mean",
             "w_ma7": "mean",
             "w_roll_std7": "mean",
             "w_7d_change": "mean",
         }).reset_index()
-        w_monthly = w.set_index("date").groupby("user_id").resample("ME").agg({
+        w_monthly = w_daily.set_index("date").groupby("user_id").resample("ME").agg({
             "weight": "mean",
             "w_ma7": "mean",
             "w_roll_std7": "mean",
@@ -156,6 +184,13 @@ def derived_features(
     base = frames[0]
     for f in frames[1:]:
         base = base.merge(f, on=["user_id", "date"], how="outer")
+
+    # Enforce min days per user: at least 5 distinct dates with any measurement present
+    MIN_DAYS = 5
+    value_cols = [c for c in ["calories", "total_minutes", "weight"] if c in base.columns]
+    if value_cols:
+        valid = _valid_users_min_days(base, "user_id", "date", value_cols, MIN_DAYS)
+        base = base[base["user_id"].isin(valid)]
 
     # BMI if profiles have height/weight (height expected in cm or inches — treat as cm if numeric string)
     if profiles is not None and not profiles.empty:
