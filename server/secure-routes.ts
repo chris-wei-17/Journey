@@ -89,6 +89,15 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
   });
   console.log('✅ health route registered');
 
+  // WHOOP integration routes (scaffold)
+  try {
+    const whoopRoutes = await import('./routes/whoop.js');
+    app.use('/api/whoop', whoopRoutes.default);
+    console.log('✅ WHOOP routes registered');
+  } catch (e) {
+    console.log('⚠️ WHOOP routes not registered:', e instanceof Error ? e.message : e);
+  }
+
   // ===== STRIPE PAYMENT ROUTES =====
   console.log('🔧 Registering Stripe payment routes...');
   try {
