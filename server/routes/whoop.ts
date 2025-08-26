@@ -29,7 +29,10 @@ router.get("/auth", (req, res) => {
 router.get("/callback", async (req, res) => {
   try {
     const code = String(req.query.code || "");
-    if (!code) return res.status(400).json({ message: "Missing code" });
+    if (!code) {
+      const { error, error_description } = req.query as any;
+      return res.status(400).json({ message: error ? "OAuth error" : "Missing code", error, error_description, received: req.query });
+    }
     const clientId = getEnv("WHOOP_CLIENT_ID");
     const clientSecret = getEnv("WHOOP_CLIENT_SECRET");
     const redirectUri = getEnv("WHOOP_REDIRECT_URI");
