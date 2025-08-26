@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import fetch from "node-fetch";
 import crypto from "crypto";
 
@@ -29,6 +29,17 @@ function parseCookies(cookieHeader?: string): Record<string, string> {
 
 function generateState(): string {
   return crypto.randomBytes(24).toString("base64url");
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ab, bb);
+}
+
+function computeHmacSha256(secret: string, payload: Buffer | string): string {
+  return crypto.createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 // Step 1: Redirect user to WHOOP authorization
@@ -104,7 +115,6 @@ router.get("/callback", async (req, res) => {
     const data = await r.json();
     if (!r.ok) return res.status(500).json({ message: "Token exchange failed", data });
     // TODO: persist tokens to DB by user
-    // Redirect back to the app UI instead of returning raw tokens
     return res.redirect("/integrations?whoop=connected");
   } catch (e: any) {
     res.status(500).json({ message: e.message });
@@ -127,6 +137,61 @@ router.get("/env-check", (req, res) => {
     };
   }
   res.json({ whoop, nodeEnv: process.env.NODE_ENV, vercel: !!process.env.VERCEL });
+});
+
+// WHOOP Webhook receiver (v2-ready)
+// Uses raw body for signature verification
+router.post("/webhook", (req: any, res) => {
+  try {
+    const secret = process.env.WHOOP_WEBHOOK_SECRET;
+    if (!secret) {
+      console.warn("WHOOP_WEBHOOK_SECRET not set; skipping signature verification");
+    }
+
+    const signatureHeader = (req.headers["x-whoop-signature"] || req.headers["X-Whoop-Signature"]) as string | undefined;
+
+    if (secret) {
+      if (!signatureHeader) {
+        return res.status(400).json({ message: "Missing signature header" });
+      }
+
+      // Support two formats:
+      // 1) raw hex signature
+      // 2) key=value pairs like "t=..., v1=..."; we extract v1
+      let provided = signatureHeader;
+      if (signatureHeader.includes("=")) {
+        const parts = signatureHeader.split(/[\,\s]+/).map(p => p.trim());
+        const dict: Record<string, string> = {};
+        for (const p of parts) {
+          const [k, v] = p.split("=");
+          if (k && v) dict[k] = v;
+        }
+        provided = dict["v1"] || dict["signature"] || signatureHeader;
+      }
+
+      const rawBody: Buffer = req.rawBody ? req.rawBody as Buffer : Buffer.from(JSON.stringify(req.body ?? {}));
+      const expected = computeHmacSha256(secret, rawBody);
+      const ok = timingSafeEqual(provided, expected);
+      if (!ok) {
+        return res.status(400).json({ message: "Invalid signature" });
+      }
+    }
+
+    // Parse payload now that signature is verified (or no secret)
+    const payload = req.rawBody ? JSON.parse((req.rawBody as Buffer).toString("utf8")) : req.body;
+
+    // Minimal v2 event handling scaffold
+    // Examples: workout.updated, sleep.updated, recovery.updated
+    const eventType = payload?.type || payload?.event || "unknown";
+    console.log("WHOOP webhook received:", eventType, payload?.id || payload?.resource_id || "");
+
+    // TODO: enqueue job or handle event types (v2 uses UUID ids)
+
+    return res.status(200).json({ received: true });
+  } catch (e: any) {
+    console.error("WHOOP webhook error:", e);
+    return res.status(500).json({ message: e.message || "Webhook error" });
+  }
 });
 
 // Example: Fetch profile (requires stored access token)

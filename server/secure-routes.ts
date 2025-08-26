@@ -106,6 +106,9 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     app.get('/api/whoop/env-check', (_req, res) => {
       res.status(501).json({ message: 'WHOOP integration not configured on server' });
     });
+    app.post('/api/whoop/webhook', (_req, res) => {
+      res.status(501).json({ message: 'WHOOP integration not configured on server' });
+    });
   }
 
   // ===== STRIPE PAYMENT ROUTES =====
