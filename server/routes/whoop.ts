@@ -148,9 +148,14 @@ router.post("/webhook", (req: any, res) => {
     const timestamp = req.headers["x-whoop-signature-timestamp"] as string | undefined;
 
     if (!clientSecret) {
+      console.error("WHOOP webhook error: WHOOP_CLIENT_SECRET not set");
       return res.status(500).json({ message: "WHOOP_CLIENT_SECRET not set" });
     }
     if (!signature || !timestamp) {
+      console.error("WHOOP webhook error: Missing signature or timestamp header", {
+        hasSignature: !!signature,
+        hasTimestamp: !!timestamp,
+      });
       return res.status(400).json({ message: "Missing signature or timestamp header" });
     }
 
@@ -162,13 +167,21 @@ router.post("/webhook", (req: any, res) => {
     const valid = timingSafeEqualString(signature, signed);
 
     if (!valid) {
+      console.error("WHOOP webhook error: Invalid signature", { timestamp, signaturePreview: signature.slice(0, 6) + "..." });
       return res.status(400).json({ message: "Invalid signature" });
     }
 
-    const payload = req.rawBody ? JSON.parse((req.rawBody as Buffer).toString("utf8")) : req.body;
+    let payload: any;
+    try {
+      payload = req.rawBody ? JSON.parse((req.rawBody as Buffer).toString("utf8")) : req.body;
+    } catch (parseErr: any) {
+      console.error("WHOOP webhook error: Failed to parse JSON payload", { error: parseErr?.message });
+      return res.status(400).json({ message: "Invalid JSON payload" });
+    }
 
     const eventType = payload?.type || payload?.event || "unknown";
-    console.log("WHOOP webhook received:", eventType, payload?.id || payload?.resource_id || "");
+    console.log("WHOOP webhook received event:", eventType);
+    console.log("WHOOP webhook payload:", JSON.stringify(payload, null, 2));
 
     return res.status(200).json({ received: true });
   } catch (e: any) {
