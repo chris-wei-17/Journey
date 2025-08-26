@@ -344,11 +344,22 @@ router.get("/test-body", authenticateToken, async (req: AuthenticatedRequest, re
     const userId = req.userId!;
     const accessToken = await ensureValidAccessToken(userId);
     const r = await fetch("https://api.prod.whoop.com/developer/v2/user/measurement/body", {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
     });
     const text = await r.text();
     const contentType = r.headers.get("content-type") || "";
-    const payload = contentType.includes("application/json") ? JSON.parse(text) : text;
+    let payload: any = text;
+    if (contentType.includes("application/json")) {
+      try {
+        payload = JSON.parse(text);
+      } catch {
+        // keep raw text if JSON parse fails
+        payload = text;
+      }
+    }
     if (!r.ok) {
       return res.status(r.status).json({ error: "WHOOP API error", status: r.status, body: payload });
     }
