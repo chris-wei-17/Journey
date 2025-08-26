@@ -1,6 +1,10 @@
 import express, { Router } from "express";
 import fetch from "node-fetch";
 import crypto from "crypto";
+import { authenticateToken, type AuthenticatedRequest } from "../auth.js";
+import { db } from "../db.js";
+import { whoopTokens } from "../../shared/schema.js";
+import { eq } from "drizzle-orm";
 
 // Minimal WHOOP API scaffold (OAuth2 + example fetch)
 // NOTE: You must configure WHOOP_CLIENT_ID, WHOOP_CLIENT_SECRET, WHOOP_REDIRECT_URI in env
@@ -42,14 +46,68 @@ function computeHmacSha256Base64(secret: string, data: string | Buffer): string 
   return crypto.createHmac("sha256", secret).update(data).digest("base64");
 }
 
+async function getUserTokens(userId: number) {
+  const [row] = await db.select().from(whoopTokens).where(eq(whoopTokens.userId, userId));
+  return row as any | undefined;
+}
+
+async function saveUserTokens(userId: number, tokenResponse: any) {
+  const expiresIn = Number(tokenResponse.expires_in || 3600);
+  const expiresAt = new Date(Date.now() + (expiresIn - 60) * 1000);
+  const data = {
+    userId,
+    accessToken: String(tokenResponse.access_token),
+    refreshToken: String(tokenResponse.refresh_token || ""),
+    tokenType: String(tokenResponse.token_type || "bearer"),
+    scope: String(tokenResponse.scope || ""),
+    expiresAt,
+    updatedAt: new Date(),
+  } as any;
+  const existing = await getUserTokens(userId);
+  if (existing) {
+    await db.update(whoopTokens).set(data).where(eq(whoopTokens.userId, userId));
+  } else {
+    await db.insert(whoopTokens).values({ ...data, createdAt: new Date() });
+  }
+}
+
+async function ensureValidAccessToken(userId: number): Promise<string> {
+  const tokens = await getUserTokens(userId);
+  if (!tokens) throw new Error("WHOOP not connected for this user");
+  const isExpired = !tokens.expiresAt || new Date(tokens.expiresAt).getTime() <= Date.now();
+  if (!isExpired) return tokens.accessToken as string;
+
+  const clientId = getEnv("WHOOP_CLIENT_ID");
+  const clientSecret = getEnv("WHOOP_CLIENT_SECRET");
+  const tokenUrl = "https://api.prod.whoop.com/oauth/oauth2/token";
+  const form = new URLSearchParams();
+  form.set("grant_type", "refresh_token");
+  form.set("refresh_token", tokens.refreshToken);
+  form.set("client_id", clientId);
+  form.set("client_secret", clientSecret);
+  const r = await fetch(tokenUrl, { method: "POST", body: form as any });
+  const data = await r.json();
+  if (!r.ok) throw new Error(`Refresh failed: ${JSON.stringify(data)}`);
+  await saveUserTokens(userId, data);
+  return String(data.access_token);
+}
+
 // Step 1: Redirect user to WHOOP authorization
-router.get("/auth", (req, res) => {
+router.get("/auth", authenticateToken, (req: AuthenticatedRequest, res) => {
   try {
     const clientId = getEnv("WHOOP_CLIENT_ID");
     const redirectUri = getEnv("WHOOP_REDIRECT_URI");
 
     const state = generateState();
     res.cookie("whoop_oauth_state", state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "lax",
+      path: "/api/whoop",
+      maxAge: 10 * 60 * 1000,
+    });
+    // Store user id to associate tokens on callback
+    res.cookie("whoop_user_id", String(req.userId!), {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development",
       sameSite: "lax",
@@ -71,6 +129,8 @@ router.get("/callback", async (req, res) => {
     const stateFromQuery = String(req.query.state || "");
     const cookies = parseCookies(req.headers.cookie);
     const expectedState = cookies["whoop_oauth_state"] || "";
+    const userIdCookie = cookies["whoop_user_id"] || "";
+    const userId = Number(userIdCookie || 0);
 
     if (!stateFromQuery || stateFromQuery.length < 8) {
       return res.status(400).json({
@@ -90,8 +150,13 @@ router.get("/callback", async (req, res) => {
       });
     }
 
-    // Clear the state cookie once verified
+    if (!userId) {
+      return res.status(400).json({ message: "Missing user id for token association" });
+    }
+
+    // Clear the state cookies once verified
     res.clearCookie("whoop_oauth_state", { path: "/api/whoop" });
+    res.clearCookie("whoop_user_id", { path: "/api/whoop" });
 
     const code = String(req.query.code || "");
     if (!code) {
@@ -114,7 +179,9 @@ router.get("/callback", async (req, res) => {
     const r = await fetch(tokenUrl, { method: "POST", body: form as any });
     const data = await r.json();
     if (!r.ok) return res.status(500).json({ message: "Token exchange failed", data });
-    // TODO: persist tokens to DB by user
+
+    await saveUserTokens(userId, data);
+
     return res.redirect("/integrations?whoop=connected");
   } catch (e: any) {
     res.status(500).json({ message: e.message });
@@ -190,6 +257,42 @@ router.post("/webhook", (req: any, res) => {
   }
 });
 
+// WHOOP Test webhook sender - POST helper for signed forward
+router.post("/test-webhook", async (req: any, res) => {
+  try {
+    const clientSecret = getEnv("WHOOP_CLIENT_SECRET");
+    const host = req.get("host");
+    const protocol = (req.headers["x-forwarded-proto"] as string) || req.protocol || "https";
+    const webhookUrl = `${protocol}://${host}/api/whoop/webhook`;
+
+    const payload = (req.body && Object.keys(req.body).length > 0) ? req.body : {
+      type: "workout.updated",
+      id: "00000000-0000-0000-0000-000000000000",
+      user_id: "00000000-0000-0000-0000-000000000000",
+      trace_id: "test-trace"
+    };
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = computeHmacSha256Base64(clientSecret, `${timestamp}${body}`);
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-WHOOP-Signature": signature,
+        "X-WHOOP-Signature-Timestamp": timestamp,
+      },
+      body,
+    });
+
+    const text = await response.text();
+    return res.status(200).json({ sentTo: webhookUrl, status: response.status, response: text });
+  } catch (e: any) {
+    console.error("WHOOP test-webhook error:", e);
+    return res.status(500).json({ message: e.message || "Test webhook error" });
+  }
+});
+
 // WHOOP Test webhook sender - GET convenience for browser
 router.get("/test-webhook", async (req: any, res) => {
   try {
@@ -223,6 +326,26 @@ router.get("/test-webhook", async (req: any, res) => {
   } catch (e: any) {
     console.error("WHOOP test-webhook (GET) error:", e);
     return res.status(500).json({ message: e.message || "Test webhook error" });
+  }
+});
+
+// WHOOP v2 body measurement tester for current user
+router.get("/test-body", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const accessToken = await ensureValidAccessToken(userId);
+    const r = await fetch("https://api.prod.whoop.com/developer/v2/user/measurement/body", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const text = await r.text();
+    const contentType = r.headers.get("content-type") || "";
+    const payload = contentType.includes("application/json") ? JSON.parse(text) : text;
+    if (!r.ok) {
+      return res.status(r.status).json({ error: "WHOOP API error", status: r.status, body: payload });
+    }
+    return res.json(payload);
+  } catch (e: any) {
+    return res.status(500).json({ message: e.message || "WHOOP test failed" });
   }
 });
 
