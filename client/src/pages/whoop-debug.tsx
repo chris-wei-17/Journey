@@ -45,6 +45,19 @@ export default function WhoopDebug() {
     }
   };
 
+  const disconnect = async () => {
+    setLoading(true);
+    try {
+      await apiRequest("POST", "/api/whoop/disconnect");
+      await loadStatus();
+      setOutput("Disconnected. Reconnect via Integrations (will re-consent for new scopes).");
+    } catch (e: any) {
+      setOutput(e?.message || String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="app-gradient-bg">
       <Header 
@@ -60,6 +73,10 @@ export default function WhoopDebug() {
             <CardTitle className="text-lg font-semibold text-gray-800">Connection Status</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="flex items-center gap-3 mb-3">
+              <Button variant="outline" onClick={loadStatus}>Refresh Status</Button>
+              <Button variant="destructive" onClick={disconnect} disabled={loading}>Disconnect</Button>
+            </div>
             <pre className="bg-gray-900 text-green-200 text-sm p-3 rounded-lg overflow-auto whitespace-pre-wrap break-all">
 {JSON.stringify(status ?? { loading: true }, null, 2)}
             </pre>
@@ -75,7 +92,6 @@ export default function WhoopDebug() {
               <Button onClick={testApi} disabled={loading}>
                 {loading ? "Testing..." : "Test API"}
               </Button>
-              <Button variant="outline" onClick={loadStatus}>Refresh Status</Button>
             </div>
             <pre className="bg-gray-900 text-green-200 text-sm p-3 rounded-lg overflow-auto max-h-[50vh] whitespace-pre-wrap break-all">
 {output || "Click Test API to fetch body measurements."}

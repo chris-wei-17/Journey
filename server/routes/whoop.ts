@@ -134,10 +134,22 @@ router.get("/auth", (req, res) => {
       "read:body_measurement",
     ];
     const scope = encodeURIComponent(scopes.join(" "));
-    const url = `https://api.prod.whoop.com/oauth/oauth2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${encodeURIComponent(state)}`;
+    const prompt = "prompt=consent&approval_prompt=force";
+    const url = `https://api.prod.whoop.com/oauth/oauth2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${encodeURIComponent(state)}&${prompt}`;
     res.redirect(url);
   } catch (e: any) {
     res.status(500).json({ message: e.message });
+  }
+});
+
+// Disconnect WHOOP for current user
+router.post("/disconnect", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.userId!;
+    await db.delete(whoopTokens).where(eq(whoopTokens.userId, userId));
+    return res.json({ disconnected: true });
+  } catch (e: any) {
+    return res.status(500).json({ message: e.message || "Disconnect failed" });
   }
 });
 
