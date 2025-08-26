@@ -92,22 +92,31 @@ async function ensureValidAccessToken(userId: number): Promise<string> {
   return String(data.access_token);
 }
 
-// Step 1: Redirect user to WHOOP authorization
-router.get("/auth", authenticateToken, (req: AuthenticatedRequest, res) => {
+// Prepare WHOOP auth: set user id cookie using app auth
+router.post("/prepare", authenticateToken, (req: AuthenticatedRequest, res) => {
   try {
-    const clientId = getEnv("WHOOP_CLIENT_ID");
-    const redirectUri = getEnv("WHOOP_REDIRECT_URI");
-
-    const state = generateState();
-    res.cookie("whoop_oauth_state", state, {
+    if (!req.userId) return res.status(401).json({ message: "Not authenticated" });
+    res.cookie("whoop_user_id", String(req.userId), {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development",
       sameSite: "lax",
       path: "/api/whoop",
       maxAge: 10 * 60 * 1000,
     });
-    // Store user id to associate tokens on callback
-    res.cookie("whoop_user_id", String(req.userId!), {
+    return res.json({ ok: true });
+  } catch (e: any) {
+    return res.status(500).json({ message: e.message || "Prepare failed" });
+  }
+});
+
+// Step 1: Redirect user to WHOOP authorization
+router.get("/auth", (req, res) => {
+  try {
+    const clientId = getEnv("WHOOP_CLIENT_ID");
+    const redirectUri = getEnv("WHOOP_REDIRECT_URI");
+
+    const state = generateState();
+    res.cookie("whoop_oauth_state", state, {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development",
       sameSite: "lax",

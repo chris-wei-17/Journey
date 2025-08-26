@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/api";
 
 export default function Integrations() {
   const [, setLocation] = useLocation();
@@ -45,7 +46,12 @@ export default function Integrations() {
     }
   }, [toast]);
 
-  const handleWhoopConnect = () => {
+  const handleWhoopConnect = async () => {
+    try {
+      await apiRequest("POST", "/api/whoop/prepare");
+    } catch {
+      // ignore; backend will error if not logged in
+    }
     window.location.href = "/api/whoop/auth";
   };
 
