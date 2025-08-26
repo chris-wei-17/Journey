@@ -131,6 +131,7 @@ router.get("/auth", (req, res) => {
       "read:cycles",
       "read:workout",
       "read:sleep",
+      "read:body_measurement",
     ];
     const scope = encodeURIComponent(scopes.join(" "));
     const url = `https://api.prod.whoop.com/oauth/oauth2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${encodeURIComponent(state)}`;
