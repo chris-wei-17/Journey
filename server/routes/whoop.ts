@@ -50,6 +50,24 @@ router.get("/callback", async (req, res) => {
   }
 });
 
+// Env check route: helps verify runtime env var visibility safely
+router.get("/env-check", (req, res) => {
+  const keys = ["WHOOP_CLIENT_ID", "WHOOP_CLIENT_SECRET", "WHOOP_REDIRECT_URI"] as const;
+  const whoop: Record<string, any> = {};
+  for (const key of keys) {
+    const value = process.env[key];
+    const masked = key === "WHOOP_REDIRECT_URI"
+      ? value || null
+      : (value ? `${value.slice(0, 4)}...${value.slice(-4)}` : null);
+    whoop[key] = {
+      present: !!value,
+      length: value ? value.length : 0,
+      preview: masked,
+    };
+  }
+  res.json({ whoop, nodeEnv: process.env.NODE_ENV, vercel: !!process.env.VERCEL });
+});
+
 // Example: Fetch profile (requires stored access token)
 router.get("/me", async (req, res) => {
   try {
