@@ -96,6 +96,13 @@ export async function registerSecureRoutes(app: Express): Promise<Server> {
     console.log('✅ WHOOP routes registered');
   } catch (e) {
     console.log('⚠️ WHOOP routes not registered:', e instanceof Error ? e.message : e);
+    // Provide a stub so the frontend button has a predictable response when not configured
+    app.get('/api/whoop/auth', (_req, res) => {
+      res.status(501).json({ message: 'WHOOP integration not configured on server' });
+    });
+    app.get('/api/whoop/callback', (_req, res) => {
+      res.status(501).json({ message: 'WHOOP integration not configured on server' });
+    });
   }
 
   // ===== STRIPE PAYMENT ROUTES =====

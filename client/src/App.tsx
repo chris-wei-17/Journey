@@ -38,6 +38,7 @@ import SubscriptionSuccess from "@/pages/subscription-success";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import PublicFeedback from "@/pages/public-feedback";
+import Integrations from "@/pages/integrations";
 // import Template from "@/pages/template"; // Uncomment when creating new pages
 // import YourNewPage from "@/pages/your-new-page"; // Example: replace with actual page name
 
@@ -107,6 +108,7 @@ function Router() {
                 <Route path="/journal-entry" component={JournalEntry} />
                 <Route path="/journal-history" component={JournalHistory} />
                 <Route path="/subscription/success" component={SubscriptionSuccess} />
+                <Route path="/integrations" component={Integrations} />
               </>
             {/* )} */}
           </>
