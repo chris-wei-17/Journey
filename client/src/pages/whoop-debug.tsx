@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ export default function WhoopDebug() {
   const [, setLocation] = useLocation();
   const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<any>(null);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -17,6 +18,19 @@ export default function WhoopDebug() {
       setLocation("/");
     }
   };
+
+  const loadStatus = async () => {
+    try {
+      const s = await apiRequest("GET", "/api/whoop/status");
+      setStatus(s);
+    } catch (e: any) {
+      setStatus({ error: e?.message || String(e) });
+    }
+  };
+
+  useEffect(() => {
+    loadStatus();
+  }, []);
 
   const testApi = async () => {
     setLoading(true);
@@ -41,6 +55,17 @@ export default function WhoopDebug() {
       />
 
       <main className="pt-[calc(env(safe-area-inset-top)+6rem)] p-4 max-w-3xl mx-auto">
+        <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0 mb-4">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-gray-800">Connection Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-gray-900 text-green-200 text-sm p-3 rounded-lg overflow-auto whitespace-pre-wrap break-all">
+{JSON.stringify(status ?? { loading: true }, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
+
         <Card className="bg-white/75 backdrop-blur-sm shadow-xl border-0">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-800">Test WHOOP API</CardTitle>
@@ -50,6 +75,7 @@ export default function WhoopDebug() {
               <Button onClick={testApi} disabled={loading}>
                 {loading ? "Testing..." : "Test API"}
               </Button>
+              <Button variant="outline" onClick={loadStatus}>Refresh Status</Button>
             </div>
             <pre className="bg-gray-900 text-green-200 text-sm p-3 rounded-lg overflow-auto max-h-[50vh] whitespace-pre-wrap break-all">
 {output || "Click Test API to fetch body measurements."}

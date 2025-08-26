@@ -349,6 +349,24 @@ router.get("/test-body", authenticateToken, async (req: AuthenticatedRequest, re
   }
 });
 
+// WHOOP connection status for current user
+router.get("/status", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const tokens = await getUserTokens(userId);
+    if (!tokens) return res.json({ connected: false });
+    return res.json({
+      connected: true,
+      expiresAt: tokens.expiresAt,
+      hasRefreshToken: !!tokens.refreshToken,
+      scope: tokens.scope,
+      tokenType: tokens.tokenType,
+    });
+  } catch (e: any) {
+    return res.status(500).json({ message: e.message || "Status check failed" });
+  }
+});
+
 // Example: Fetch profile (requires stored access token)
 router.get("/me", async (req, res) => {
   try {
