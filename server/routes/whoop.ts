@@ -31,15 +31,15 @@ function generateState(): string {
   return crypto.randomBytes(24).toString("base64url");
 }
 
-function timingSafeEqual(a: string, b: string): boolean {
+function timingSafeEqualString(a: string, b: string): boolean {
   const ab = Buffer.from(a);
   const bb = Buffer.from(b);
   if (ab.length !== bb.length) return false;
   return crypto.timingSafeEqual(ab, bb);
 }
 
-function computeHmacSha256(secret: string, payload: Buffer | string): string {
-  return crypto.createHmac("sha256", secret).update(payload).digest("hex");
+function computeHmacSha256Base64(secret: string, data: string | Buffer): string {
+  return crypto.createHmac("sha256", secret).update(data).digest("base64");
 }
 
 // Step 1: Redirect user to WHOOP authorization
@@ -140,52 +140,35 @@ router.get("/env-check", (req, res) => {
 });
 
 // WHOOP Webhook receiver (v2-ready)
-// Uses raw body for signature verification
+// Verify with Client Secret and timestamp header
 router.post("/webhook", (req: any, res) => {
   try {
-    const secret = process.env.WHOOP_WEBHOOK_SECRET;
-    if (!secret) {
-      console.warn("WHOOP_WEBHOOK_SECRET not set; skipping signature verification");
+    const clientSecret = process.env.WHOOP_CLIENT_SECRET;
+    const signature = req.headers["x-whoop-signature"] as string | undefined;
+    const timestamp = req.headers["x-whoop-signature-timestamp"] as string | undefined;
+
+    if (!clientSecret) {
+      return res.status(500).json({ message: "WHOOP_CLIENT_SECRET not set" });
+    }
+    if (!signature || !timestamp) {
+      return res.status(400).json({ message: "Missing signature or timestamp header" });
     }
 
-    const signatureHeader = (req.headers["x-whoop-signature"] || req.headers["X-Whoop-Signature"]) as string | undefined;
+    const rawBody: Buffer = req.rawBody ? req.rawBody as Buffer : Buffer.from(JSON.stringify(req.body ?? {}));
+    const payloadString = rawBody.toString("utf8");
 
-    if (secret) {
-      if (!signatureHeader) {
-        return res.status(400).json({ message: "Missing signature header" });
-      }
+    // WHOOP signing: HMAC-SHA256 over `${timestamp}${payload}`, base64-encoded
+    const signed = computeHmacSha256Base64(clientSecret, `${timestamp}${payloadString}`);
+    const valid = timingSafeEqualString(signature, signed);
 
-      // Support two formats:
-      // 1) raw hex signature
-      // 2) key=value pairs like "t=..., v1=..."; we extract v1
-      let provided = signatureHeader;
-      if (signatureHeader.includes("=")) {
-        const parts = signatureHeader.split(/[\,\s]+/).map(p => p.trim());
-        const dict: Record<string, string> = {};
-        for (const p of parts) {
-          const [k, v] = p.split("=");
-          if (k && v) dict[k] = v;
-        }
-        provided = dict["v1"] || dict["signature"] || signatureHeader;
-      }
-
-      const rawBody: Buffer = req.rawBody ? req.rawBody as Buffer : Buffer.from(JSON.stringify(req.body ?? {}));
-      const expected = computeHmacSha256(secret, rawBody);
-      const ok = timingSafeEqual(provided, expected);
-      if (!ok) {
-        return res.status(400).json({ message: "Invalid signature" });
-      }
+    if (!valid) {
+      return res.status(400).json({ message: "Invalid signature" });
     }
 
-    // Parse payload now that signature is verified (or no secret)
     const payload = req.rawBody ? JSON.parse((req.rawBody as Buffer).toString("utf8")) : req.body;
 
-    // Minimal v2 event handling scaffold
-    // Examples: workout.updated, sleep.updated, recovery.updated
     const eventType = payload?.type || payload?.event || "unknown";
     console.log("WHOOP webhook received:", eventType, payload?.id || payload?.resource_id || "");
-
-    // TODO: enqueue job or handle event types (v2 uses UUID ids)
 
     return res.status(200).json({ received: true });
   } catch (e: any) {
