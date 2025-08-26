@@ -1,5 +1,6 @@
 import { Router } from "express";
 import fetch from "node-fetch";
+import crypto from "crypto";
 
 // Minimal WHOOP API scaffold (OAuth2 + example fetch)
 // NOTE: You must configure WHOOP_CLIENT_ID, WHOOP_CLIENT_SECRET, WHOOP_REDIRECT_URI in env
@@ -12,13 +13,41 @@ function getEnv(key: string): string {
   return v;
 }
 
+function parseCookies(cookieHeader?: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!cookieHeader) return out;
+  const parts = cookieHeader.split(";");
+  for (const part of parts) {
+    const [rawKey, ...rest] = part.split("=");
+    const key = rawKey?.trim();
+    if (!key) continue;
+    const value = rest.join("=").trim();
+    out[key] = decodeURIComponent(value || "");
+  }
+  return out;
+}
+
+function generateState(): string {
+  return crypto.randomBytes(24).toString("base64url");
+}
+
 // Step 1: Redirect user to WHOOP authorization
 router.get("/auth", (req, res) => {
   try {
     const clientId = getEnv("WHOOP_CLIENT_ID");
     const redirectUri = getEnv("WHOOP_REDIRECT_URI");
+
+    const state = generateState();
+    res.cookie("whoop_oauth_state", state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "lax",
+      path: "/api/whoop",
+      maxAge: 10 * 60 * 1000,
+    });
+
     const scope = encodeURIComponent("offline read:recovery read:cycles read:workout read:sleep");
-    const url = `https://api.prod.whoop.com/oauth/oauth2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}`;
+    const url = `https://api.prod.whoop.com/oauth/oauth2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${encodeURIComponent(state)}`;
     res.redirect(url);
   } catch (e: any) {
     res.status(500).json({ message: e.message });
@@ -28,21 +57,49 @@ router.get("/auth", (req, res) => {
 // Step 2: OAuth callback to exchange code for tokens
 router.get("/callback", async (req, res) => {
   try {
+    const stateFromQuery = String(req.query.state || "");
+    const cookies = parseCookies(req.headers.cookie);
+    const expectedState = cookies["whoop_oauth_state"] || "";
+
+    if (!stateFromQuery || stateFromQuery.length < 8) {
+      return res.status(400).json({
+        message: "OAuth error",
+        error: "invalid_state",
+        error_description: "Missing or too short state parameter",
+        received: req.query,
+      });
+    }
+
+    if (!expectedState || expectedState !== stateFromQuery) {
+      return res.status(400).json({
+        message: "OAuth error",
+        error: "invalid_state",
+        error_description: "State mismatch",
+        received: req.query,
+      });
+    }
+
+    // Clear the state cookie once verified
+    res.clearCookie("whoop_oauth_state", { path: "/api/whoop" });
+
     const code = String(req.query.code || "");
     if (!code) {
       const { error, error_description } = req.query as any;
       return res.status(400).json({ message: error ? "OAuth error" : "Missing code", error, error_description, received: req.query });
     }
+
     const clientId = getEnv("WHOOP_CLIENT_ID");
     const clientSecret = getEnv("WHOOP_CLIENT_SECRET");
     const redirectUri = getEnv("WHOOP_REDIRECT_URI");
     const tokenUrl = "https://api.prod.whoop.com/oauth/oauth2/token";
+
     const form = new URLSearchParams();
     form.set("grant_type", "authorization_code");
     form.set("code", code);
     form.set("redirect_uri", redirectUri);
     form.set("client_id", clientId);
     form.set("client_secret", clientSecret);
+
     const r = await fetch(tokenUrl, { method: "POST", body: form as any });
     const data = await r.json();
     if (!r.ok) return res.status(500).json({ message: "Token exchange failed", data });
