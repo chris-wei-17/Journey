@@ -190,6 +190,42 @@ router.post("/webhook", (req: any, res) => {
   }
 });
 
+// WHOOP Test webhook sender - signs payload and forwards to our webhook
+router.post("/test-webhook", async (req: any, res) => {
+  try {
+    const clientSecret = getEnv("WHOOP_CLIENT_SECRET");
+    const host = req.get("host");
+    const protocol = (req.headers["x-forwarded-proto"] as string) || req.protocol || "https";
+    const webhookUrl = `${protocol}://${host}/api/whoop/webhook`;
+
+    const payload = (req.body && Object.keys(req.body).length > 0) ? req.body : {
+      type: "workout.updated",
+      id: "00000000-0000-0000-0000-000000000000",
+      user_id: "00000000-0000-0000-0000-000000000000",
+      trace_id: "test-trace"
+    };
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = computeHmacSha256Base64(clientSecret, `${timestamp}${body}`);
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-WHOOP-Signature": signature,
+        "X-WHOOP-Signature-Timestamp": timestamp,
+      },
+      body,
+    });
+
+    const text = await response.text();
+    return res.status(200).json({ sentTo: webhookUrl, status: response.status, response: text });
+  } catch (e: any) {
+    console.error("WHOOP test-webhook error:", e);
+    return res.status(500).json({ message: e.message || "Test webhook error" });
+  }
+});
+
 // Example: Fetch profile (requires stored access token)
 router.get("/me", async (req, res) => {
   try {
