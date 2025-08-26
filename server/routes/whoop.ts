@@ -104,7 +104,8 @@ router.get("/callback", async (req, res) => {
     const data = await r.json();
     if (!r.ok) return res.status(500).json({ message: "Token exchange failed", data });
     // TODO: persist tokens to DB by user
-    res.json({ message: "whoop connected", tokens: data });
+    // Redirect back to the app UI instead of returning raw tokens
+    return res.redirect("/integrations?whoop=connected");
   } catch (e: any) {
     res.status(500).json({ message: e.message });
   }

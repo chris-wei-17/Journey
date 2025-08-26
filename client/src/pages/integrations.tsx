@@ -2,9 +2,13 @@ import { useLocation } from "wouter";
 import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Integrations() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [whoopConnected, setWhoopConnected] = useState(false);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -13,6 +17,33 @@ export default function Integrations() {
       setLocation("/");
     }
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("whoop") === "connected";
+    const error = params.get("error");
+    const errorDescription = params.get("error_description");
+
+    if (connected) {
+      setWhoopConnected(true);
+      toast({
+        title: "WHOOP connected",
+        description: "Your WHOOP account was successfully linked.",
+      });
+    } else if (error) {
+      toast({
+        title: "WHOOP connection failed",
+        description: errorDescription || error,
+        variant: "destructive",
+      });
+    }
+
+    if (connected || error) {
+      const url = new URL(window.location.href);
+      url.search = "";
+      window.history.replaceState({}, document.title, url.toString());
+    }
+  }, [toast]);
 
   const handleWhoopConnect = () => {
     window.location.href = "/api/whoop/auth";
@@ -44,9 +75,18 @@ export default function Integrations() {
                   <div className="text-base font-medium text-gray-800">WHOOP</div>
                   <div className="text-sm text-gray-600">Connect your WHOOP account to sync recovery, sleep, and workout data.</div>
                 </div>
-                <Button onClick={handleWhoopConnect} className="shadow-md">
-                  <i className="fas fa-link mr-2"></i>
-                  Connect
+                <Button onClick={handleWhoopConnect} className="shadow-md" disabled={whoopConnected}>
+                  {whoopConnected ? (
+                    <>
+                      <i className="fas fa-check mr-2"></i>
+                      Connected
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-link mr-2"></i>
+                      Connect
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
