@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import crypto from "crypto";
 import { authenticateToken, type AuthenticatedRequest } from "../auth.js";
 import { db } from "../db.js";
-import { whoopTokens } from "../../shared/schema.js";
+import { whoopTokens, whoopEvents, whoopResourceCache } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 
 // Minimal WHOOP API scaffold (OAuth2 + example fetch)
@@ -211,7 +211,19 @@ router.get("/callback", async (req, res) => {
     const data = await r.json();
     if (!r.ok) return res.status(500).json({ message: "Token exchange failed", data });
 
-    await saveUserTokens(userId, data);
+    // Fetch WHOOP profile to capture user id (v2)
+    let whoopUserId: string | undefined = undefined;
+    try {
+      const profileRes = await fetch("https://api.prod.whoop.com/developer/v2/user/profile/basic", {
+        headers: { Authorization: `Bearer ${String(data.access_token)}` },
+      });
+      if (profileRes.ok) {
+        const profileJson: any = await profileRes.json();
+        whoopUserId = String(profileJson?.id || profileJson?.user_id || "");
+      }
+    } catch {}
+
+    await saveUserTokens(userId, { ...data, whoop_user_id: whoopUserId });
 
     return res.redirect("/integrations?whoop=connected");
   } catch (e: any) {
@@ -291,9 +303,57 @@ router.post("/webhook", (req: any, res) => {
     }
 
     const eventType = payload?.type || payload?.event || "unknown";
-    console.log("[WHOOP webhook] Event received", { eventType, id: payload?.id || payload?.resource_id });
+    const resourceId = payload?.id || payload?.resource_id || undefined;
+    const whoopUserId = payload?.user_id || payload?.user?.id || undefined;
+    console.log("[WHOOP webhook] Event received", { eventType, id: resourceId, whoopUserId });
 
-    // TODO: enqueue job or handle event types (v2 uses UUID ids)
+    // Log event
+    await db.insert(whoopEvents).values({
+      userId: null,
+      whoopUserId: whoopUserId ? String(whoopUserId) : null,
+      eventType: String(eventType),
+      resourceId: resourceId ? String(resourceId) : null,
+      rawPayload: payload,
+    });
+
+    // Map whoop user to our user via whoopTokens
+    let mappedUserId: number | null = null;
+    if (whoopUserId) {
+      const [tokenRow] = await db.select().from(whoopTokens).where(eq(whoopTokens.whoopUserId, String(whoopUserId)));
+      if (tokenRow) mappedUserId = tokenRow.userId as number;
+    }
+
+    // Fetch resource details for known v2 types
+    const typeToPath: Record<string, string> = {
+      "workout.updated": "activity/workout",
+      "sleep.updated": "activity/sleep",
+      "recovery.updated": "recovery",
+    };
+    const path = typeToPath[eventType];
+    if (path && resourceId && whoopUserId && mappedUserId) {
+      try {
+        const accessToken = await ensureValidAccessToken(mappedUserId);
+        const url = `https://api.prod.whoop.com/developer/v2/${path}/${resourceId}`;
+        const rsrc = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" } });
+        const bodyText = await rsrc.text();
+        let json: any = bodyText;
+        try { json = JSON.parse(bodyText); } catch {}
+        if (rsrc.ok && typeof json === 'object') {
+          await db.insert(whoopResourceCache).values({
+            userId: mappedUserId,
+            whoopUserId: String(whoopUserId),
+            resourceType: path.split('/')[1] || path,
+            resourceId: String(resourceId),
+            data: json,
+          });
+          console.log("[WHOOP webhook] Cached resource", { path, resourceId });
+        } else {
+          console.warn("[WHOOP webhook] Failed to fetch resource", { status: rsrc.status, url });
+        }
+      } catch (e: any) {
+        console.error("[WHOOP webhook] Error fetching resource", e?.message);
+      }
+    }
 
     console.log("[WHOOP webhook] Responding 200 OK");
     return res.status(200).json({ received: true });

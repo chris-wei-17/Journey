@@ -232,6 +232,7 @@ export type CustomActivity = typeof customActivities.$inferSelect;
 export const whoopTokens = pgTable("whoop_tokens", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id).unique(),
+  whoopUserId: varchar("whoop_user_id"),
   accessToken: text("access_token").notNull(),
   refreshToken: text("refresh_token").notNull(),
   tokenType: varchar("token_type", { length: 20 }).notNull().default("bearer"),
@@ -239,6 +240,31 @@ export const whoopTokens = pgTable("whoop_tokens", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// WHOOP webhook events audit/log table
+export const whoopEvents = pgTable("whoop_events", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  whoopUserId: varchar("whoop_user_id"),
+  eventType: varchar("event_type", { length: 64 }).notNull(),
+  resourceId: varchar("resource_id", { length: 64 }),
+  rawPayload: jsonb("raw_payload").$type<Record<string, any>>(),
+  receivedAt: timestamp("received_at").defaultNow(),
+  processed: boolean("processed").default(false),
+  processError: text("process_error"),
+  processedAt: timestamp("processed_at"),
+});
+
+// WHOOP resource cache (raw JSON per resource)
+export const whoopResourceCache = pgTable("whoop_resource_cache", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  whoopUserId: varchar("whoop_user_id"),
+  resourceType: varchar("resource_type", { length: 32 }).notNull(),
+  resourceId: varchar("resource_id", { length: 64 }).notNull(),
+  data: jsonb("data").$type<Record<string, any>>().notNull(),
+  fetchedAt: timestamp("fetched_at").defaultNow(),
 });
 
 // Macros table for nutrition tracking
