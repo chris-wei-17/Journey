@@ -228,6 +228,19 @@ export const insertCustomActivitySchema = createInsertSchema(customActivities).o
 export type InsertCustomActivity = z.infer<typeof insertCustomActivitySchema>;
 export type CustomActivity = typeof customActivities.$inferSelect;
 
+// WHOOP tokens per user (OAuth persistence)
+export const whoopTokens = pgTable("whoop_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id).unique(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token").notNull(),
+  tokenType: varchar("token_type", { length: 20 }).notNull().default("bearer"),
+  scope: text("scope"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Macros table for nutrition tracking
 export const macros = pgTable("macros", {
   id: serial("id").primaryKey(),

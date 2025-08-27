@@ -17,6 +17,11 @@ Required environment variables:
 - `JWT_SECRET`: Secret key for JWT token generation
 - `NODE_ENV`: Set to "production" for production builds
 
+Whoop (feature/whoop):
+- `WHOOP_CLIENT_ID`
+- `WHOOP_CLIENT_SECRET`
+- `WHOOP_REDIRECT_URI`
+
 ### Development
 
 ```bash
