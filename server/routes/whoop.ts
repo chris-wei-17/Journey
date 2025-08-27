@@ -240,17 +240,28 @@ router.get("/env-check", (req, res) => {
 // WHOOP Webhook receiver (v2-ready)
 // Verify with Client Secret and timestamp header
 router.post("/webhook", (req: any, res) => {
+  // Pre-try logging
+  console.log("[WHOOP webhook] Received request", {
+    ts: new Date().toISOString(),
+    method: req.method,
+    path: req.path,
+    contentType: req.headers["content-type"],
+    hasSignature: !!req.headers["x-whoop-signature"],
+    hasTimestamp: !!req.headers["x-whoop-signature-timestamp"],
+    rawBodyLen: req.rawBody ? (req.rawBody as Buffer).length : undefined,
+  });
   try {
+    console.log("[WHOOP webhook] Entered try block");
     const clientSecret = process.env.WHOOP_CLIENT_SECRET;
     const signature = req.headers["x-whoop-signature"] as string | undefined;
     const timestamp = req.headers["x-whoop-signature-timestamp"] as string | undefined;
 
     if (!clientSecret) {
-      console.error("WHOOP webhook error: WHOOP_CLIENT_SECRET not set");
+      console.error("[WHOOP webhook] WHOOP_CLIENT_SECRET not set");
       return res.status(500).json({ message: "WHOOP_CLIENT_SECRET not set" });
     }
     if (!signature || !timestamp) {
-      console.error("WHOOP webhook error: Missing signature or timestamp header", {
+      console.error("[WHOOP webhook] Missing signature or timestamp header", {
         hasSignature: !!signature,
         hasTimestamp: !!timestamp,
       });
@@ -263,27 +274,31 @@ router.post("/webhook", (req: any, res) => {
     // WHOOP signing: HMAC-SHA256 over `${timestamp}${payload}`, base64-encoded
     const signed = computeHmacSha256Base64(clientSecret, `${timestamp}${payloadString}`);
     const valid = timingSafeEqualString(signature, signed);
+    console.log("[WHOOP webhook] Signature check", { valid });
 
     if (!valid) {
-      console.error("WHOOP webhook error: Invalid signature", { timestamp, signaturePreview: signature.slice(0, 6) + "..." });
+      console.error("[WHOOP webhook] Invalid signature", { timestamp, signaturePreview: signature.slice(0, 6) + "..." });
       return res.status(400).json({ message: "Invalid signature" });
     }
 
     let payload: any;
     try {
       payload = req.rawBody ? JSON.parse((req.rawBody as Buffer).toString("utf8")) : req.body;
+      console.log("[WHOOP webhook] JSON parsed successfully");
     } catch (parseErr: any) {
-      console.error("WHOOP webhook error: Failed to parse JSON payload", { error: parseErr?.message });
+      console.error("[WHOOP webhook] Failed to parse JSON payload", { error: parseErr?.message });
       return res.status(400).json({ message: "Invalid JSON payload" });
     }
 
     const eventType = payload?.type || payload?.event || "unknown";
-    console.log("WHOOP webhook received event:", eventType);
-    console.log("WHOOP webhook payload:", JSON.stringify(payload, null, 2));
+    console.log("[WHOOP webhook] Event received", { eventType, id: payload?.id || payload?.resource_id });
 
+    // TODO: enqueue job or handle event types (v2 uses UUID ids)
+
+    console.log("[WHOOP webhook] Responding 200 OK");
     return res.status(200).json({ received: true });
   } catch (e: any) {
-    console.error("WHOOP webhook error:", e);
+    console.error("[WHOOP webhook] Exception", e);
     return res.status(500).json({ message: e.message || "Webhook error" });
   }
 });
