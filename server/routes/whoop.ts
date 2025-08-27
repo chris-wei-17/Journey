@@ -52,18 +52,19 @@ async function getUserTokens(userId: number) {
 }
 
 async function saveUserTokens(userId: number, tokenResponse: any) {
+  const existing = await getUserTokens(userId);
   const expiresIn = Number(tokenResponse.expires_in || 3600);
   const expiresAt = new Date(Date.now() + (expiresIn - 60) * 1000);
+  const nextRefreshToken = tokenResponse.refresh_token ? String(tokenResponse.refresh_token) : (existing?.refreshToken || "");
   const data = {
     userId,
     accessToken: String(tokenResponse.access_token),
-    refreshToken: String(tokenResponse.refresh_token || ""),
+    refreshToken: nextRefreshToken,
     tokenType: String(tokenResponse.token_type || "bearer"),
-    scope: String(tokenResponse.scope || ""),
+    scope: String(tokenResponse.scope || existing?.scope || ""),
     expiresAt,
     updatedAt: new Date(),
   } as any;
-  const existing = await getUserTokens(userId);
   if (existing) {
     await db.update(whoopTokens).set(data).where(eq(whoopTokens.userId, userId));
   } else {
@@ -421,6 +422,42 @@ router.get("/me", async (req, res) => {
     res.json(data);
   } catch (e: any) {
     res.status(500).json({ message: e.message });
+  }
+});
+
+// Diagnostics: show raw token scope for current user
+router.get("/debug-scope", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const t = await getUserTokens(req.userId!);
+    if (!t) return res.json({ connected: false });
+    return res.json({ connected: true, scope: t.scope, expiresAt: t.expiresAt });
+  } catch (e: any) {
+    return res.status(500).json({ message: e.message || "Scope check failed" });
+  }
+});
+
+// Diagnostics: force refresh and report scope
+router.post("/debug-refresh", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const before = await getUserTokens(userId);
+    // Trigger refresh regardless of expiry
+    const clientId = getEnv("WHOOP_CLIENT_ID");
+    const clientSecret = getEnv("WHOOP_CLIENT_SECRET");
+    const tokenUrl = "https://api.prod.whoop.com/oauth/oauth2/token";
+    const form = new URLSearchParams();
+    form.set("grant_type", "refresh_token");
+    form.set("refresh_token", String(before?.refreshToken || ""));
+    form.set("client_id", clientId);
+    form.set("client_secret", clientSecret);
+    const r = await fetch(tokenUrl, { method: "POST", body: form as any });
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json({ message: "Refresh failed", data });
+    await saveUserTokens(userId, data);
+    const after = await getUserTokens(userId);
+    return res.json({ before: { scope: before?.scope, expiresAt: before?.expiresAt }, after: { scope: after?.scope, expiresAt: after?.expiresAt } });
+  } catch (e: any) {
+    return res.status(500).json({ message: e.message || "Refresh debug failed" });
   }
 });
 
