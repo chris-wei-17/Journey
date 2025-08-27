@@ -29,7 +29,13 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(express.json());
+app.use(express.json({
+  verify: (req: any, _res, buf) => {
+    try {
+      req.rawBody = buf;
+    } catch {}
+  }
+}));
 app.use(express.urlencoded({ extended: false }));
 
 // Request logging middleware
