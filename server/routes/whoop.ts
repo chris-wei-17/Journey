@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import crypto from "crypto";
 import { authenticateToken, type AuthenticatedRequest } from "../auth.js";
 import { db } from "../db.js";
+import { storage } from "../storage.js";
 import { whoopTokens, whoopEvents, whoopResourceCache } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 
@@ -338,17 +339,43 @@ router.post("/webhook", (req: any, res) => {
         const bodyText = await rsrc.text();
         let json: any = bodyText;
         try { json = JSON.parse(bodyText); } catch {}
-        if (rsrc.ok && typeof json === 'object') {
-          await db.insert(whoopResourceCache).values({
-            userId: mappedUserId,
-            whoopUserId: String(whoopUserId),
-            resourceType: path.split('/')[1] || path,
-            resourceId: String(resourceId),
-            data: json,
-          });
-          console.log("[WHOOP webhook] Cached resource", { path, resourceId });
-        } else {
+        if (!rsrc.ok || typeof json !== 'object') {
           console.warn("[WHOOP webhook] Failed to fetch resource", { status: rsrc.status, url });
+        } else {
+          // Map WHOOP resource to Journey activity where applicable
+          const kind = path.split('/')[1] || path;
+          if (kind === 'workout') {
+            const start = new Date(json.start);
+            const end = new Date(json.end);
+            const durationMinutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+            const activity = {
+              userId: mappedUserId,
+              activityType: (json?.sport?.toLowerCase?.() || 'workout') as string,
+              startTime: start,
+              endTime: end,
+              durationMinutes,
+              date: start,
+            } as any;
+            await storage.createActivity(activity);
+            console.log("[WHOOP webhook] Inserted workout activity", { id: resourceId, activityType: activity.activityType });
+          } else if (kind === 'sleep') {
+            const start = new Date(json.start);
+            const end = new Date(json.end);
+            const durationMinutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+            const activity = {
+              userId: mappedUserId,
+              activityType: 'sleep',
+              startTime: start,
+              endTime: end,
+              durationMinutes,
+              date: start,
+            } as any;
+            await storage.createActivity(activity);
+            console.log("[WHOOP webhook] Inserted sleep activity", { id: resourceId });
+          } else if (kind === 'recovery') {
+            // No-op insert for now; we fetched json already
+            console.log("[WHOOP webhook] Fetched recovery (no-op)", { id: resourceId });
+          }
         }
       } catch (e: any) {
         console.error("[WHOOP webhook] Error fetching resource", e?.message);
