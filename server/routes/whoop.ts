@@ -348,9 +348,20 @@ router.post("/webhook", (req: any, res) => {
             const start = new Date(json.start);
             const end = new Date(json.end);
             const durationMinutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+            let sport = (json?.sport || '').toString().trim();
+            if (!sport) sport = 'workout';
+            const normalized = sport.toUpperCase();
+            // Ensure activity type exists in user's custom activities if not default
+            const existingCustom = await storage.getUserCustomActivities(mappedUserId);
+            const hasCustom = existingCustom.some(a => a.name.trim().toUpperCase() === normalized);
+            const defaultSet = new Set(['RUNNING','CYCLING','WALKING','SWIMMING','WORKOUT','GYM','YOGA','PILATES']);
+            if (!hasCustom && !defaultSet.has(normalized)) {
+              await storage.createCustomActivity({ userId: mappedUserId, name: normalized, category: 'STRAIN', icon: 'fa-dumbbell' } as any);
+              console.log("[WHOOP webhook] Auto-created custom activity type", { name: normalized });
+            }
             const activity = {
               userId: mappedUserId,
-              activityType: (json?.sport?.toLowerCase?.() || 'workout') as string,
+              activityType: sport.toLowerCase(),
               startTime: start,
               endTime: end,
               durationMinutes,
