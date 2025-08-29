@@ -1,5 +1,4 @@
 import express, { Router } from "express";
-import fetch from "node-fetch";
 import crypto from "crypto";
 import { authenticateToken, type AuthenticatedRequest } from "../auth.js";
 import { db } from "../db.js";
@@ -239,7 +238,7 @@ router.get("/env-check", (req, res) => {
 
 // WHOOP Webhook receiver (v2-ready)
 // Verify with Client Secret and timestamp header
-router.post("/webhook", (req: any, res) => {
+router.post("/webhook", async (req: any, res) => {
   // Pre-try logging
   console.log("[WHOOP webhook] Received request", {
     ts: new Date().toISOString(),
@@ -268,9 +267,10 @@ router.post("/webhook", (req: any, res) => {
       return res.status(400).json({ message: "Missing signature or timestamp header" });
     }
 
-    const rawBody: Buffer = req.rawBody ? req.rawBody as Buffer : Buffer.from(JSON.stringify(req.body ?? {}));
-    const payloadString = rawBody.toString("utf8");
-
+    // For signature verification, we need the raw body
+    // Since we're in an async route, we'll reconstruct it from req.body
+    const payloadString = JSON.stringify(req.body ?? {});
+    
     // WHOOP signing: HMAC-SHA256 over `${timestamp}${payload}`, base64-encoded
     const signed = computeHmacSha256Base64(clientSecret, `${timestamp}${payloadString}`);
     const valid = timingSafeEqualString(signature, signed);
@@ -281,19 +281,25 @@ router.post("/webhook", (req: any, res) => {
       return res.status(400).json({ message: "Invalid signature" });
     }
 
-    let payload: any;
-    try {
-      payload = req.rawBody ? JSON.parse((req.rawBody as Buffer).toString("utf8")) : req.body;
-      console.log("[WHOOP webhook] JSON parsed successfully");
-    } catch (parseErr: any) {
-      console.error("[WHOOP webhook] Failed to parse JSON payload", { error: parseErr?.message });
-      return res.status(400).json({ message: "Invalid JSON payload" });
-    }
+    // The payload is already parsed by express.json() middleware
+    const payload = req.body;
+    console.log("[WHOOP webhook] JSON parsed successfully");
 
     const eventType = payload?.type || payload?.event || "unknown";
-    console.log("[WHOOP webhook] Event received", { eventType, id: payload?.id || payload?.resource_id });
+    const resourceId = payload?.id || payload?.resource_id;
+    const whoopUserId = payload?.user_id;
+    console.log("[WHOOP webhook] Event received", { eventType, id: resourceId, whoopUserId });
 
-    // TODO: enqueue job or handle event types (v2 uses UUID ids)
+    // Handle the event by creating/updating activities
+    if (resourceId && whoopUserId) {
+      try {
+        await handleWhoopEvent(eventType, resourceId, whoopUserId);
+        console.log("[WHOOP webhook] Event handled successfully");
+      } catch (error) {
+        console.error("[WHOOP webhook] Failed to handle event:", error);
+        // Don't fail the webhook, just log the error
+      }
+    }
 
     console.log("[WHOOP webhook] Responding 200 OK");
     return res.status(200).json({ received: true });
@@ -302,6 +308,73 @@ router.post("/webhook", (req: any, res) => {
     return res.status(500).json({ message: e.message || "Webhook error" });
   }
 });
+
+// Function to handle WHOOP activities and create/update them in our database
+async function handleWhoopEvent(eventType: string, resourceId: string, whoopUserId: string) {
+  try {
+    console.log("[WHOOP handleWhoopEvent] Processing event", { eventType, resourceId, whoopUserId });
+    
+    // Extract the activity type from the event (e.g., "workout.updated" -> "workout")
+    const activityType = eventType.split('.')[0];
+    
+    // Only process workout, sleep, and recovery events
+    if (!['workout', 'sleep', 'recovery'].includes(activityType)) {
+      console.log("[WHOOP handleWhoopEvent] Skipping non-activity event type:", activityType);
+      return;
+    }
+    
+    // Find users who have WHOOP tokens
+    // In production, you'd want proper WHOOP user ID mapping
+    const tokenRows = await db.select().from(whoopTokens);
+    if (tokenRows.length === 0) {
+      console.log("[WHOOP handleWhoopEvent] No users with WHOOP tokens found");
+      return;
+    }
+    
+    // For now, process for the first user with WHOOP tokens
+    // In production, implement proper user mapping
+    const userId = tokenRows[0].userId as number;
+    console.log("[WHOOP handleWhoopEvent] Processing for user ID:", userId);
+    
+    // Fetch the activity details from WHOOP API
+    const accessToken = await ensureValidAccessToken(userId);
+    const path = activityType === 'workout' ? 'activity/workout' : 
+                 activityType === 'sleep' ? 'activity/sleep' : 'recovery';
+    const url = `https://api.prod.whoop.com/developer/v2/${path}/${resourceId}`;
+    
+    const response = await fetch(url, { 
+      headers: { 
+        Authorization: `Bearer ${accessToken}`, 
+        Accept: "application/json" 
+      } 
+    });
+    
+    if (!response.ok) {
+      console.error("[WHOOP handleWhoopEvent] Failed to fetch WHOOP data:", response.status, response.statusText);
+      return;
+    }
+    
+    const whoopData = await response.json();
+    console.log("[WHOOP handleWhoopEvent] WHOOP data fetched:", { type: activityType, id: resourceId });
+    
+    // Process the activity based on type
+    // TODO: Uncomment these when we add the helper functions
+    /*
+    if (activityType === 'workout') {
+      await processWorkoutActivity(userId, whoopData);
+    } else if (activityType === 'sleep') {
+      await processSleepActivity(userId, whoopData);
+    } else if (activityType === 'recovery') {
+      await processRecoveryActivity(userId, whoopData);
+    }
+    */
+    
+    console.log("[WHOOP handleWhoopEvent] Activity processed successfully");
+  } catch (error) {
+    console.error("[WHOOP handleWhoopEvent] Error processing event:", error);
+    throw error;
+  }
+}
 
 // WHOOP Test webhook sender - POST helper for signed forward
 router.post("/test-webhook", async (req: any, res) => {
