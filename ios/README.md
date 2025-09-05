@@ -3,7 +3,7 @@
 This is a native iOS SwiftUI app that talks to the existing server used by the PWA.
 
 ## Requirements
-- macOS with Xcode 15+
+- macOS with Xcode 13+
 - XcodeGen (optional) if you want to regenerate the project
   - Install: brew install xcodegen
 

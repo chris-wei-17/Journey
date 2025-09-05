@@ -1,14 +1,13 @@
 name: Journey
 options:
-  minimumXcodeGenVersion: 2.19.0
   deploymentTarget:
-    iOS: 16.0
+    iOS: 15.0
 settings:
   base:
     PRODUCT_BUNDLE_IDENTIFIER: com.journey.app
     DEVELOPMENT_TEAM: ""
     INFOPLIST_FILE: Journey/Info.plist
-    SWIFT_VERSION: 5.9
+    SWIFT_VERSION: 5.5
     CODE_SIGN_STYLE: Automatic
     CURRENT_PROJECT_VERSION: 1
     MARKETING_VERSION: 1.0.0
@@ -33,8 +32,8 @@ targets:
         DEVELOPMENT_TEAM: ""
         INFOPLIST_FILE: Journey/Info.plist
         TARGETED_DEVICE_FAMILY: 1
-        IPHONEOS_DEPLOYMENT_TARGET: 16.0
-        SWIFT_VERSION: 5.9
+        IPHONEOS_DEPLOYMENT_TARGET: 15.0
+        SWIFT_VERSION: 5.5
         CODE_SIGN_STYLE: Automatic
     scheme:
       testTargets: []

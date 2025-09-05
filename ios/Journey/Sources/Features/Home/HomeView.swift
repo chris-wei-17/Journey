@@ -8,10 +8,26 @@ struct HomeView: View {
             Group {
                 if let health = apiClient.health {
                     List {
-                        LabeledContent("Status", value: health.status)
-                        LabeledContent("Timestamp", value: health.timestamp)
-                        LabeledContent("Environment", value: health.environment)
-                        LabeledContent("Vercel", value: String(health.vercel))
+                        HStack {
+                            Text("Status")
+                            Spacer()
+                            Text(health.status).foregroundColor(.secondary)
+                        }
+                        HStack {
+                            Text("Timestamp")
+                            Spacer()
+                            Text(health.timestamp).foregroundColor(.secondary)
+                        }
+                        HStack {
+                            Text("Environment")
+                            Spacer()
+                            Text(health.environment).foregroundColor(.secondary)
+                        }
+                        HStack {
+                            Text("Vercel")
+                            Spacer()
+                            Text(String(health.vercel)).foregroundColor(.secondary)
+                        }
                     }
                 } else if let error = apiClient.errorMessage {
                     VStack(spacing: 12) {
